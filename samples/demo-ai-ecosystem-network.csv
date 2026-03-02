@@ -1,0 +1,36 @@
+id,connections by id,label,category,city,funding_billions,employees,valuation_billions,founded_year
+nvidia,openai|anthropic|google_deepmind|meta_ai|xai|amd,NVIDIA,Chip Maker,Santa Clara,0,29000,2800,1993
+openai,nvidia|microsoft|anthropic|sequoia|andrej_karpathy|ilya_sutskever|sam_altman,OpenAI,AI Lab,San Francisco,13,1200,157,2015
+anthropic,nvidia|openai|amazon|google|sequoia|dario_amodei|daniela_amodei,Anthropic,AI Lab,San Francisco,7.3,850,61,2021
+google_deepmind,nvidia|google|demis_hassabis|meta_ai|anthropic,Google DeepMind,AI Lab,London,0,2500,30,2010
+meta_ai,nvidia|google_deepmind|yann_lecun|mark_zuckerberg,Meta AI,AI Lab,Menlo Park,0,1800,0,2013
+xai,nvidia|elon_musk|tesla,xAI,AI Lab,Austin,12,400,50,2023
+microsoft,openai|satya_nadella|nvidia,Microsoft,Big Tech,Redmond,0,221000,3100,1975
+google,google_deepmind|anthropic|sundar_pichai,Google / Alphabet,Big Tech,Mountain View,0,182000,2100,1998
+amazon,anthropic,Amazon,Big Tech,Seattle,4,1540000,1900,1994
+amd,nvidia|intel|lisa_su,AMD,Chip Maker,Santa Clara,0,26000,280,1969
+intel,amd|pat_gelsinger,Intel,Chip Maker,San Jose,0,110000,130,1968
+cohere,nvidia|aidan_gomez,Cohere,AI Startup,Toronto,0.445,450,5.5,2019
+mistral,nvidia|andreessen|arthur_mensch,Mistral AI,AI Startup,Paris,0.415,60,2,2023
+stability_ai,nvidia,Stability AI,AI Startup,London,0.25,180,1,2019
+ssi,ilya_sutskever,SSI,AI Startup,Palo Alto,1,30,5,2024
+jensen_huang,nvidia,Jensen Huang,Person,Santa Clara,0,0,0,0
+sam_altman,openai,Sam Altman,Person,San Francisco,0,0,0,0
+dario_amodei,anthropic|daniela_amodei,Dario Amodei,Person,San Francisco,0,0,0,0
+daniela_amodei,anthropic|dario_amodei,Daniela Amodei,Person,San Francisco,0,0,0,0
+demis_hassabis,google_deepmind,Demis Hassabis,Person,London,0,0,0,0
+yann_lecun,meta_ai,Yann LeCun,Person,New York,0,0,0,0
+mark_zuckerberg,meta_ai,Mark Zuckerberg,Person,Menlo Park,0,0,0,0
+elon_musk,xai|tesla,Elon Musk,Person,Austin,0,0,0,0
+satya_nadella,microsoft,Satya Nadella,Person,Redmond,0,0,0,0
+sundar_pichai,google,Sundar Pichai,Person,Mountain View,0,0,0,0
+lisa_su,amd,Lisa Su,Person,Santa Clara,0,0,0,0
+pat_gelsinger,intel,Pat Gelsinger,Person,San Jose,0,0,0,0
+andrej_karpathy,openai,Andrej Karpathy,Person,San Francisco,0,0,0,0
+ilya_sutskever,openai|ssi,Ilya Sutskever,Person,Palo Alto,0,0,0,0
+aidan_gomez,cohere,Aidan Gomez,Person,Toronto,0,0,0,0
+arthur_mensch,mistral,Arthur Mensch,Person,Paris,0,0,0,0
+sequoia,openai|anthropic,Sequoia Capital,Investor,Menlo Park,0,0,0,0
+andreessen,mistral,Andreessen Horowitz,Investor,Menlo Park,0,0,0,0
+tiger_global,openai,Tiger Global,Investor,New York,4.2,0,0,0
+tesla,elon_musk|xai,Tesla,Company,Austin,0,140000,780,2003

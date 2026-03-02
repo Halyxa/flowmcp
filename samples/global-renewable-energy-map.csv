@@ -1,0 +1,31 @@
+name,latitude,longitude,capacity_mw,energy_type,country,operational_year,annual_output_gwh
+Gansu Wind Farm,40.5,95.7,7965,Wind,China,2009,15200
+Bhadla Solar Park,27.5,71.9,2245,Solar,India,2018,4500
+Hornsea Two,53.9,1.8,1386,Offshore Wind,United Kingdom,2022,5800
+Alta Wind Energy Center,35.1,-118.4,1548,Wind,United States,2014,4200
+Tengger Desert Solar,37.5,104.8,1547,Solar,China,2016,3200
+Walney Extension,54.0,-3.5,659,Offshore Wind,United Kingdom,2018,2800
+Topaz Solar Farm,35.1,-120.1,550,Solar,United States,2014,1300
+Itaipu Dam,-25.4,-54.6,14000,Hydro,Brazil,1984,103000
+Three Gorges Dam,30.8,111.0,22500,Hydro,China,2006,101600
+Guri Dam,7.8,-63.0,10235,Hydro,Venezuela,1986,47000
+Robert-Bourassa,-53.8,-77.4,5616,Hydro,Canada,1981,26500
+Noor-Ouarzazate,31.0,-6.9,580,Solar Thermal,Morocco,2016,1800
+Shepherds Flat Wind Farm,45.4,-120.3,845,Wind,United States,2012,2100
+London Array,51.6,1.5,630,Offshore Wind,United Kingdom,2013,2500
+Kamuthi Solar,9.3,78.4,648,Solar,India,2016,1500
+Geysers Geothermal,38.8,-122.8,1517,Geothermal,United States,1960,6700
+Hellisheidi,64.0,-21.4,303,Geothermal,Iceland,2006,2600
+Olkaria,0.9,36.3,280,Geothermal,Kenya,1981,2100
+Jiuquan Wind Farm,40.0,98.5,6800,Wind,China,2010,13500
+Dogger Bank,54.7,2.1,3600,Offshore Wind,United Kingdom,2023,18000
+Benban Solar Park,24.5,32.7,1650,Solar,Egypt,2019,3800
+Mohammed bin Rashid Solar,24.8,55.4,5000,Solar,UAE,2020,9000
+Cerro Dominador,-22.7,-69.5,210,Solar Thermal,Chile,2021,950
+Horns Rev 3,55.7,7.6,407,Offshore Wind,Denmark,2019,1700
+Sarulla,2.2,98.9,330,Geothermal,Indonesia,2018,2600
+Lake Turkana,-2.4,36.8,310,Wind,Kenya,2019,1600
+Parque Eolico Arauco,-38.0,-70.4,100,Wind,Argentina,2012,400
+Jirau Dam,-9.3,-64.6,3750,Hydro,Brazil,2013,16500
+Vineyard Wind,41.1,-70.5,800,Offshore Wind,United States,2024,3500
+Grand Inga,-5.5,13.6,39000,Hydro,DR Congo,2030,200000

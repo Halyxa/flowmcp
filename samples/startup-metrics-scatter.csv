@@ -1,0 +1,31 @@
+name,revenue_millions,employees,funding_millions,growth_rate,sector,founded_year,customer_count
+Nexora AI,12.5,85,45.0,0.82,AI/ML,2019,340
+CloudVault,8.3,62,22.0,0.45,Cloud,2020,890
+DataPulse,34.7,210,120.0,1.15,Analytics,2017,2100
+FinLogic,6.1,38,15.0,0.33,Fintech,2021,560
+MediSync,19.8,145,75.0,0.67,HealthTech,2018,430
+CyberNest,27.3,178,95.0,0.91,Security,2016,1800
+AgriSense,4.2,28,8.5,0.28,AgTech,2022,120
+EduVerse,15.6,112,55.0,0.73,EdTech,2019,3200
+RetailIQ,41.2,290,150.0,1.42,Retail,2015,4500
+GreenGrid,9.7,74,30.0,0.56,CleanTech,2020,670
+Quantum Leap,2.8,18,12.0,0.19,DeepTech,2023,45
+SocialPulse,22.4,165,88.0,0.88,Social,2017,7800
+LogiFlow,31.5,225,110.0,1.08,Logistics,2016,3400
+BioGenix,7.9,55,42.0,0.41,BioTech,2021,180
+PropTech One,13.2,92,48.0,0.62,PropTech,2019,920
+RoboWorks,18.1,130,65.0,0.77,Robotics,2018,260
+SpaceLink,5.4,42,25.0,0.35,SpaceTech,2022,95
+GameForge,26.8,198,100.0,0.95,Gaming,2016,12000
+LegalBot,11.3,78,38.0,0.58,LegalTech,2020,1400
+TravelMesh,16.9,118,60.0,0.71,Travel,2018,5200
+AutoDrive,52.3,380,200.0,1.65,Automotive,2014,890
+FoodChain,8.8,65,28.0,0.47,FoodTech,2021,2300
+InsurTech Pro,14.7,105,50.0,0.64,InsurTech,2019,3100
+StreamCore,38.9,265,135.0,1.28,Media,2015,8900
+DevOps Hub,20.6,155,80.0,0.84,DevTools,2017,6700
+NanoHealth,3.5,24,18.0,0.22,NanoTech,2023,60
+MarketMind,29.1,205,105.0,1.02,MarTech,2016,5400
+PaySwift,45.6,320,175.0,1.51,Payments,2014,15000
+DroneVista,10.2,72,35.0,0.53,Drones,2020,340
+BlockSecure,7.1,48,20.0,0.38,Blockchain,2022,780

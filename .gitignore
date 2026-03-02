@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+sessions/
+.autodev/logs/
+conversation-logs/
+backup/
+memory/
+research/
+state.json
+CLAUDE.md
+DONE.md
+TRANSPORT.md
+.claude/
+.mcp.json

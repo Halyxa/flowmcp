@@ -1,0 +1,21 @@
+language,category,github_repos_thousands,avg_salary_usd,stackoverflow_questions_thousands,learning_curve,performance_score,ecosystem_maturity,year_created,primary_domain
+Python,General Purpose,4200,125000,2100,Easy,45,95,1991,AI/ML
+JavaScript,Web,3800,118000,2400,Easy,55,98,1995,Web Frontend
+TypeScript,Web,2100,130000,890,Medium,55,88,2012,Web Full-Stack
+Java,Enterprise,2900,128000,1900,Medium,72,97,1995,Enterprise
+C++,Systems,1200,138000,780,Hard,98,90,1985,Systems/Games
+Rust,Systems,450,142000,120,Hard,96,65,2010,Systems/WASM
+Go,Cloud,680,135000,280,Easy,88,78,2009,Cloud/DevOps
+C#,Enterprise,1500,122000,1600,Medium,75,92,2000,Enterprise/.NET
+Swift,Mobile,380,132000,340,Medium,82,72,2014,iOS/macOS
+Kotlin,Mobile,520,128000,180,Medium,78,70,2011,Android/JVM
+Ruby,Web,950,125000,420,Easy,40,82,1995,Web Backend
+PHP,Web,1100,105000,1500,Easy,42,85,1994,Web Backend
+Scala,Data,280,140000,160,Hard,80,68,2004,Data/JVM
+Elixir,Concurrent,85,132000,25,Medium,70,55,2011,Real-time Systems
+Zig,Systems,45,145000,8,Hard,95,25,2016,Systems
+Haskell,Functional,120,138000,95,Hard,78,58,1990,Academic/Finance
+Lua,Scripting,180,110000,45,Easy,65,52,1993,Games/Embedded
+R,Statistics,350,115000,480,Medium,35,80,1993,Statistics
+Julia,Scientific,95,130000,28,Medium,90,45,2012,Scientific Computing
+Dart,Mobile,220,120000,85,Easy,68,60,2011,Flutter/Mobile

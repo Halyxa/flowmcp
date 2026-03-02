@@ -1,0 +1,25 @@
+The AI Arms Race: Who's Connected to Whom in 2026
+
+The artificial intelligence landscape has become a complex web of alliances, rivalries, and billion-dollar bets. Understanding who is funding whom, which researchers are migrating where, and how the major players interconnect is no longer optional — it's a strategic imperative.
+
+At the center of the storm sits NVIDIA, whose CEO Jensen Huang has become the most powerful person in tech. NVIDIA's $2.8 trillion market cap dwarfs most nations' GDP. The company supplies GPUs to virtually every AI lab: OpenAI, Anthropic, Google DeepMind, Meta AI, and xAI all depend on NVIDIA hardware.
+
+OpenAI, led by Sam Altman from San Francisco, raised $13 billion from Microsoft. Their partnership with Microsoft has transformed Redmond under Satya Nadella into an AI powerhouse. Microsoft's $3.1 trillion valuation reflects Wall Street's bet on this alliance. OpenAI has 1,200 employees and reportedly generates $3.4 billion in annual revenue.
+
+But Anthropic is gaining fast. Founded by Dario Amodei and Daniela Amodei, former OpenAI researchers who left over safety disagreements, Anthropic raised $7.3 billion. Amazon invested $4 billion. Google invested $2 billion. Their Claude model family — including Claude Opus 4 — is increasingly preferred by developers for complex reasoning tasks. Anthropic operates from San Francisco with 850 employees.
+
+Google DeepMind, run by Demis Hassabis from London, merged Google Brain and DeepMind into a $30 billion research operation. Sundar Pichai greenlit massive compute spending: $32 billion in 2025 alone on AI infrastructure. Gemini is their flagship, but the real moat may be Google's data advantage. 2,500 researchers work on frontier models.
+
+Meta AI under Mark Zuckerberg and Yann LeCun made a radical bet: open source everything. Llama 3 has been downloaded 350 million times. Meta spent $37 billion on AI in 2025. The strategy is simple — commoditize the model layer, win on distribution through 3.9 billion users. Meta AI operates from Menlo Park with 1,800 AI researchers.
+
+Elon Musk's xAI, founded in Austin, raised $12 billion and built the Colossus supercomputer — 100,000 H100 GPUs in a single cluster. Grok powers X's 600 million users. xAI has 400 employees and is burning $8 billion annually on compute.
+
+The chip war extends beyond NVIDIA. Lisa Su's AMD launched MI300X as a direct competitor, with $6.5 billion in AI chip revenue. AMD operates from Santa Clara with 26,000 employees. Intel under Pat Gelsinger is rebuilding from San Jose, investing $20 billion in new fabs, but their Gaudi chips capture only 1% of the training market.
+
+In the applied AI space, several startups have broken out. Cohere, founded by Aidan Gomez in Toronto, focuses on enterprise AI with $445 million raised and 450 employees. Mistral AI, led by Arthur Mensch from Paris, raised $415 million — a European champion valued at $2 billion. Stability AI from London, despite leadership turmoil, has 180 employees and raised $250 million for open-source image generation.
+
+The talent migration pattern tells its own story. Andrej Karpathy left OpenAI, then Tesla, to go independent in San Francisco, launching educational content that reaches millions. Ilya Sutskever left OpenAI to found Safe Superintelligence (SSI) in Palo Alto, raising $1 billion with a team of just 30 for pure safety research. Researchers are flowing from big labs to startups: 47 OpenAI alumni founded companies in 2025 alone.
+
+Venture capital is reshaping the map. Sequoia Capital invested in both OpenAI and Anthropic. Andreessen Horowitz backs Mistral and multiple AI application startups. Tiger Global has deployed $4.2 billion into AI since 2023. The total AI venture funding in 2025 hit $97 billion, up from $42 billion in 2023.
+
+Geographically, the AI world clusters intensely. San Francisco dominates with 38% of all AI startup funding. The Bay Area corridor — San Francisco to Mountain View to Santa Clara — contains more AI talent per square mile than anywhere on Earth. London is the European hub. Beijing's Zhongguancun district rivals Silicon Valley in pure research output. Toronto, Paris, and Singapore are emerging secondary hubs.

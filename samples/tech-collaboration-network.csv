@@ -1,0 +1,21 @@
+id,connections by id,label,category,influence_score,location
+satya_nadella,tim_cook|sundar_pichai|jensen_huang|sam_altman,Satya Nadella,Microsoft,95,Redmond
+tim_cook,satya_nadella|sundar_pichai|lisa_su|jony_ive,Tim Cook,Apple,92,Cupertino
+sundar_pichai,satya_nadella|tim_cook|jensen_huang|demis_hassabis|sam_altman,Sundar Pichai,Google,94,Mountain View
+jensen_huang,satya_nadella|sundar_pichai|lisa_su|sam_altman|ilya_sutskever,Jensen Huang,NVIDIA,97,Santa Clara
+sam_altman,satya_nadella|sundar_pichai|jensen_huang|ilya_sutskever|dario_amodei|elon_musk,Sam Altman,OpenAI,96,San Francisco
+dario_amodei,sam_altman|ilya_sutskever|demis_hassabis|daniela_amodei,Dario Amodei,Anthropic,88,San Francisco
+daniela_amodei,dario_amodei|sam_altman,Daniela Amodei,Anthropic,82,San Francisco
+ilya_sutskever,jensen_huang|sam_altman|dario_amodei|demis_hassabis|yann_lecun,Ilya Sutskever,SSI,90,Palo Alto
+demis_hassabis,sundar_pichai|ilya_sutskever|dario_amodei|yann_lecun,Demis Hassabis,DeepMind,91,London
+yann_lecun,ilya_sutskever|demis_hassabis|mark_zuckerberg,Yann LeCun,Meta AI,87,New York
+mark_zuckerberg,yann_lecun|tim_cook|sundar_pichai|elon_musk,Mark Zuckerberg,Meta,93,Menlo Park
+elon_musk,sam_altman|mark_zuckerberg|jensen_huang|gwynne_shotwell|andrej_karpathy,Elon Musk,xAI,94,Austin
+andrej_karpathy,elon_musk|ilya_sutskever|sam_altman,Andrej Karpathy,Independent,83,San Francisco
+lisa_su,jensen_huang|tim_cook|pat_gelsinger,Lisa Su,AMD,89,Santa Clara
+pat_gelsinger,lisa_su|satya_nadella,Pat Gelsinger,Intel,78,San Jose
+gwynne_shotwell,elon_musk,Gwynne Shotwell,SpaceX,76,Hawthorne
+jony_ive,tim_cook|sam_altman,Jony Ive,LoveFrom,74,San Francisco
+linus_torvalds,satya_nadella|sundar_pichai,Linus Torvalds,Linux Foundation,85,Portland
+vitalik_buterin,elon_musk,Vitalik Buterin,Ethereum,79,Singapore
+reshma_saujani,satya_nadella|tim_cook,Reshma Saujani,Girls Who Code,72,New York
