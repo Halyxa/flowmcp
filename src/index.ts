@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2102,6 +2102,82 @@ Output: pass/fail, total_rows, valid_rows, invalid_rows, violation details, and 
           required: ["csv_content", "rules"],
         },
       },
+
+      // Tool 43: flow_fill_missing
+      {
+        name: "flow_fill_missing",
+        description: `Fill missing/empty values in CSV columns using smart imputation methods: constant value, column mean, column median, column mode (most frequent), or forward fill (propagate last known value). Essential for handling incomplete data before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User has missing data, empty cells, or NaN values in their CSV
+- User asks to "fill", "impute", "interpolate", or "handle missing values"
+- User needs to replace empty cells before uploading to Flow
+- Data has gaps that would create holes in 3D visualization
+- User wants to use mean/median imputation for numeric columns
+
+Input: CSV data, optional column list, fill method, optional constant fill_value.
+Output: Cleaned CSV with filled_count, row_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with missing values to fill",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to fill (optional — fills all columns if omitted)",
+            },
+            method: {
+              type: "string",
+              enum: ["constant", "mean", "median", "mode", "forward"],
+              description: "Fill method: constant (fixed value), mean, median, mode (most frequent), forward (last known value)",
+            },
+            fill_value: {
+              type: "string",
+              description: "Value to fill with when method is 'constant'",
+            },
+          },
+          required: ["csv_content", "method"],
+        },
+      },
+
+      // Tool 44: flow_rename_columns
+      {
+        name: "flow_rename_columns",
+        description: `Rename and/or reorder columns in a CSV dataset. Rename columns to meaningful labels, reorder columns to match visualization requirements, or both in one operation. Data rows are preserved and reordered to match new column positions.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "rename", "relabel", or "change column names"
+- User asks to "reorder", "rearrange", or "sort columns"
+- Column names are cryptic (col1, col2) and need meaningful labels
+- Visualization tool expects columns in a specific order
+- User wants to reorganize columns before export or upload
+
+Input: CSV data, optional renames map (old→new), optional column order list.
+Output: Renamed/reordered CSV with columns_renamed, columns_reordered, final_columns, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to rename/reorder columns in",
+            },
+            renames: {
+              type: "object",
+              additionalProperties: { type: "string" },
+              description: "Map of old column name → new column name",
+            },
+            order: {
+              type: "array",
+              items: { type: "string" },
+              description: "Desired column order (use new names if renames are also applied)",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
     ],
   };
 });
@@ -2564,6 +2640,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_validate_rules": {
       try {
         const result = flowValidateRules(args as unknown as ValidateRulesInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_fill_missing": {
+      try {
+        const result = flowFillMissing(args as unknown as FillMissingInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_rename_columns": {
+      try {
+        const result = flowRenameColumns(args as unknown as RenameColumnsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5565,7 +5659,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 42, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 44, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

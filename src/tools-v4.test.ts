@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -2034,5 +2034,190 @@ describe("flowValidateRules", () => {
   it("throws on missing column", () => {
     const csv = "val\n10";
     expect(() => flowValidateRules({ csv_content: csv, rules: [{ column: "missing", rule: "not_null" }] })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 43: flow_fill_missing
+// ============================================================================
+
+describe("flowFillMissing", () => {
+  it("fills with constant value", () => {
+    const csv = "a,b\n1,\n,3\n5,6";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["a", "b"],
+      method: "constant",
+      fill_value: "0",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("1,0");
+    expect(lines[2]).toBe("0,3");
+  });
+
+  it("fills with mean", () => {
+    const csv = "val\n10\n\n30";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["val"],
+      method: "mean",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2]).toBe("20"); // mean of 10 and 30
+  });
+
+  it("fills with median", () => {
+    const csv = "val\n10\n\n30\n40";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["val"],
+      method: "median",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(Number(lines[2])).toBe(30); // median of 10, 30, 40
+  });
+
+  it("fills with forward fill", () => {
+    const csv = "val\n10\n\n\n40";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["val"],
+      method: "forward",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2]).toBe("10"); // forward from row 1
+    expect(lines[3]).toBe("10"); // forward from row 1
+  });
+
+  it("returns filled_count and summary", () => {
+    const csv = "a,b\n1,\n,3";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["a", "b"],
+      method: "constant",
+      fill_value: "0",
+    });
+    expect(result.filled_count).toBe(2);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("preserves non-empty values", () => {
+    const csv = "val\n10\n20\n30";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["val"],
+      method: "constant",
+      fill_value: "999",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("10");
+    expect(lines[2]).toBe("20");
+    expect(lines[3]).toBe("30");
+    expect(result.filled_count).toBe(0);
+  });
+
+  it("auto-detects columns when not specified", () => {
+    const csv = "a,b\n1,\n,3";
+    const result = flowFillMissing({
+      csv_content: csv,
+      method: "constant",
+      fill_value: "0",
+    });
+    expect(result.filled_count).toBe(2);
+  });
+
+  it("fills with mode", () => {
+    const csv = "cat\nA\nB\nA\n\nA";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["cat"],
+      method: "mode",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[4]).toBe("A"); // mode is A (3 occurrences)
+  });
+});
+
+// ============================================================================
+// TOOL 44: flow_rename_columns
+// ============================================================================
+
+describe("flowRenameColumns", () => {
+  it("renames columns", () => {
+    const csv = "old_name,val\nfoo,1\nbar,2";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      renames: { old_name: "new_name" },
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("new_name");
+    expect(header).not.toContain("old_name");
+  });
+
+  it("renames multiple columns", () => {
+    const csv = "a,b,c\n1,2,3";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      renames: { a: "x", c: "z" },
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("x,b,z");
+  });
+
+  it("preserves data rows", () => {
+    const csv = "name,score\nAlice,100\nBob,200";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      renames: { name: "student" },
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("Alice,100");
+    expect(lines[2]).toBe("Bob,200");
+  });
+
+  it("reorders columns when order is specified", () => {
+    const csv = "a,b,c\n1,2,3\n4,5,6";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      order: ["c", "a", "b"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("c,a,b");
+    expect(lines[1]).toBe("3,1,2");
+  });
+
+  it("renames and reorders simultaneously", () => {
+    const csv = "a,b,c\n1,2,3";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      renames: { a: "x" },
+      order: ["c", "x", "b"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("c,x,b");
+    expect(lines[1]).toBe("3,1,2");
+  });
+
+  it("returns columns_renamed count", () => {
+    const csv = "a,b\n1,2";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      renames: { a: "x", b: "y" },
+    });
+    expect(result.columns_renamed).toBe(2);
+  });
+
+  it("returns summary", () => {
+    const csv = "a,b\n1,2";
+    const result = flowRenameColumns({
+      csv_content: csv,
+      renames: { a: "alpha" },
+    });
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on non-existent column in renames", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowRenameColumns({ csv_content: csv, renames: { missing: "x" } })).toThrow();
   });
 });

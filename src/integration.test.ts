@@ -50,7 +50,7 @@ describe("MCP Protocol Integration", () => {
 
   it("lists all 36 tools", async () => {
     const result = await client.listTools();
-    expect(result.tools.length).toBe(42);
+    expect(result.tools.length).toBe(44);
   });
 
   it("includes all expected tool names", async () => {
@@ -100,6 +100,8 @@ describe("MCP Protocol Integration", () => {
       "flow_parse_dates",
       "flow_string_transform",
       "flow_validate_rules",
+      "flow_fill_missing",
+      "flow_rename_columns",
     ];
 
     for (const name of expected) {

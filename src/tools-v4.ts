@@ -2340,3 +2340,210 @@ export function flowValidateRules(input: ValidateRulesInput): ValidateRulesResul
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 43: flow_fill_missing — IMPUTE MISSING VALUES
+// ============================================================================
+
+export interface FillMissingInput {
+  csv_content: string;
+  /** Columns to fill (optional — fills all columns if omitted) */
+  columns?: string[];
+  method: "constant" | "mean" | "median" | "mode" | "forward";
+  /** Value to use for constant fill method */
+  fill_value?: string;
+}
+
+export interface FillMissingResult {
+  csv: string;
+  filled_count: number;
+  row_count: number;
+  summary: string;
+}
+
+export function flowFillMissing(input: FillMissingInput): FillMissingResult {
+  const { csv_content, method, fill_value } = input;
+
+  const allLines = csv_content.trim().split("\n");
+  // Find the header (first non-empty line)
+  const headerIdx = allLines.findIndex(l => l.trim() !== "");
+  if (headerIdx === -1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(allLines[headerIdx]);
+  // Keep ALL lines after header — empty lines represent rows with missing values
+  const rows = allLines.slice(headerIdx + 1).map(l => {
+    if (l.trim() === "") return headers.map(() => "");
+    return parseCSVLine(l);
+  });
+
+  // Determine which columns to fill
+  const targetCols = input.columns || [...headers];
+  const colIndices: number[] = [];
+  for (const col of targetCols) {
+    const idx = headers.indexOf(col);
+    if (idx !== -1) colIndices.push(idx);
+  }
+
+  // Pre-compute fill values per column for mean/median/mode
+  const fillValues = new Map<number, string>();
+  if (method === "mean" || method === "median" || method === "mode") {
+    for (const idx of colIndices) {
+      const values = rows
+        .map(r => r[idx] || "")
+        .filter(v => v.trim() !== "");
+
+      if (method === "mean") {
+        const nums = values.map(Number).filter(n => !isNaN(n));
+        if (nums.length > 0) {
+          const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+          fillValues.set(idx, String(Math.round(mean * 1e10) / 1e10));
+        }
+      } else if (method === "median") {
+        const nums = values.map(Number).filter(n => !isNaN(n)).sort((a, b) => a - b);
+        if (nums.length > 0) {
+          const mid = Math.floor(nums.length / 2);
+          const med = nums.length % 2 === 0 ? (nums[mid - 1] + nums[mid]) / 2 : nums[mid];
+          fillValues.set(idx, String(med));
+        }
+      } else if (method === "mode") {
+        const counts = new Map<string, number>();
+        for (const v of values) {
+          counts.set(v, (counts.get(v) || 0) + 1);
+        }
+        let maxCount = 0;
+        let modeVal = "";
+        for (const [v, c] of counts) {
+          if (c > maxCount) { maxCount = c; modeVal = v; }
+        }
+        if (modeVal) fillValues.set(idx, modeVal);
+      }
+    }
+  }
+
+  let filled = 0;
+
+  for (let r = 0; r < rows.length; r++) {
+    for (const idx of colIndices) {
+      const val = (rows[r][idx] || "").trim();
+      if (val === "") {
+        let replacement = "";
+        switch (method) {
+          case "constant":
+            replacement = fill_value || "";
+            break;
+          case "mean":
+          case "median":
+          case "mode":
+            replacement = fillValues.get(idx) || "";
+            break;
+          case "forward":
+            // Look backwards for last non-empty value
+            for (let prev = r - 1; prev >= 0; prev--) {
+              const prevVal = (rows[prev][idx] || "").trim();
+              if (prevVal !== "") { replacement = prevVal; break; }
+            }
+            break;
+        }
+        if (replacement !== "") {
+          rows[r][idx] = replacement;
+          filled++;
+        }
+      }
+    }
+  }
+
+  const resultLines = [headers.map(h => csvEscapeField(h)).join(",")];
+  for (const row of rows) {
+    resultLines.push(row.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const summary = filled > 0
+    ? `Filled ${filled} missing value(s) using ${method} method across ${targetCols.length} column(s).`
+    : `No missing values found in ${targetCols.length} column(s) across ${rows.length} rows.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    filled_count: filled,
+    row_count: rows.length,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 44: flow_rename_columns — RENAME AND REORDER COLUMNS
+// ============================================================================
+
+export interface RenameColumnsInput {
+  csv_content: string;
+  /** Map of old_name → new_name */
+  renames?: Record<string, string>;
+  /** Desired column order (after renames applied) */
+  order?: string[];
+}
+
+export interface RenameColumnsResult {
+  csv: string;
+  columns_renamed: number;
+  columns_reordered: boolean;
+  final_columns: string[];
+  summary: string;
+}
+
+export function flowRenameColumns(input: RenameColumnsInput): RenameColumnsResult {
+  const { csv_content, renames, order } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate rename keys exist
+  const renameMap = renames || {};
+  for (const oldName of Object.keys(renameMap)) {
+    if (!headers.includes(oldName)) {
+      throw new Error(`Column "${oldName}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  // Apply renames
+  const renamedHeaders = headers.map(h => renameMap[h] || h);
+  const columnsRenamed = Object.keys(renameMap).length;
+
+  // Apply reordering if specified
+  let finalHeaders = renamedHeaders;
+  let finalRows = rows;
+
+  if (order && order.length > 0) {
+    const newOrder: number[] = [];
+    for (const col of order) {
+      const idx = renamedHeaders.indexOf(col);
+      if (idx !== -1) newOrder.push(idx);
+    }
+    // Add any columns not in order at the end
+    for (let i = 0; i < renamedHeaders.length; i++) {
+      if (!newOrder.includes(i)) newOrder.push(i);
+    }
+
+    finalHeaders = newOrder.map(i => renamedHeaders[i]);
+    finalRows = rows.map(row => newOrder.map(i => row[i] || ""));
+  }
+
+  const resultLines = [finalHeaders.map(h => csvEscapeField(h)).join(",")];
+  for (const row of finalRows) {
+    resultLines.push(row.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const parts: string[] = [];
+  if (columnsRenamed > 0) parts.push(`Renamed ${columnsRenamed} column(s)`);
+  if (order) parts.push(`Reordered to [${finalHeaders.join(", ")}]`);
+  const summary = parts.join(". ") + `. ${rows.length} rows preserved.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    columns_renamed: columnsRenamed,
+    columns_reordered: !!order,
+    final_columns: finalHeaders,
+    summary,
+  };
+}
