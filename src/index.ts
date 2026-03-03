@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1940,6 +1940,82 @@ Output: Per-column stats (count, mean, median, std, min, max, q1, q3, range, mis
           required: ["csv_content"],
         },
       },
+
+      // Tool 39: flow_computed_columns
+      {
+        name: "flow_computed_columns",
+        description: `Add new calculated columns to a CSV dataset using safe arithmetic formulas. Supports +, -, *, /, parentheses, numeric literals, and column name references. Uses a recursive descent parser — no code execution. Essential for deriving metrics like ratios, differences, or weighted scores before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "add a column", "compute", "calculate", or "derive" new values
+- User needs ratios (price/quantity), differences (actual-forecast), or products (width*height)
+- User wants to create composite scores or weighted metrics
+- User asks to "normalize" or "scale" by a formula (e.g., "value / max_value * 100")
+- Data needs mathematical transformation before 3D visualization
+
+Input: CSV data and array of {name, formula} expressions.
+Output: CSV with new columns appended, row_count, columns_added, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to add computed columns to",
+            },
+            expressions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string", description: "Name for the new column" },
+                  formula: { type: "string", description: "Arithmetic formula using column names (e.g., 'price * qty', '(a + b) / 2')" },
+                },
+                required: ["name", "formula"],
+              },
+              description: "List of computed columns to add",
+            },
+          },
+          required: ["csv_content", "expressions"],
+        },
+      },
+
+      // Tool 40: flow_parse_dates
+      {
+        name: "flow_parse_dates",
+        description: `Parse date strings in a CSV column and extract temporal components: year, month, day, day_of_week (ISO: 1=Mon, 7=Sun), quarter, and epoch_days. Converts dates into numeric columns that can be used as axes, color dimensions, or animation frames in 3D visualization.
+
+INVOKE THIS TOOL WHEN:
+- User has date/time strings and needs to visualize by year, month, quarter, or day of week
+- User asks to "extract year", "get month", "parse dates", or "add temporal features"
+- User wants to group or color data by time period (quarterly trends, weekday patterns)
+- User needs to convert dates to numeric values for scatter plots or animation
+- Temporal data needs decomposition before spatial visualization
+
+Input: CSV data, date column name, and list of components to extract.
+Output: CSV with new date component columns appended, parsed_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data containing dates to parse",
+            },
+            date_column: {
+              type: "string",
+              description: "Name of the column containing date strings",
+            },
+            output_components: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["year", "month", "day", "day_of_week", "quarter", "epoch_days"],
+              },
+              description: "Date components to extract (year, month, day, day_of_week, quarter, epoch_days)",
+            },
+          },
+          required: ["csv_content", "date_column", "output_components"],
+        },
+      },
     ],
   };
 });
@@ -2366,6 +2442,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_column_stats": {
       try {
         const result = flowColumnStats(args as unknown as ColumnStatsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_computed_columns": {
+      try {
+        const result = flowComputedColumns(args as unknown as ComputedColumnsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_parse_dates": {
+      try {
+        const result = flowParseDates(args as unknown as ParseDatesInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5367,7 +5461,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 38, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 40, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

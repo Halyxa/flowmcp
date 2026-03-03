@@ -1856,3 +1856,228 @@ export function flowColumnStats(input: ColumnStatsInput): ColumnStatsResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 39: flow_computed_columns — ADD CALCULATED COLUMNS USING FORMULAS
+// ============================================================================
+
+export interface ComputedColumnExpression {
+  name: string;
+  formula: string;
+}
+
+export interface ComputedColumnsInput {
+  csv_content: string;
+  expressions: ComputedColumnExpression[];
+}
+
+export interface ComputedColumnsResult {
+  csv: string;
+  row_count: number;
+  columns_added: number;
+  summary: string;
+}
+
+/**
+ * Safe arithmetic expression calculator.
+ * Supports: +, -, *, /, parentheses, numeric literals, and column references.
+ * Uses a recursive descent parser — NO code execution of any kind.
+ * This is a pure math expression parser, not a code evaluator.
+ */
+function calculateFormula(formula: string, vars: Record<string, number>): number {
+  let pos = 0;
+  const expr = formula.replace(/\s+/g, "");
+
+  function parseExpr(): number {
+    let result = parseTerm();
+    while (pos < expr.length && (expr[pos] === "+" || expr[pos] === "-")) {
+      const op = expr[pos++];
+      const right = parseTerm();
+      result = op === "+" ? result + right : result - right;
+    }
+    return result;
+  }
+
+  function parseTerm(): number {
+    let result = parseFactor();
+    while (pos < expr.length && (expr[pos] === "*" || expr[pos] === "/")) {
+      const op = expr[pos++];
+      const right = parseFactor();
+      result = op === "*" ? result * right : result / right;
+    }
+    return result;
+  }
+
+  function parseFactor(): number {
+    // Unary minus
+    if (expr[pos] === "-") {
+      pos++;
+      return -parseFactor();
+    }
+    // Parentheses
+    if (expr[pos] === "(") {
+      pos++;
+      const result = parseExpr();
+      if (expr[pos] === ")") pos++;
+      return result;
+    }
+    // Number literal
+    const numMatch = expr.slice(pos).match(/^(\d+\.?\d*)/);
+    if (numMatch) {
+      pos += numMatch[1].length;
+      return Number(numMatch[1]);
+    }
+    // Variable (column name)
+    const varMatch = expr.slice(pos).match(/^([a-zA-Z_][a-zA-Z0-9_]*)/);
+    if (varMatch) {
+      pos += varMatch[1].length;
+      const name = varMatch[1];
+      if (name in vars) return vars[name];
+      return 0; // Unknown variable → 0
+    }
+    return 0;
+  }
+
+  return parseExpr();
+}
+
+export function flowComputedColumns(input: ComputedColumnsInput): ComputedColumnsResult {
+  const { csv_content, expressions } = input;
+  if (!expressions || expressions.length === 0) {
+    throw new Error("At least one expression is required");
+  }
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  const newHeaders = [...headers, ...expressions.map(e => e.name)];
+  const resultLines = [newHeaders.map(h => csvEscapeField(h)).join(",")];
+
+  for (const row of rows) {
+    // Build variable map from column values
+    const vars: Record<string, number> = {};
+    for (let i = 0; i < headers.length; i++) {
+      const val = Number(row[i]);
+      if (!isNaN(val)) vars[headers[i]] = val;
+    }
+
+    const newValues = [...row];
+    for (const expr of expressions) {
+      const result = calculateFormula(expr.formula, vars);
+      const rounded = Math.round(result * 1e10) / 1e10; // Avoid floating point noise
+      newValues.push(String(rounded));
+      // Make computed columns available for subsequent expressions
+      vars[expr.name] = rounded;
+    }
+
+    resultLines.push(newValues.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const summary = `Added ${expressions.length} computed column(s) (${expressions.map(e => e.name).join(", ")}) to ${rows.length} rows.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    row_count: rows.length,
+    columns_added: expressions.length,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 40: flow_parse_dates — EXTRACT DATE COMPONENTS FOR TEMPORAL VISUALIZATION
+// ============================================================================
+
+export type DateComponent = "year" | "month" | "day" | "day_of_week" | "quarter" | "epoch_days";
+
+export interface ParseDatesInput {
+  csv_content: string;
+  date_column: string;
+  output_components: DateComponent[];
+}
+
+export interface ParseDatesResult {
+  csv: string;
+  parsed_count: number;
+  failed_count: number;
+  components_added: number;
+  summary: string;
+}
+
+export function flowParseDates(input: ParseDatesInput): ParseDatesResult {
+  const { csv_content, date_column, output_components } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const dateIdx = headers.indexOf(date_column);
+  if (dateIdx === -1) throw new Error(`Date column "${date_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Build new headers
+  const componentHeaders = output_components.map(c => `${date_column}_${c}`);
+  const newHeaders = [...headers, ...componentHeaders];
+
+  const resultLines = [newHeaders.map(h => csvEscapeField(h)).join(",")];
+  let parsed = 0;
+  let failed = 0;
+
+  // Epoch reference: 1970-01-01
+  const EPOCH = new Date("1970-01-01T00:00:00Z").getTime();
+  const MS_PER_DAY = 86400000;
+
+  for (const row of rows) {
+    const dateStr = row[dateIdx] || "";
+    const d = new Date(dateStr);
+    const valid = !isNaN(d.getTime()) && dateStr.trim() !== "";
+
+    if (valid) parsed++;
+    else failed++;
+
+    const newValues = [...row];
+    for (const comp of output_components) {
+      if (!valid) {
+        newValues.push("");
+        continue;
+      }
+      switch (comp) {
+        case "year":
+          newValues.push(String(d.getUTCFullYear()));
+          break;
+        case "month":
+          newValues.push(String(d.getUTCMonth() + 1));
+          break;
+        case "day":
+          newValues.push(String(d.getUTCDate()));
+          break;
+        case "day_of_week":
+          // 0=Sunday in JS, convert to 1=Monday, 7=Sunday (ISO 8601)
+          newValues.push(String(d.getUTCDay() === 0 ? 7 : d.getUTCDay()));
+          break;
+        case "quarter":
+          newValues.push(String(Math.ceil((d.getUTCMonth() + 1) / 3)));
+          break;
+        case "epoch_days":
+          newValues.push(String(Math.floor((d.getTime() - EPOCH) / MS_PER_DAY)));
+          break;
+      }
+    }
+
+    resultLines.push(newValues.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const summary = `Parsed ${parsed} date(s) from "${date_column}", extracted ${output_components.length} component(s): ${output_components.join(", ")}.` +
+    (failed > 0 ? ` ${failed} row(s) had unparseable dates.` : "");
+
+  return {
+    csv: resultLines.join("\n"),
+    parsed_count: parsed,
+    failed_count: failed,
+    components_added: output_components.length,
+    summary,
+  };
+}

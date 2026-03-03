@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -1585,5 +1585,247 @@ describe("flow_column_stats", () => {
     });
     expect(result.stats[0].count).toBe(3); // only 10, 30, 50
     expect(result.stats[0].mean).toBe(30);
+  });
+});
+
+// ============================================================================
+// TOOL 39: flow_computed_columns
+// ============================================================================
+
+describe("flowComputedColumns", () => {
+  it("adds a simple arithmetic column", () => {
+    const csv = "a,b\n10,3\n20,7\n30,5";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "sum", formula: "a + b" }],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("sum");
+    expect(lines[1]).toContain("13");
+    expect(lines[2]).toContain("27");
+    expect(lines[3]).toContain("35");
+  });
+
+  it("supports subtraction", () => {
+    const csv = "x,y\n100,30\n50,20";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "diff", formula: "x - y" }],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("70");
+    expect(lines[2]).toContain("30");
+  });
+
+  it("supports multiplication", () => {
+    const csv = "price,qty\n10,5\n20,3";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "total", formula: "price * qty" }],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("50");
+    expect(lines[2]).toContain("60");
+  });
+
+  it("supports division", () => {
+    const csv = "a,b\n100,4\n50,5";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "ratio", formula: "a / b" }],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("25");
+    expect(lines[2]).toContain("10");
+  });
+
+  it("supports multiple expressions at once", () => {
+    const csv = "a,b\n10,5\n20,8";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [
+        { name: "sum", formula: "a + b" },
+        { name: "product", formula: "a * b" },
+      ],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("sum");
+    expect(header).toContain("product");
+    expect(result.columns_added).toBe(2);
+  });
+
+  it("preserves original columns", () => {
+    const csv = "x,y\n1,2\n3,4";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "z", formula: "x + y" }],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("x,y,z");
+  });
+
+  it("handles division by zero gracefully", () => {
+    const csv = "a,b\n10,0\n20,5";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "ratio", formula: "a / b" }],
+    });
+    // Should not throw, should produce Infinity or NaN string
+    expect(result.csv).toBeTruthy();
+    expect(result.row_count).toBe(2);
+  });
+
+  it("returns correct row_count and summary", () => {
+    const csv = "a,b\n1,2\n3,4\n5,6";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "c", formula: "a + b" }],
+    });
+    expect(result.row_count).toBe(3);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on empty expressions", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowComputedColumns({ csv_content: csv, expressions: [] })).toThrow();
+  });
+
+  it("supports parentheses", () => {
+    const csv = "a,b,c\n2,3,4";
+    const result = flowComputedColumns({
+      csv_content: csv,
+      expressions: [{ name: "calc", formula: "(a + b) * c" }],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("20");
+  });
+});
+
+// ============================================================================
+// TOOL 40: flow_parse_dates
+// ============================================================================
+
+describe("flowParseDates", () => {
+  it("parses ISO dates and extracts year", () => {
+    const csv = "date,val\n2024-01-15,100\n2024-06-20,200";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["year"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("date_year");
+    expect(lines[1]).toContain("2024");
+  });
+
+  it("extracts month", () => {
+    const csv = "date,val\n2024-03-15,100\n2024-11-20,200";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["month"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("date_month");
+    expect(lines[1]).toContain("3");
+    expect(lines[2]).toContain("11");
+  });
+
+  it("extracts day", () => {
+    const csv = "date,val\n2024-03-15,100";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["day"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("date_day");
+    expect(lines[1]).toContain("15");
+  });
+
+  it("extracts day_of_week", () => {
+    const csv = "date,val\n2024-01-01,100"; // Monday
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["day_of_week"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("date_day_of_week");
+    // 2024-01-01 is a Monday = 1
+    expect(lines[1]).toContain("1");
+  });
+
+  it("extracts quarter", () => {
+    const csv = "date,val\n2024-01-15,100\n2024-04-15,200\n2024-09-15,300";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["quarter"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("date_quarter");
+    expect(lines[1]).toContain("1");
+    expect(lines[2]).toContain("2");
+    expect(lines[3]).toContain("3");
+  });
+
+  it("extracts multiple components at once", () => {
+    const csv = "date,val\n2024-06-15,100";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["year", "month", "quarter"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("date_year");
+    expect(header).toContain("date_month");
+    expect(header).toContain("date_quarter");
+    expect(result.components_added).toBe(3);
+  });
+
+  it("preserves original columns", () => {
+    const csv = "date,val\n2024-01-15,100";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["year"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("date");
+    expect(header).toContain("val");
+  });
+
+  it("handles epoch_days output", () => {
+    const csv = "date,val\n2024-01-01,100\n2024-01-02,200";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["epoch_days"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("date_epoch_days");
+    // Second date should be exactly 1 more than first
+    const header = lines[0].split(",");
+    const epochIdx = header.indexOf("date_epoch_days");
+    const day1 = Number(lines[1].split(",")[epochIdx]);
+    const day2 = Number(lines[2].split(",")[epochIdx]);
+    expect(day2 - day1).toBe(1);
+  });
+
+  it("returns parsed_count and summary", () => {
+    const csv = "date,val\n2024-01-15,100\n2024-06-20,200";
+    const result = flowParseDates({
+      csv_content: csv,
+      date_column: "date",
+      output_components: ["year"],
+    });
+    expect(result.parsed_count).toBe(2);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing date column", () => {
+    const csv = "val\n100";
+    expect(() => flowParseDates({ csv_content: csv, date_column: "date", output_components: ["year"] })).toThrow();
   });
 });
