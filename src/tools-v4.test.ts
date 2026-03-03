@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowRunningTotal, flowZscore } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, RunningTotalInput, ZscoreInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowRunningTotal, flowZscore, flowMelt, flowStringExtract } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, RunningTotalInput, ZscoreInput, MeltInput, StringExtractInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -5147,6 +5147,157 @@ describe("flow_zscore", () => {
     const result = flowZscore({
       csv_content: csv,
       columns: ["value"],
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// Tool 81: flow_melt
+// ============================================================================
+describe("flow_melt", () => {
+  it("melts wide format to long format", () => {
+    const csv = "name,Q1,Q2,Q3\nAlice,10,20,30\nBob,40,50,60";
+    const result = flowMelt({
+      csv_content: csv,
+      id_columns: ["name"],
+      value_columns: ["Q1", "Q2", "Q3"],
+    });
+    const lines = result.csv.trim().split("\n");
+    // 2 rows × 3 value cols = 6 output rows + header
+    expect(lines.length).toBe(7);
+    expect(lines[0]).toContain("variable");
+    expect(lines[0]).toContain("value");
+  });
+
+  it("uses custom variable and value names", () => {
+    const csv = "name,Q1,Q2\nAlice,10,20";
+    const result = flowMelt({
+      csv_content: csv,
+      id_columns: ["name"],
+      value_columns: ["Q1", "Q2"],
+      variable_name: "quarter",
+      value_name: "revenue",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("quarter");
+    expect(header).toContain("revenue");
+  });
+
+  it("preserves id column values", () => {
+    const csv = "name,Q1,Q2\nAlice,10,20\nBob,30,40";
+    const result = flowMelt({
+      csv_content: csv,
+      id_columns: ["name"],
+      value_columns: ["Q1", "Q2"],
+    });
+    const lines = result.csv.trim().split("\n");
+    // Alice should appear twice
+    const aliceRows = lines.filter(l => l.includes("Alice"));
+    expect(aliceRows.length).toBe(2);
+  });
+
+  it("handles multiple id columns", () => {
+    const csv = "name,dept,Q1,Q2\nAlice,Sales,10,20\nBob,Eng,30,40";
+    const result = flowMelt({
+      csv_content: csv,
+      id_columns: ["name", "dept"],
+      value_columns: ["Q1", "Q2"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines.length).toBe(5); // 2 rows × 2 cols + header
+    expect(lines[0]).toContain("name");
+    expect(lines[0]).toContain("dept");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowMelt({
+      csv_content: csv,
+      id_columns: ["nonexistent"],
+      value_columns: ["b"],
+    })).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "name,Q1,Q2\nAlice,10,20";
+    const result = flowMelt({
+      csv_content: csv,
+      id_columns: ["name"],
+      value_columns: ["Q1", "Q2"],
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.row_count).toBe(2);
+  });
+});
+
+// ============================================================================
+// Tool 82: flow_string_extract
+// ============================================================================
+describe("flow_string_extract", () => {
+  it("extracts with regex capture group", () => {
+    const csv = "text\norder-123\norder-456\norder-789";
+    const result = flowStringExtract({
+      csv_content: csv,
+      column: "text",
+      pattern: "order-(\\d+)",
+      output_column: "order_num",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const idx = header.indexOf("order_num");
+    expect(idx).toBeGreaterThanOrEqual(0);
+    expect(lines[1].split(",")[idx]).toBe("123");
+    expect(lines[2].split(",")[idx]).toBe("456");
+  });
+
+  it("handles non-matching rows", () => {
+    const csv = "text\norder-123\nno-match\norder-789";
+    const result = flowStringExtract({
+      csv_content: csv,
+      column: "text",
+      pattern: "order-(\\d+)",
+      output_column: "order_num",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const idx = header.indexOf("order_num");
+    expect(lines[2].split(",")[idx]).toBe(""); // no match
+    expect(result.matched_count).toBe(2);
+  });
+
+  it("extracts without capture group (full match)", () => {
+    const csv = "text\nhello world\nfoo bar";
+    const result = flowStringExtract({
+      csv_content: csv,
+      column: "text",
+      pattern: "\\w+",
+      output_column: "first_word",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const idx = header.indexOf("first_word");
+    expect(lines[1].split(",")[idx]).toBe("hello");
+    expect(lines[2].split(",")[idx]).toBe("foo");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowStringExtract({
+      csv_content: csv,
+      column: "nonexistent",
+      pattern: ".*",
+      output_column: "out",
+    })).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "text\nhello\nworld";
+    const result = flowStringExtract({
+      csv_content: csv,
+      column: "text",
+      pattern: "(\\w+)",
+      output_column: "word",
     });
     expect(result.summary).toBeTruthy();
   });

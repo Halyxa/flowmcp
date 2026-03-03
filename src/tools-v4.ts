@@ -5540,3 +5540,124 @@ export function flowZscore(input: ZscoreInput): ZscoreResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 81: flow_melt — WIDE TO LONG FORMAT
+// ============================================================================
+
+export interface MeltInput {
+  csv_content: string;
+  id_columns: string[];
+  value_columns: string[];
+  variable_name?: string;
+  value_name?: string;
+}
+
+export interface MeltResult {
+  csv: string;
+  row_count: number;
+  summary: string;
+}
+
+export function flowMelt(input: MeltInput): MeltResult {
+  const lines = input.csv_content.trim().split("\n");
+  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate all columns exist
+  for (const col of [...input.id_columns, ...input.value_columns]) {
+    if (!headers.includes(col)) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+  }
+
+  const varName = input.variable_name || "variable";
+  const valName = input.value_name || "value";
+
+  const idIndices = input.id_columns.map(c => headers.indexOf(c));
+  const valIndices = input.value_columns.map(c => headers.indexOf(c));
+
+  const outHeaders = [...input.id_columns, varName, valName];
+  const outRows: string[][] = [];
+
+  for (const row of rows) {
+    for (let v = 0; v < input.value_columns.length; v++) {
+      const outRow: string[] = [];
+      for (const idx of idIndices) {
+        outRow.push(row[idx] || "");
+      }
+      outRow.push(input.value_columns[v]);
+      outRow.push(row[valIndices[v]] || "");
+      outRows.push(outRow);
+    }
+  }
+
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = outRows.map(r => r.map(v => csvEscapeField(v)).join(","));
+
+  const summary = `Melted ${rows.length} rows × ${input.value_columns.length} value columns → ${outRows.length} long-format rows.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: outRows.length,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 82: flow_string_extract — REGEX EXTRACTION FROM STRING COLUMN
+// ============================================================================
+
+export interface StringExtractInput {
+  csv_content: string;
+  column: string;
+  pattern: string;
+  output_column: string;
+}
+
+export interface StringExtractResult {
+  csv: string;
+  row_count: number;
+  matched_count: number;
+  summary: string;
+}
+
+export function flowStringExtract(input: StringExtractInput): StringExtractResult {
+  const lines = input.csv_content.trim().split("\n");
+  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  const colIdx = headers.indexOf(input.column);
+  if (colIdx < 0) throw new Error(`Column "${input.column}" not found. Available: ${headers.join(", ")}`);
+
+  const regex = new RegExp(input.pattern);
+  let matchedCount = 0;
+  const extracted: string[] = [];
+
+  for (const row of rows) {
+    const val = row[colIdx] || "";
+    const match = val.match(regex);
+    if (match) {
+      // Use first capture group if available, otherwise full match
+      extracted.push(match[1] !== undefined ? match[1] : match[0]);
+      matchedCount++;
+    } else {
+      extracted.push("");
+    }
+  }
+
+  const outHeaders = [...headers, input.output_column];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((r, i) => [...r.map(v => csvEscapeField(v)), csvEscapeField(extracted[i])].join(","));
+
+  const summary = `Extracted "${input.pattern}" from "${input.column}": ${matchedCount}/${rows.length} matched.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    matched_count: matchedCount,
+    summary,
+  };
+}

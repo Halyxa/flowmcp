@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowRunningTotal, flowZscore } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, RunningTotalInput, ZscoreInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowRunningTotal, flowZscore, flowMelt, flowStringExtract } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, RunningTotalInput, ZscoreInput, MeltInput, StringExtractInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -3396,6 +3396,82 @@ Output: CSV with z-score columns appended, row_count, summary.`,
           required: ["csv_content", "columns"],
         },
       },
+      {
+        name: "flow_melt",
+        description: `Transform wide-format CSV into long (tidy) format by unpivoting value columns into variable/value rows. Each combination of id columns × value columns produces one output row. The inverse of pivot. Essential for converting spreadsheet-style data into analysis-ready format.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "melt", "unpivot wide to long", "tidy the data", or "convert wide format to long"
+- User has columns like Q1/Q2/Q3 or 2020/2021/2022 that should become rows
+- User asks to "stack columns", "reshape wide to long", or "normalize table structure"
+- User needs long format for time-series visualization or grouped analysis
+
+Input: CSV data, id_columns (kept), value_columns (melted), optional variable/value names.
+Output: Long-format CSV, row_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "Wide-format CSV data",
+            },
+            id_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to keep as identifiers (not melted)",
+            },
+            value_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to melt into rows",
+            },
+            variable_name: {
+              type: "string",
+              description: "Name for the variable column (default: 'variable')",
+            },
+            value_name: {
+              type: "string",
+              description: "Name for the value column (default: 'value')",
+            },
+          },
+          required: ["csv_content", "id_columns", "value_columns"],
+        },
+      },
+      {
+        name: "flow_string_extract",
+        description: `Extract substrings from a text column using regex patterns. Uses first capture group if available, otherwise full match. Non-matching rows get empty string. Useful for parsing structured text like codes, IDs, dates, or embedded values from free-text fields.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "extract pattern", "parse text column", "pull out values", or "regex extract"
+- User has structured text (e.g., "order-123") and wants the numeric part
+- User asks to "extract numbers", "parse IDs", or "get substring from column"
+- User needs to create a new column from parts of an existing text column
+
+Input: CSV data, column, regex pattern, output_column name.
+Output: CSV with extracted column, row_count, matched_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with text column",
+            },
+            column: {
+              type: "string",
+              description: "Text column to extract from",
+            },
+            pattern: {
+              type: "string",
+              description: "Regex pattern (use capture group for specific extraction)",
+            },
+            output_column: {
+              type: "string",
+              description: "Name for the extracted values column",
+            },
+          },
+          required: ["csv_content", "column", "pattern", "output_column"],
+        },
+      },
     ],
   };
 });
@@ -4200,6 +4276,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_zscore": {
       try {
         const result = flowZscore(args as unknown as ZscoreInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_melt": {
+      try {
+        const result = flowMelt(args as unknown as MeltInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_string_extract": {
+      try {
+        const result = flowStringExtract(args as unknown as StringExtractInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -7201,7 +7295,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 80, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 82, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
