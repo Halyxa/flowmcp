@@ -50,7 +50,11 @@ def main():
             "tools_below_floor": r.get("tools_below_floor", 0),
         })
 
-    con.execute("CREATE TABLE optimizers AS SELECT * FROM read_json_auto(?)", [json.dumps(rows)])
+    import tempfile
+    tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+    json.dump(rows, tmp)
+    tmp.close()
+    con.execute(f"CREATE TABLE optimizers AS SELECT * FROM read_json_auto('{tmp.name}')")
 
     # Analysis queries
     analysis = {}
@@ -93,7 +97,10 @@ def main():
                 param_data.append({"optimizer": name, "param": pk, "value": float(pv)})
 
     if param_data:
-        con.execute("CREATE TABLE params AS SELECT * FROM read_json_auto(?)", [json.dumps(param_data)])
+        tmp2 = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        json.dump(param_data, tmp2)
+        tmp2.close()
+        con.execute(f"CREATE TABLE params AS SELECT * FROM read_json_auto('{tmp2.name}')")
 
         consensus = con.execute("""
             SELECT param,

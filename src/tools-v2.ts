@@ -626,31 +626,45 @@ export function flowMergeDatasets(input: MergeDatasetsInput) {
       const rightRowSets = rightIndices.map(ri => ri.get(key));
       if (rightRowSets.some(rs => !rs)) continue;
 
-      // Cross-product of matching rows (simplification: just first match from each right)
+      // True cross-product: left × right1 × right2 × ...
+      const rightArrays = rightRowSets.map(rs => rs!);
+      let rightCombinations: string[][][] = rightArrays[0].map(r => [r]);
+      for (let ri = 1; ri < rightArrays.length; ri++) {
+        const expanded: string[][][] = [];
+        for (const existing of rightCombinations) {
+          for (const r of rightArrays[ri]) {
+            expanded.push([...existing, r]);
+          }
+        }
+        rightCombinations = expanded;
+      }
+
       for (const lr of leftRows) {
-        const outRow: string[] = [];
-        // Join columns from left
-        for (const jc of joinCols!) {
-          const idx = parsed[0].headers.indexOf(jc);
-          outRow.push(lr[idx] ?? "");
-        }
-        // Value columns
-        for (const cs of colSources) {
-          if (cs.dsIdx === 0) {
-            outRow.push(lr[cs.colIdx] ?? "");
-          } else {
-            const rRows = rightRowSets[cs.dsIdx - 1];
-            outRow.push(rRows && rRows[0] ? rRows[0][cs.colIdx] ?? "" : "");
+        for (const rightCombo of rightCombinations) {
+          const outRow: string[] = [];
+          // Join columns from left
+          for (const jc of joinCols!) {
+            const idx = parsed[0].headers.indexOf(jc);
+            outRow.push(lr[idx] ?? "");
           }
-        }
-        if (addSource) {
-          const sources: string[] = [parsed[0].label];
-          for (let d = 1; d < parsed.length; d++) {
-            if (rightRowSets[d - 1]) sources.push(parsed[d].label);
+          // Value columns
+          for (const cs of colSources) {
+            if (cs.dsIdx === 0) {
+              outRow.push(lr[cs.colIdx] ?? "");
+            } else {
+              const rRow = rightCombo[cs.dsIdx - 1];
+              outRow.push(rRow ? rRow[cs.colIdx] ?? "" : "");
+            }
           }
-          outRow.push(sources.join("+"));
+          if (addSource) {
+            const sources: string[] = [parsed[0].label];
+            for (let d = 1; d < parsed.length; d++) {
+              sources.push(parsed[d].label);
+            }
+            outRow.push(sources.join("+"));
+          }
+          outRows.push(outRow);
         }
-        outRows.push(outRow);
       }
     } else if (joinType === "left") {
       if (!leftRows) continue;

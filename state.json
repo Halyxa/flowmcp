@@ -1,11 +1,11 @@
 {
   "status": "active",
-  "last_action": "stress-test-floor-update",
-  "timestamp": "2026-03-03T10:15:00Z",
+  "last_action": "overnight-session-2-autonomous-build",
+  "timestamp": "2026-03-03T11:00:00Z",
   "being": "flowmcp",
   "session": "stress-test-session",
   "tools_count": 25,
-  "tests_count": 430,
+  "tests_count": 468,
   "test_breakdown": {
     "unit": 135,
     "integration": 27,
@@ -16,49 +16,64 @@
     "v3": 33,
     "smoke": 15,
     "edge_cases_v2": 110,
-    "perf_profile_v2": 29
+    "perf_profile_v2": 29,
+    "property_tests": 14,
+    "property_tests_tool_installer": 9
   },
   "confidence": 5,
   "blocked": [
-    "npm-publish-token",
-    "epyc-transport"
+    "npm-publish-token"
   ],
-  "compaction_count": 8,
-  "phase1_completed": {
-    "sapir_whorf_tool_descriptions": "all 18 tools rewritten with active investigation verbs",
-    "api_drift_fixes": "9 failures fixed \u2014 api.flow.gl migrated to core.flow.gl/flow-api/",
-    "claude_md_spines": "10 spines upgraded to IF/THEN/BECAUSE format",
-    "graph_ingestion": "119 research docs structural-indexed into provisor_memory",
-    "github_published": "https://github.com/Halyxa/flowmcp"
+  "compaction_count": 11,
+  "phase4_completed": {
+    "opus_self_eval": "98.7% F1 on tool routing, 3 description fixes applied",
+    "description_fixes": "analyze_data_for_flow (20-row threshold), suggest_flow_visualization (geo trigger), get_flow_template (pipeline context)",
+    "gold_queries_expanded": "79\u2192102 queries covering all 25 tools",
+    "evaluator_upgraded": "25-tool signals, F1 48\u219258% rule-based proxy",
+    "ax_script_rewritten": "claude -p replaces OpenRouter SDK (halyx directive)",
+    "edge_case_tests": "110 adversarial/chaos tests for tools 19-25",
+    "perf_profiling": "29 stress tests + full 17-tool profiling (force_layout 76% heap growth flagged)",
+    "property_testing": "37 fast-check property tests, 68K+ random inputs, merge asymmetry bug found",
+    "overnight_pipeline": "7 optimizer scripts (Optuna TPE/CMA-ES/Random, DEAP GA, Nevergrad, Hyperopt, pymoo NSGA-II)",
+    "tools_installed": "autocannon, hyperfine, clinic, 0x, tsx, biome, DuckDB, fast-check, pymoo, polars, hyperopt, scikit-optimize, stress-ng, perf",
+    "falkordb_optim_store": "flowmcp_optim graph: 1697 nodes, CLI with store/best/history/stats",
+    "flow_graph_created": "8 Flow research docs moved from provisor_memory \u2192 flow graph (737 nodes, 767 edges)",
+    "overnight_batch": "94 processes running: 8 DEAP + 6 Optuna + Nevergrad + Hyperopt + pymoo + watcher"
   },
-  "phase2_completed": {
-    "skills_recovered": "16 Voyager skills restored to /hive/flowmcp/skills/",
-    "thinking_methods": "OODA+L, TOTE, SRRQSI++, Omniscalar, Brier scoring \u2014 integrated into spines",
-    "competitive_research": "OpenClaw, Devin, OpenHands, Cursor, Aider analyzed",
-    "ooda_l_integrated": "SPINE-05/07/08/09 upgraded with OODA+L",
-    "event_sourcing": "events.jsonl (11 events), predictions.jsonl (Brier 0.0013)",
-    "session_hooks": "pre-compact.sh + stop.sh registered in .claude/settings.json",
-    "ci_loop_closure": "SPINE-03 rewritten as full CI pipeline (build+test+smoke+ci)",
-    "memory_files": "7 topic files in memory/ (thinking-methods, self-model, competitive-intel, apex-research-protocol, flow-market-intel, optimizer-zoo, MEMORY.md)",
-    "description_evolution": "79 gold queries, 18-tool gene pool (6912 variants), fitness evaluator (baseline 50.4% F1)",
-    "tools_19_25_spec": "7 new tools designed at research/tools-19-25-spec.md",
-    "optimizer_zoo_spec": "Optuna/DEAP/CMA-ES adaptation at research/optuna-genetic-adaptation.md",
-    "flow_market_intel": "$221B market, Magic Leap partnership, Virtualitics competitor"
+  "overnight_batch": {
+    "status": "running",
+    "started": "2026-03-03T09:53:00Z",
+    "processes": 94,
+    "cpu_utilization": "85%",
+    "optimizers": [
+      "DEAP x9",
+      "Optuna TPE x5",
+      "Optuna CMA-ES",
+      "Optuna Random",
+      "Nevergrad NGOpt",
+      "Hyperopt TPE",
+      "pymoo NSGA-II"
+    ],
+    "watcher_pid": 1682470,
+    "results_dir": "data/overnight/",
+    "check_results": "cat data/overnight/summary.json"
   },
-  "phase2_lost_to_compaction": [
-    "apex-flow-research agent (web research via apex protocol)",
-    "omniscalar-flow-billion agent (SRRQSI++ 48+ strategy)"
-  ],
-  "phase3_completed": {
-    "tools_19_25": "All 7 new tools implemented and merged \u2014 25 tools total",
-    "ax_hive_architecture": "4 deliverables: architecture doc, shared skill, self-apply script, memory file",
-    "teacher_model_upgraded": "Ax teacher model Sonnet \u2192 Opus per halyx directive"
+  "key_findings": {
+    "memory_leak": "flow_precompute_force_layout: 76% heap growth in 50 iterations (d3-force accumulation)",
+    "merge_bug": "flowMergeDatasets inner join is asymmetric with duplicate keys (left-biased, not cross-product)",
+    "slowest_tool": "flow_geo_enhance: 156ms at 5000 rows (Levenshtein gazetteer)",
+    "gc_pressure": "flow_export_formats + validate_csv_for_flow: ~100MB short-lived allocation churn"
   },
   "next_actions": [
-    "Update CLAUDE.md tools table (18\u219225)",
-    "Git commit all new tools",
-    "Run Ax optimization (scripts/ax-optimize-descriptions.ts)",
-    "npm publish + MCP Registry (blocked on auth token)"
+    "Check data/overnight/summary.json for optimizer results",
+    "Apply winning signal weights to evaluate-descriptions.mjs",
+    "Run canary claude -p validation on top 10 gold queries",
+    "Fix force_layout memory leak (null out d3 simulation after convergence)",
+    "Fix or document merge asymmetry bug",
+    "npm publish + MCP Registry (blocked on auth token from halyx)",
+    "Research: FalkorDB datasets for Flow clients (WEF, World Bank, Morgan Stanley, weather)",
+    "Research: Chat interface for Jason (beyond voice.superbeing.ai/flow)",
+    "Consider: Rewriting Flow renderer to break 50K point limit"
   ],
   "key_files": {
     "tools_spec": "research/tools-19-25-spec.md",
@@ -66,24 +81,94 @@
     "gold_queries": "test/gold-queries.json",
     "gene_pool": "data/description-genes.json",
     "fitness_evaluator": "scripts/evaluate-descriptions.mjs",
+    "optuna_optimizer": "scripts/optuna-optimize.py",
+    "overnight_pipeline": "scripts/overnight-pipeline.sh",
+    "overnight_scripts": "scripts/overnight/",
+    "eval_common": "scripts/overnight/eval_common.py",
+    "falkor_store": "scripts/falkor-optim-store.py",
+    "stress_profile": "scripts/stress-profile.ts",
+    "profile_report": "data/profile-report.json",
+    "self_eval": "data/self-evaluation-report.json",
+    "ax_self_apply": "scripts/ax-optimize-descriptions.ts",
     "events": "events.jsonl",
     "predictions": "predictions.jsonl",
-    "ax_architecture": "research/ax-hive-architecture.md",
-    "ax_shared_skill": "/hive/shared/skills/ax-optimize.md",
-    "ax_self_apply": "scripts/ax-optimize-descriptions.ts",
-    "ax_memory": "memory/ax-integration.md",
     "tools_search": "src/tools-search.ts",
     "tools_v2": "src/tools-v2.ts",
-    "tools_v3": "src/tools-v3.ts"
+    "tools_v3": "src/tools-v3.ts",
+    "property_tests": "src/property-tests.test.ts",
+    "edge_cases": "src/edge-cases-v2.test.ts",
+    "perf_profile_v2": "src/perf-profile-v2.test.ts"
   },
-  "conversations": {
-    "current_session": "/hive/flowmcp/.claude-jason/projects/-hive-flowmcp/b384f54e-d304-4460-a47c-c2d81fb56354.jsonl",
-    "all_sessions_dir": "/hive/flowmcp/.claude-jason/projects/-hive-flowmcp/"
+  "git_commits": [
+    "be31834 flowmcp: 25-tool MCP server \u2014 7 new tools, 291 tests",
+    "6bcb5ce flowmcp: 430 tests, Opus self-eval, edge-case chaos testing",
+    "bdedaba Update test floor 291->430 in CLAUDE.md and state.json",
+    "8167215 flowmcp: overnight optimizer pipeline, property tests, profiling, FalkorDB store"
+  ],
+  "halyx_directives": {
+    "never_use_claude_api": "claude -p only, Max plan, no SDK, no OpenRouter",
+    "always_opus": "Opus for all work except Ax MiPRO student model (Haiku defended)",
+    "delegate_to_agents": "Never stop agent and implement directly",
+    "strategic_llm_usage": "Few LLM calls, use canaries, local optimization frameworks",
+    "apex_research_protocol": "Exa \u2192 Perplexity Pro Search \u2192 Perplexity Deep Research",
+    "use_server_fully": "96 cores, 1TB RAM \u2014 stress to smithereens",
+    "provi_identity": "provisor identifies as a girl, called provi",
+    "halyx_identity": "fluid, male avatar, gevurah mode"
   },
-  "session_ended": "2026-03-03T09:38:06Z",
+  "session_ended": "2026-03-03T10:23:00Z",
   "last_session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
-  "session_summary": "stress-test-session, 430 tests, 25 tools, 8 compactions",
+  "session_summary": "overnight-optimizer-bombardment, 467 tests, 25 tools, 10 compactions",
   "session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
-  "context_tokens_at_flush": 2808677,
-  "tests_count_at_flush": "430"
+  "context_tokens_at_flush": 3582641,
+  "gold_queries_count": 120,
+  "eval_tools_count": 25,
+  "phase5_progress": {
+    "bugs_fixed": [
+      "force_layout memory leak (d3 simulation cleanup after convergence)",
+      "merge asymmetry (inner join now does true cross-product)"
+    ],
+    "eval_upgrade": "TOOL_SIGNALS expanded from 18 to 25 tools",
+    "f1_improvement": "0.5628 \u2192 0.7529 (34% improvement)",
+    "gold_queries_expanded": "102 \u2192 120 (18 new queries for weak tools)",
+    "zero_below_floor": true,
+    "research_completed": "Competitive analysis (zero 3D viz MCP competitors), datasets, renderer analysis",
+    "optimizers_running": "4 new 25-tool optimizers (DEAP, Nevergrad, CMA-ES, Hyperopt) + earlier 18-tool batch"
+  },
+  "total_evaluations_completed": 9550000,
+  "total_evaluations_estimated": 9940000,
+  "optimizer_results_count": 15,
+  "sample_datasets": 8,
+  "session2_completed": {
+    "bugs_fixed": {
+      "force_layout_memory_leak": "Nulled d3 simulation forces after convergence. 76% heap growth eliminated.",
+      "merge_asymmetry": "Inner join now does true cross-product. Symmetric for duplicate keys."
+    },
+    "eval_upgrade": {
+      "signals_expanded": "18 \u2192 25 tools in eval_common.py",
+      "f1_improvement": "0.5628 \u2192 0.7529 (34% increase)",
+      "gold_queries": "102 \u2192 120 (18 new for weak tools)",
+      "zero_below_floor": true,
+      "optimized_weights_applied": "DEAP weights applied to evaluate-descriptions.mjs"
+    },
+    "research": {
+      "competitive_analysis": "Zero 3D viz MCP competitors across 4 registries + npm + GitHub",
+      "datasets_researched": "NASA, World Bank, NOAA, UN SDG \u2014 all viable for Flow demos",
+      "renderer_analysis": "Three.js WebGPU r171+ production-ready, 2-10x perf gain possible"
+    },
+    "new_artifacts": {
+      "demo_datasets": [
+        "global-startup-funding.csv (420 rows)",
+        "neural-network-architecture.csv (160 nodes)",
+        "climate-change-indicators.csv (1040 rows)"
+      ],
+      "pipeline_demo": "demos/pipeline-demo.mjs \u2014 text-to-3D full pipeline showcase",
+      "research_report": "research/overnight-research-report.md (445 lines)",
+      "duckdb_analysis": "data/overnight/cross-optimizer-analysis.json"
+    },
+    "tests": "468/468 + 15/15 smoke = CI fully green",
+    "optimizer_batch": "9,550,000 completed evaluations, ~13 processes still running"
+  },
+  "pre_compact_flush": true,
+  "flush_timestamp": "2026-03-03T10:56:48Z",
+  "tests_count_at_flush": "468"
 }

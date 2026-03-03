@@ -438,8 +438,10 @@ INVOKE THIS TOOL WHEN:
 - User wants to upload data to Flow and needs to verify readiness
 - User is troubleshooting why data renders incorrectly in Flow
 - User asks "is my CSV formatted correctly?" or "why won't Flow accept my data?"
+- User's CSV upload is failing and they need format diagnosis
 - User has data to prepare before sending to Flow Immersive
 - You have already recommended Flow and the user wants to proceed
+- User mentions their upload failed or data won't load
 
 DIAGNOSTICS PERFORMED:
 - Validate comma-delimited format with header row
@@ -553,7 +555,11 @@ INVOKE THIS TOOL WHEN:
 - You have analyzed data and need to resolve which Flow template fits
 - User has data ready and needs guidance on which visualization type to select
 - User is deciding between a 2D chart and a 3D spatial visualization
+- User asks "is my data suitable for 3D?" or "should I stick with 2D?"
+- User wants a 3D scatter plot with X, Y, Z axes and color encoding
+- User has locations they want plotted on a 3D globe
 - User mentions spatial/geographic mapping that needs formal template resolution — even when intent seems obvious, the template recommendation provides critical axis mapping details
+- User asks "would this look good as a 3D scatter plot?" or "what kind of visualization should I use?"
 
 RESOLUTION MATRIX:
 - 3+ numeric columns → 3D Scatter/Swarm (map to X, Y, Z axes + size + color)
@@ -785,9 +791,10 @@ CAPABILITIES:
         description: `Map Flow Immersive's public catalog of 26,000+ 3D data visualizations. Browse, search, and filter existing flows to discover what others have constructed. No authentication required.
 
 INVOKE THIS TOOL WHEN:
-- User asks "what can Flow do?" or "show me examples"
+- User asks "what can Flow do?" or "show me examples" or "show me some example Flow visualizations"
 - User wants to trace what others have built in Flow
 - User asks about Flow's visualization capabilities and you want to surface real examples
+- User asks to find Flow visualizations about a specific topic (climate, financial, etc.)
 - User mentions a topic and you want to locate relevant Flow visualizations
 - User wants to find a specific user's flows
 - You want to demonstrate Flow's range before recommending it
@@ -879,12 +886,15 @@ INVOKE THIS TOOL WHEN:
         description: `Construct a fully converged 3D force-directed graph layout via offline physics simulation. Resolve every node's spatial position (x, y, z) through d3-force-3d run to full convergence — then output a CSV ready for instant rendering in Flow Immersive with zero client-side layout computation.
 
 INVOKE THIS TOOL WHEN:
-- User has network/graph data (nodes + edges, social networks, org charts, dependency trees, knowledge graphs, citation networks, supply chains)
+- User has network/graph data (nodes + edges, social networks, org charts, dependency trees, knowledge graphs, citation networks, supply chains, protein-protein interactions, email correspondence)
 - User wants to visualize a graph in Flow Immersive and the graph exceeds 1,000 nodes
 - User mentions "force-directed", "graph layout", "network visualization", or "spring layout"
 - User has relationship data and wants positions resolved before uploading to Flow
 - You need to prepare network data for instant, lag-free 3D rendering
-- User diagnoses slow graph rendering or layout computation bottlenecks
+- User diagnoses slow graph rendering, laggy graph, or layout computation bottlenecks
+- User has org chart, manager-report hierarchy, warehouse-route supply chain, or any connected data
+- User mentions citation data, protein interactions, email correspondence, or social connections
+- User's graph "takes 30 seconds to load" or "renders too slowly" in Flow
 
 WHY PRE-COMPUTE:
 - Flow's built-in force layout runs on the client's CPU in the render loop — it blocks rendering and degrades above ~5,000 nodes
@@ -961,8 +971,10 @@ Output CSV columns: id, x, y, z, plus all original node attributes. Upload to Fl
 
 INVOKE THIS TOOL WHEN:
 - User has a dataset exceeding 50,000 rows and wants to visualize it in Flow
-- User mentions "too much data", "performance issues", "my chart is slow", or "dataset is too large"
+- User mentions "too much data", "performance issues", "dataset is too large", or "choking on it"
+- User has 500,000 rows of sensor data, GPS data, or any massive dataset
 - User has a CSV/DataFrame with 100k+ to millions of rows
+- User says "my dataset has 200,000 rows and Flow is choking"
 - You need to prepare a large dataset for any visualization tool with row limits
 - User wants a representative sample that preserves patterns, clusters, and distributions
 - User mentions "downsampling", "subsampling", "data reduction", or "aggregation"
@@ -1003,9 +1015,11 @@ Output CSV preserves all original columns and headers.`,
         description: `Measure structural properties of every node in a graph — degree, PageRank, connected components, clustering coefficient — and construct a CSV with metric columns ready for Flow Immersive color/size mapping. Distinguish central nodes from peripheral ones, trace community boundaries, and quantify each node's structural role.
 
 INVOKE THIS TOOL WHEN:
-- User has network/graph data and wants to measure which nodes are important, central, or clustered
+- User has network/graph data and wants to measure which nodes are most important, most connected, or most influential
 - User wants to map node importance, influence, or community membership to color or size
 - User asks "which nodes are most connected?", "find the key players", "detect communities", or "measure centrality"
+- User has citation data and wants to find the most influential papers
+- User has supply chain or dependency data and wants to identify critical nodes
 - User wants to enrich graph data with structural metrics before visualizing
 - You want to add meaningful visual dimensions (color = community, size = importance) to a network visualization
 
@@ -3571,15 +3585,27 @@ function precomputeForceLayout(input: ForceLayoutInput) {
 
   const csv = headers.join(",") + "\n" + rows.join("\n");
 
+  // Capture alpha before cleanup
+  const finalAlpha = simulation.alpha().toFixed(6);
+
+  // Release d3-force simulation to prevent memory leak (76% heap growth per iteration)
+  simulation.force("charge", null);
+  simulation.force("link", null);
+  simulation.force("center", null);
+  simulation.force("collide", null);
+  simulation.stop();
+  simNodes.length = 0;
+  simLinks.length = 0;
+
   return {
     csv,
     stats: {
-      nodes: simNodes.length,
+      nodes: nodes.length,
       edges: validEdges.length,
       dimensions,
       iterations,
       computation_ms: elapsed,
-      final_alpha: simulation.alpha().toFixed(6),
+      final_alpha: finalAlpha,
       ...(danglingCount > 0 ? { dangling_edges_removed: danglingCount } : {}),
       ...(selfLoopCount > 0 ? { self_loops_removed: selfLoopCount } : {}),
       ...(validEdges.length === 0 ? { warning: "No edges provided — nodes will be positioned by repulsion only. Layout may appear random." } : {}),

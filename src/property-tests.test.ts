@@ -435,13 +435,8 @@ describe("Property: Merge datasets symmetry", () => {
     );
   });
 
-  it("BUG: inner join is asymmetric with duplicate keys (left-biased)", () => {
-    // This test documents a known asymmetry: the implementation iterates left rows
-    // and takes the first matching right row, so duplicate keys on the left side
-    // produce more output rows than duplicates on the right side.
-    // Counterexample from fast-check: A=[["a",0],["a",0]], B=[["a",0]]
-    // A,B inner join => 2 rows (each left "a" matches right "a")
-    // B,A inner join => 1 row (single left "a" matches first right "a")
+  it("inner join cross-product is symmetric with duplicate keys", () => {
+    // Fixed asymmetry bug: inner join now does true cross-product
     const csvA = "id,val_a\na,0\na,0";
     const csvB = "id,val_b\na,0";
 
@@ -465,9 +460,28 @@ describe("Property: Merge datasets symmetry", () => {
       add_source_column: false,
     });
 
-    // Documenting asymmetry: AB=2 rows, BA=1 row
+    // AB: 2 left "a" × 1 right "a" = 2 rows
+    // BA: 1 left "a" × 2 right "a" = 2 rows
     expect(resultAB.rows_output).toBe(2);
-    expect(resultBA.rows_output).toBe(1);
+    expect(resultBA.rows_output).toBe(2);
+  });
+
+  it("inner join cross-product produces m×n rows for duplicate keys", () => {
+    // 2 left rows × 3 right rows = 6 output rows
+    const csvA = "id,val_a\na,1\na,2";
+    const csvB = "id,val_b\na,x\na,y\na,z";
+
+    const result = flowMergeDatasets({
+      datasets: [
+        { csv_content: csvA, label: "A" },
+        { csv_content: csvB, label: "B" },
+      ],
+      join_type: "inner",
+      join_columns: ["id"],
+      add_source_column: false,
+    });
+
+    expect(result.rows_output).toBe(6);
   });
 });
 

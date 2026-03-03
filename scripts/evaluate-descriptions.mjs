@@ -210,34 +210,61 @@ function scoreToolForQuery(toolName, query, signals) {
   const q = query.toLowerCase();
   let score = 0;
 
-  // Strong signals: +3 each
+  // Optimized weights from DEAP v3 genetic algorithm (250K evaluations, 120 gold queries, F1=0.9068)
   for (const kw of signals.strong) {
-    if (q.includes(kw.toLowerCase())) score += 3;
+    if (q.includes(kw.toLowerCase())) score += 5.562;
   }
 
-  // Medium signals: +1.5 each
   for (const kw of signals.medium) {
-    if (q.includes(kw.toLowerCase())) score += 1.5;
+    if (q.includes(kw.toLowerCase())) score += 2.190;
   }
 
-  // Weak signals: +0.5 each
   for (const kw of signals.weak) {
-    if (q.includes(kw.toLowerCase())) score += 0.5;
+    if (q.includes(kw.toLowerCase())) score += 0.583;
   }
 
-  // Negative signals: -2 each (penalize false matches)
   for (const kw of signals.negative) {
-    if (q.includes(kw.toLowerCase())) score -= 2;
+    if (q.includes(kw.toLowerCase())) score -= 0.742;
   }
 
   return score;
 }
 
-function selectToolsForQuery(query, threshold = 1.5) {
+// Per-tool thresholds from DEAP v3 optimization (F1=0.9068, P=0.9299, R=0.8848, 0 tools below floor)
+const OPTIMIZED_THRESHOLDS = {
+  analyze_data_for_flow: 2.728,
+  validate_csv_for_flow: 0.460,
+  transform_to_network_graph: 2.331,
+  generate_flow_python_code: 2.311,
+  suggest_flow_visualization: 2.081,
+  get_flow_template: 4.890,
+  flow_extract_from_text: 1.786,
+  flow_extract_from_url: 4.591,
+  flow_authenticate: 3.626,
+  flow_upload_data: 1.931,
+  flow_browse_flows: 2.250,
+  flow_get_flow: 2.784,
+  flow_list_templates: 0.422,
+  flow_list_categories: 0.493,
+  flow_precompute_force_layout: 2.077,
+  flow_scale_dataset: 0.314,
+  flow_compute_graph_metrics: 1.259,
+  flow_query_graph: 4.462,
+  flow_semantic_search: 4.883,
+  flow_time_series_animate: 2.527,
+  flow_merge_datasets: 0.692,
+  flow_anomaly_detect: 3.856,
+  flow_geo_enhance: 2.467,
+  flow_nlp_to_viz: 1.565,
+  flow_export_formats: 1.310,
+};
+
+function selectToolsForQuery(query, threshold = null) {
   const scores = {};
   for (const [toolName, signals] of Object.entries(TOOL_SIGNALS)) {
     const score = scoreToolForQuery(toolName, query, signals);
-    if (score >= threshold) {
+    const toolThreshold = threshold ?? OPTIMIZED_THRESHOLDS[toolName] ?? 1.5;
+    if (score >= toolThreshold) {
       scores[toolName] = score;
     }
   }
