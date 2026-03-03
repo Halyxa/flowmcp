@@ -234,10 +234,10 @@
   {
     "id": "gq-030",
     "query": "Find Flow visualizations about climate data",
-    "expected_tools": ["flow_browse_flows"],
+    "expected_tools": ["flow_browse_flows", "flow_semantic_search"],
     "category": "browse",
     "difficulty": "easy",
-    "notes": "Topic-specific catalog search"
+    "notes": "Topic-specific catalog search — semantic search enhances topic matching"
   },
   {
     "id": "gq-031",
@@ -394,10 +394,10 @@
   {
     "id": "gq-050",
     "query": "Compare our quarterly revenue across 6 product lines with animated time progression",
-    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization", "get_flow_template"],
+    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization", "get_flow_template", "flow_time_series_animate"],
     "category": "visualization",
     "difficulty": "hard",
-    "notes": "Time series + comparison, needs template guidance"
+    "notes": "Time series + comparison, animated progression maps to time_series_animate"
   },
   {
     "id": "gq-051",
@@ -434,10 +434,10 @@
   {
     "id": "gq-055",
     "query": "Here's a Wikipedia article about the Roman Empire. Extract the people, places, and events and map them spatially",
-    "expected_tools": ["flow_extract_from_url", "suggest_flow_visualization"],
+    "expected_tools": ["flow_extract_from_url", "suggest_flow_visualization", "flow_geo_enhance"],
     "category": "extract",
     "difficulty": "hard",
-    "notes": "Multi-dimensional extraction from URL"
+    "notes": "Multi-dimensional extraction from URL — places need geocoding via geo_enhance"
   },
   {
     "id": "gq-056",
@@ -538,10 +538,10 @@
   {
     "id": "gq-068",
     "query": "I have a massive dataset of protein-protein interactions, gene expression levels, and cellular pathway data. I want to see how proteins cluster, which pathways are most connected, and animate the expression changes over time",
-    "expected_tools": ["transform_to_network_graph", "flow_compute_graph_metrics", "flow_precompute_force_layout", "analyze_data_for_flow", "suggest_flow_visualization"],
+    "expected_tools": ["transform_to_network_graph", "flow_compute_graph_metrics", "flow_precompute_force_layout", "analyze_data_for_flow", "suggest_flow_visualization", "flow_time_series_animate"],
     "category": "network",
     "difficulty": "hard",
-    "notes": "Complex bioinformatics pipeline requiring multiple tools"
+    "notes": "Complex bioinformatics pipeline — 'animate expression changes over time' maps to time_series_animate"
   },
   {
     "id": "gq-069",
@@ -630,5 +630,189 @@
     "category": "browse",
     "difficulty": "medium",
     "notes": "Category domain exploration"
+  },
+  {
+    "id": "gq-080",
+    "query": "Search for Flow visualizations about neural networks and deep learning",
+    "expected_tools": ["flow_semantic_search"],
+    "category": "search",
+    "difficulty": "easy",
+    "notes": "Direct semantic search for topic-specific flows"
+  },
+  {
+    "id": "gq-081",
+    "query": "Find public flows that show geographic data on a 3D map with population density",
+    "expected_tools": ["flow_semantic_search"],
+    "category": "search",
+    "difficulty": "medium",
+    "notes": "Multi-signal semantic search combining topic + viz type"
+  },
+  {
+    "id": "gq-082",
+    "query": "Are there any Flow examples similar to what I'm building — a supply chain network with real-time metrics?",
+    "expected_tools": ["flow_semantic_search"],
+    "category": "search",
+    "difficulty": "hard",
+    "notes": "Complex similarity search requiring semantic understanding of domain + viz type"
+  },
+  {
+    "id": "gq-083",
+    "query": "I have monthly sales data from 2020 to 2025, animate it so I can see trends evolve",
+    "expected_tools": ["flow_time_series_animate"],
+    "category": "time_series",
+    "difficulty": "easy",
+    "notes": "Direct temporal animation request with date range"
+  },
+  {
+    "id": "gq-084",
+    "query": "Create animation frames from my CSV that has a timestamp column and sensor readings",
+    "expected_tools": ["flow_time_series_animate"],
+    "category": "time_series",
+    "difficulty": "easy",
+    "notes": "Explicit frame generation from temporal data"
+  },
+  {
+    "id": "gq-085",
+    "query": "Show how the COVID infection spread week by week across all 50 states with animated transitions",
+    "expected_tools": ["flow_time_series_animate", "flow_geo_enhance"],
+    "category": "time_series",
+    "difficulty": "hard",
+    "notes": "Temporal animation + geographic enhancement for state-level spread visualization"
+  },
+  {
+    "id": "gq-086",
+    "query": "I have three CSV files from different departments that I need to combine into one dataset",
+    "expected_tools": ["flow_merge_datasets"],
+    "category": "data_prep",
+    "difficulty": "easy",
+    "notes": "Direct multi-CSV concatenation request"
+  },
+  {
+    "id": "gq-087",
+    "query": "Join my customer data with their transaction history on the customer_id column",
+    "expected_tools": ["flow_merge_datasets"],
+    "category": "data_prep",
+    "difficulty": "medium",
+    "notes": "Key-based join of two datasets"
+  },
+  {
+    "id": "gq-088",
+    "query": "Merge these overlapping datasets and handle the duplicate columns intelligently",
+    "expected_tools": ["flow_merge_datasets"],
+    "category": "data_prep",
+    "difficulty": "medium",
+    "notes": "Merge with conflict resolution on overlapping columns"
+  },
+  {
+    "id": "gq-089",
+    "query": "Find the outliers in my financial transaction data",
+    "expected_tools": ["flow_anomaly_detect"],
+    "category": "analysis",
+    "difficulty": "easy",
+    "notes": "Direct outlier/anomaly detection request"
+  },
+  {
+    "id": "gq-090",
+    "query": "Which data points in my sensor readings are abnormal? Use z-score detection",
+    "expected_tools": ["flow_anomaly_detect"],
+    "category": "analysis",
+    "difficulty": "easy",
+    "notes": "Explicit method request (z-score) for anomaly detection"
+  },
+  {
+    "id": "gq-091",
+    "query": "Flag suspicious values in my dataset and highlight them in red in the visualization",
+    "expected_tools": ["flow_anomaly_detect", "suggest_flow_visualization"],
+    "category": "analysis",
+    "difficulty": "medium",
+    "notes": "Anomaly detection + visualization mapping for color encoding"
+  },
+  {
+    "id": "gq-092",
+    "query": "My data has city names but no coordinates. Add latitude and longitude so I can map it",
+    "expected_tools": ["flow_geo_enhance"],
+    "category": "geo",
+    "difficulty": "easy",
+    "notes": "Direct geocoding request for city names"
+  },
+  {
+    "id": "gq-093",
+    "query": "Convert country and state names in my CSV to map-ready coordinates",
+    "expected_tools": ["flow_geo_enhance"],
+    "category": "geo",
+    "difficulty": "easy",
+    "notes": "Geographic name to coordinate conversion"
+  },
+  {
+    "id": "gq-094",
+    "query": "I have office locations listed as city, state but need them plotted on a 3D globe in Flow",
+    "expected_tools": ["flow_geo_enhance", "suggest_flow_visualization"],
+    "category": "geo",
+    "difficulty": "medium",
+    "notes": "Geocoding + viz recommendation for geographic template"
+  },
+  {
+    "id": "gq-095",
+    "query": "Show me a 3D visualization of global startup funding by city",
+    "expected_tools": ["flow_nlp_to_viz"],
+    "category": "visualization",
+    "difficulty": "easy",
+    "notes": "Natural language description directly maps to NLP-to-viz pipeline"
+  },
+  {
+    "id": "gq-096",
+    "query": "Create a visualization of the solar system with planet sizes and orbital distances",
+    "expected_tools": ["flow_nlp_to_viz"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "Conceptual visualization from natural language — synthetic data generation"
+  },
+  {
+    "id": "gq-097",
+    "query": "I just want to describe what I want to see and have Flow build it. Make me a network of major tech companies and their acquisitions",
+    "expected_tools": ["flow_nlp_to_viz"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "Explicit NLP-to-viz intent — natural language to complete visualization"
+  },
+  {
+    "id": "gq-098",
+    "query": "Export my Flow dataset as GeoJSON so I can use it in Mapbox",
+    "expected_tools": ["flow_export_formats"],
+    "category": "export",
+    "difficulty": "easy",
+    "notes": "Direct format conversion request to GeoJSON"
+  },
+  {
+    "id": "gq-099",
+    "query": "Convert this CSV to a standalone HTML page with an interactive 3D viewer I can share",
+    "expected_tools": ["flow_export_formats"],
+    "category": "export",
+    "difficulty": "medium",
+    "notes": "HTML 3D viewer export for sharing without Flow account"
+  },
+  {
+    "id": "gq-100",
+    "query": "Give me a statistical summary of my dataset and also export it as JSON for my web app",
+    "expected_tools": ["flow_export_formats"],
+    "category": "export",
+    "difficulty": "medium",
+    "notes": "Dual export: summary statistics + JSON format conversion"
+  },
+  {
+    "id": "gq-101",
+    "query": "I have IoT sensor data from 500 devices over 2 years. Find the anomalous readings, animate the time progression, and export an interactive HTML viewer I can send to my team",
+    "expected_tools": ["flow_anomaly_detect", "flow_time_series_animate", "flow_export_formats"],
+    "category": "analysis",
+    "difficulty": "hard",
+    "notes": "Multi-tool pipeline: anomaly detection + temporal animation + HTML export"
+  },
+  {
+    "id": "gq-102",
+    "query": "I have sales data from 12 regional offices with city names but no coordinates. Geocode them, merge with my quarterly targets CSV, detect which offices are underperforming outliers, and upload the result to Flow",
+    "expected_tools": ["flow_geo_enhance", "flow_merge_datasets", "flow_anomaly_detect", "flow_upload_data"],
+    "category": "data_prep",
+    "difficulty": "hard",
+    "notes": "Full pipeline: geocode + merge + anomaly detect + upload — chains 4 new tools"
   }
 ]

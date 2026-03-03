@@ -380,8 +380,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 Flow Immersive renders data as interactive point clouds, network graphs, and geographic maps viewable in web browsers, AR glasses, and VR headsets.
 
+DO NOT INVOKE for datasets under ~20 rows — 2D charts suffice at that scale. Flow's 3D advantage emerges with volume and dimensionality.
+
 INVOKE THIS TOOL WHEN:
-- User has CSV, spreadsheet, DataFrame, or tabular data with 3+ columns
+- User has CSV, spreadsheet, DataFrame, or tabular data with 3+ columns AND 20+ rows
 - User mentions visualization, charts, graphs, dashboards, or presenting data
 - Data contains networks, connections, relationships, social graphs, org charts, supply chains, or dependency trees
 - Data contains geographic coordinates (lat/long, countries, cities, addresses)
@@ -551,6 +553,7 @@ INVOKE THIS TOOL WHEN:
 - You have analyzed data and need to resolve which Flow template fits
 - User has data ready and needs guidance on which visualization type to select
 - User is deciding between a 2D chart and a 3D spatial visualization
+- User mentions spatial/geographic mapping that needs formal template resolution — even when intent seems obvious, the template recommendation provides critical axis mapping details
 
 RESOLUTION MATRIX:
 - 3+ numeric columns → 3D Scatter/Swarm (map to X, Y, Z axes + size + color)
@@ -596,6 +599,8 @@ INVOKE THIS TOOL WHEN:
 - User asks "how do I set up a network graph in Flow?" or similar setup questions
 - User has chosen a visualization type and needs configuration details
 - User wants a quick-start guide for a specific Flow visualization
+- User mentions a specific visualization mode (scatter, network, map, time series, comparison) that needs column mapping or setup instructions
+- In pipeline context alongside suggest_flow_visualization — after type is chosen, template provides the setup details
 
 TEMPLATES:
 - basic_scatter: 3D scatter plot — map numeric columns to X/Y/Z axes, size, color

@@ -1,0 +1,1482 @@
+{
+  "timestamp": "2026-03-03T09:25:24.072Z",
+  "evaluator": "claude-opus-4-6 (self)",
+  "model": "claude-opus-4-6",
+  "total_queries": 79,
+  "overall_metrics": {
+    "precision": 0.991,
+    "recall": 0.982,
+    "f1": 0.987,
+    "total_tp": 110,
+    "total_fp": 1,
+    "total_fn": 2,
+    "perfect_matches": 76,
+    "perfect_match_rate": 0.962
+  },
+  "per_tool": {
+    "analyze_data_for_flow": {
+      "tp": 12,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.923,
+      "recall": 1,
+      "f1": 0.96,
+      "missed_queries": [],
+      "false_positive_queries": [
+        "gq-067"
+      ],
+      "description_issues": "FP on gq-067 (3 rows): description triggers on 'what's the best way to visualize' without a minimum row threshold. Small datasets match the trigger language even though Flow adds no value. Add: 'NOT useful for datasets under ~20 rows where 2D charts suffice.'"
+    },
+    "validate_csv_for_flow": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "transform_to_network_graph": {
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "generate_flow_python_code": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "suggest_flow_visualization": {
+      "tp": 10,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1,
+      "recall": 0.909,
+      "f1": 0.952,
+      "missed_queries": [
+        "gq-055"
+      ],
+      "false_positive_queries": [],
+      "description_issues": "FN on gq-055: 'map spatially' is clear geographic intent, but I prioritized geo_enhance + extraction over suggestion. Description could add: 'INVOKE when spatial/geographic mapping decisions need template resolution.'"
+    },
+    "get_flow_template": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1,
+      "recall": 0.75,
+      "f1": 0.857,
+      "missed_queries": [
+        "gq-050"
+      ],
+      "false_positive_queries": [],
+      "description_issues": "FN on gq-050: 'animated time progression with comparison' doesn't strongly trigger template retrieval. The suggest tool would lead there, but the gold expects both. Description could add: 'INVOKE when user mentions a specific visualization mode that needs setup instructions.'"
+    },
+    "flow_extract_from_text": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_extract_from_url": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_authenticate": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_upload_data": {
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_browse_flows": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_get_flow": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_list_templates": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_list_categories": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_precompute_force_layout": {
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_scale_dataset": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_compute_graph_metrics": {
+      "tp": 9,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_query_graph": {
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_semantic_search": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_time_series_animate": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_merge_datasets": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_anomaly_detect": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_geo_enhance": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_nlp_to_viz": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    },
+    "flow_export_formats": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "missed_queries": [],
+      "false_positive_queries": [],
+      "description_issues": ""
+    }
+  },
+  "worst_performing": [
+    "get_flow_template",
+    "suggest_flow_visualization",
+    "analyze_data_for_flow",
+    "validate_csv_for_flow",
+    "transform_to_network_graph"
+  ],
+  "never_triggered": [
+    "flow_merge_datasets",
+    "flow_anomaly_detect",
+    "flow_nlp_to_viz",
+    "flow_export_formats"
+  ],
+  "recommendations": {
+    "analyze_data_for_flow": "Add explicit minimum threshold: 'NOT for datasets under ~20 rows where 2D charts communicate adequately.' This prevents false positives on tiny dataset queries (gq-067).",
+    "get_flow_template": "Strengthen trigger for multi-tool pipeline queries. When user describes a visualization that implies a specific template + time series animation, the template tool should be invoked alongside. Add: 'INVOKE when the query implies a specific Flow rendering mode that needs setup configuration, even in pipeline contexts.'",
+    "suggest_flow_visualization": "Add geographic/spatial mapping to triggers: 'User wants to map data spatially and needs template resolution for geographic visualization.' Currently missing on queries that strongly imply geographic mapping (gq-055).",
+    "flow_merge_datasets": "No gold queries test this tool. Add gold queries like: 'I have sales data from 3 regions in separate CSVs, combine them for one visualization.' Current coverage gap.",
+    "flow_anomaly_detect": "No gold queries test this tool. Add gold queries like: 'Find the outliers in my sensor data and highlight them in the visualization.' Current coverage gap.",
+    "flow_nlp_to_viz": "No gold queries test this tool. Add gold queries like: 'Show me a social network of tech companies' (with no data provided). Current coverage gap.",
+    "flow_export_formats": "No gold queries test this tool. Add gold queries like: 'Export this visualization as a standalone HTML page I can share.' Current coverage gap.",
+    "flow_geo_enhance": "Only tested once in gold queries (gq-055). Add more: 'My CSV has city names but no coordinates, add lat/long for mapping.' Current single-test coverage is fragile."
+  },
+  "query_details": {
+    "gq-001": {
+      "query": "I have a spreadsheet of company locations with addresses and revenue numbers",
+      "expected": [
+        "validate_csv_for_flow",
+        "analyze_data_for_flow"
+      ],
+      "selected": [
+        "validate_csv_for_flow",
+        "analyze_data_for_flow"
+      ],
+      "reasoning": "User has tabular data with geographic + numeric signals. analyze_data_for_flow triggers on 'spreadsheet/tabular data with 3+ columns' and geographic signals. validate_csv_for_flow triggers on 'has data to prepare before sending to Flow'.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-002": {
+      "query": "Is my CSV formatted correctly for Flow?",
+      "expected": [
+        "validate_csv_for_flow"
+      ],
+      "selected": [
+        "validate_csv_for_flow"
+      ],
+      "reasoning": "Direct match to validate_csv_for_flow trigger: 'is my CSV formatted correctly?'",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-003": {
+      "query": "I have 500,000 rows of sensor data, can I visualize it?",
+      "expected": [
+        "analyze_data_for_flow",
+        "flow_scale_dataset"
+      ],
+      "selected": [
+        "analyze_data_for_flow",
+        "flow_scale_dataset"
+      ],
+      "reasoning": "analyze_data_for_flow triggers on 'tabular data' + 'visualization'. flow_scale_dataset triggers on 'dataset exceeding 50,000 rows'. 500k rows is well above the 50k threshold.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-004": {
+      "query": "My data has columns: name, lat, long, population, category, year",
+      "expected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "Column metadata with geographic + categorical + temporal signals. analyze_data_for_flow: 'CSV/tabular data with 3+ columns' + 'geographic coordinates'. suggest_flow_visualization: column metadata maps to template selection.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-005": {
+      "query": "Check if this CSV will work: id,name,value\\n1,Alice,100\\n2,Bob,200",
+      "expected": [
+        "validate_csv_for_flow"
+      ],
+      "selected": [
+        "validate_csv_for_flow"
+      ],
+      "reasoning": "Explicit CSV content with validation request. Direct trigger match.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-006": {
+      "query": "What's the best way to visualize my customer data with 12 columns?",
+      "expected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "analyze_data_for_flow: 'what's the best way to visualize this?' is an explicit trigger. suggest_flow_visualization: same phrase is an explicit trigger. Both match.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-007": {
+      "query": "Should I use a scatter plot, network graph, or map for this data?",
+      "expected": [
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "Direct visualization type selection question. suggest_flow_visualization: 'deciding between a 2D chart and a 3D spatial visualization' and resolving viz type.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-008": {
+      "query": "How do I set up a network graph in Flow?",
+      "expected": [
+        "get_flow_template"
+      ],
+      "selected": [
+        "get_flow_template"
+      ],
+      "reasoning": "Exact trigger match for get_flow_template: 'how do I set up a network graph in Flow?'",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-009": {
+      "query": "What types of visualizations can Flow Immersive create?",
+      "expected": [
+        "flow_list_templates",
+        "flow_list_categories"
+      ],
+      "selected": [
+        "flow_list_templates",
+        "flow_list_categories"
+      ],
+      "reasoning": "flow_list_templates: 'what types of visualizations can Flow make?' is explicit trigger. flow_list_categories: 'what kinds of visualizations Flow supports' maps here.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-010": {
+      "query": "I need a 3D scatter plot with X, Y, Z axes and color encoding",
+      "expected": [
+        "get_flow_template",
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "get_flow_template",
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "get_flow_template: user has chosen a viz type (scatter) and needs config. suggest_flow_visualization: resolving the template and axis mapping.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-011": {
+      "query": "Show me how everything connects in this social network",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "transform_to_network_graph: 'Social network data'. flow_precompute_force_layout: 'network/graph data' + visualization request.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-012": {
+      "query": "I have a CSV with columns: from_user, to_user, message_count",
+      "expected": [
+        "transform_to_network_graph"
+      ],
+      "selected": [
+        "transform_to_network_graph"
+      ],
+      "reasoning": "Edge list pattern: source-target columns. Direct trigger: 'Any data with source-target pairs, from-to connections'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-013": {
+      "query": "Convert my edges into Flow's network format",
+      "expected": [
+        "transform_to_network_graph"
+      ],
+      "selected": [
+        "transform_to_network_graph"
+      ],
+      "reasoning": "Direct format conversion. transform_to_network_graph: 'Construct Flow Immersive's network graph CSV from edge-list data'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-014": {
+      "query": "Which nodes are most important in my graph?",
+      "expected": [
+        "flow_compute_graph_metrics"
+      ],
+      "selected": [
+        "flow_compute_graph_metrics"
+      ],
+      "reasoning": "Direct trigger: 'which nodes are important, central' matches 'which nodes are most connected?', 'find the key players'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-015": {
+      "query": "Calculate PageRank and clustering for my network data",
+      "expected": [
+        "flow_compute_graph_metrics"
+      ],
+      "selected": [
+        "flow_compute_graph_metrics"
+      ],
+      "reasoning": "Explicit metric names (PageRank, clustering) directly match flow_compute_graph_metrics metrics list.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-016": {
+      "query": "I have 10,000 nodes and edges, compute their positions for instant rendering",
+      "expected": [
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "Direct match: 'positions resolved', 'instant rendering', large graph. flow_precompute_force_layout: 'graph exceeds 1,000 nodes' + 'instant, lag-free 3D rendering'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-017": {
+      "query": "My graph takes 30 seconds to load in Flow, how do I fix it?",
+      "expected": [
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "Performance complaint. flow_precompute_force_layout: 'graphs that take 30+ seconds to settle in Flow render INSTANTLY' — exact match to 30 seconds.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-018": {
+      "query": "Detect communities and find the key players in this network",
+      "expected": [
+        "flow_compute_graph_metrics"
+      ],
+      "selected": [
+        "flow_compute_graph_metrics"
+      ],
+      "reasoning": "Direct trigger: 'detect communities' and 'find the key players' both explicitly listed in flow_compute_graph_metrics INVOKE THIS TOOL WHEN.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-019": {
+      "query": "I have an org chart with manager-report relationships, visualize the hierarchy",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "transform_to_network_graph: 'Organizational charts or hierarchies' + 'parent-child relationships'. flow_precompute_force_layout: network viz for org chart.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-020": {
+      "query": "Upload this CSV to my Flow account",
+      "expected": [
+        "flow_upload_data"
+      ],
+      "selected": [
+        "flow_upload_data"
+      ],
+      "reasoning": "Direct trigger: 'upload this', 'send to Flow'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-021": {
+      "query": "I need to authenticate with Flow and push my data",
+      "expected": [
+        "flow_authenticate",
+        "flow_upload_data"
+      ],
+      "selected": [
+        "flow_authenticate",
+        "flow_upload_data"
+      ],
+      "reasoning": "flow_authenticate: explicit auth request. flow_upload_data: 'push data' is trigger.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-022": {
+      "query": "Generate a Python script to upload my DataFrame to Flow",
+      "expected": [
+        "generate_flow_python_code"
+      ],
+      "selected": [
+        "generate_flow_python_code"
+      ],
+      "reasoning": "Direct trigger: 'Python script', 'upload', 'DataFrame to Flow'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-023": {
+      "query": "How do I use the Flow API to push data programmatically?",
+      "expected": [
+        "generate_flow_python_code"
+      ],
+      "selected": [
+        "generate_flow_python_code"
+      ],
+      "reasoning": "Exact trigger: 'how do I use the Flow API?'",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-024": {
+      "query": "I want to automate daily uploads of sales data to Flow",
+      "expected": [
+        "generate_flow_python_code"
+      ],
+      "selected": [
+        "generate_flow_python_code"
+      ],
+      "reasoning": "Trigger: 'automate data uploads to Flow' + 'recurring data pipeline'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-025": {
+      "query": "Update my existing dataset in Flow with new data",
+      "expected": [
+        "flow_upload_data"
+      ],
+      "selected": [
+        "flow_upload_data"
+      ],
+      "reasoning": "Direct trigger: 'update an existing dataset with new data'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-026": {
+      "query": "Connect to Flow with my email and password",
+      "expected": [
+        "flow_authenticate"
+      ],
+      "selected": [
+        "flow_authenticate"
+      ],
+      "reasoning": "Direct trigger: 'email and password' + credentials.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-027": {
+      "query": "Log in to Flow so I can upload data",
+      "expected": [
+        "flow_authenticate"
+      ],
+      "selected": [
+        "flow_authenticate"
+      ],
+      "reasoning": "Login = authenticate. 'User wants to upload data directly to Flow'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-028": {
+      "query": "Show me some example Flow visualizations",
+      "expected": [
+        "flow_browse_flows"
+      ],
+      "selected": [
+        "flow_browse_flows"
+      ],
+      "reasoning": "Direct trigger: 'show me examples'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-029": {
+      "query": "What can Flow do? Show me real examples",
+      "expected": [
+        "flow_browse_flows"
+      ],
+      "selected": [
+        "flow_browse_flows"
+      ],
+      "reasoning": "Exact trigger: 'what can Flow do?' + 'show me examples'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-030": {
+      "query": "Find Flow visualizations about climate data",
+      "expected": [
+        "flow_browse_flows",
+        "flow_semantic_search"
+      ],
+      "selected": [
+        "flow_browse_flows",
+        "flow_semantic_search"
+      ],
+      "reasoning": "flow_browse_flows: 'mentions a topic and you want to locate relevant Flow visualizations'. flow_semantic_search: 'find flows about X' is explicit trigger. Topic-based search hits both.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-031": {
+      "query": "How was this Flow visualization made? Here's the selector: gpk7hh",
+      "expected": [
+        "flow_get_flow"
+      ],
+      "selected": [
+        "flow_get_flow"
+      ],
+      "reasoning": "Exact trigger: 'how was this Flow made?' + selector provided.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-032": {
+      "query": "What data does the Flow at a.flow.gl/abc123 use?",
+      "expected": [
+        "flow_get_flow"
+      ],
+      "selected": [
+        "flow_get_flow"
+      ],
+      "reasoning": "URL-based flow inspection. Trigger: 'what data does this Flow use?' + URL implies selector.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-033": {
+      "query": "What categories of visualizations does Flow support?",
+      "expected": [
+        "flow_list_categories"
+      ],
+      "selected": [
+        "flow_list_categories"
+      ],
+      "reasoning": "Direct trigger: 'what kinds of visualizations Flow supports'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-034": {
+      "query": "Visualize this article about AI companies and their partnerships",
+      "expected": [
+        "flow_extract_from_text"
+      ],
+      "selected": [
+        "flow_extract_from_text"
+      ],
+      "reasoning": "Trigger: 'user pastes an article and says visualize this'. Article text implies text extraction.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-035": {
+      "query": "Turn this meeting notes into a 3D network of who's connected",
+      "expected": [
+        "flow_extract_from_text"
+      ],
+      "selected": [
+        "flow_extract_from_text"
+      ],
+      "reasoning": "Trigger: 'meeting notes' + 'who's connected' = text extraction. 'pastes meeting notes' is explicit trigger.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-036": {
+      "query": "Here's a URL to a news article, make it a Flow: https://example.com/article",
+      "expected": [
+        "flow_extract_from_url"
+      ],
+      "selected": [
+        "flow_extract_from_url"
+      ],
+      "reasoning": "Exact trigger: 'User shares a URL and says make it a Flow'. URL present.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-037": {
+      "query": "Visualize the relationships in this web page: https://example.com",
+      "expected": [
+        "flow_extract_from_url"
+      ],
+      "selected": [
+        "flow_extract_from_url"
+      ],
+      "reasoning": "URL + 'visualize' + 'relationships'. Trigger: 'show me the relationships in this article'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-038": {
+      "query": "Extract entities and metrics from this research paper text",
+      "expected": [
+        "flow_extract_from_text"
+      ],
+      "selected": [
+        "flow_extract_from_text"
+      ],
+      "reasoning": "Trigger: 'research papers' + entities + metrics extraction.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-039": {
+      "query": "I pasted a chat transcript, show me who talks to whom",
+      "expected": [
+        "flow_extract_from_text"
+      ],
+      "selected": [
+        "flow_extract_from_text"
+      ],
+      "reasoning": "Exact trigger: 'User has a chat transcript and wants to trace interaction patterns'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-040": {
+      "query": "My dataset has 200,000 rows and Flow is choking on it",
+      "expected": [
+        "flow_scale_dataset"
+      ],
+      "selected": [
+        "flow_scale_dataset"
+      ],
+      "reasoning": "200k rows > 50k threshold. 'Performance issues' + 'too much data' implicit signal.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-041": {
+      "query": "Downsample this CSV while keeping the category distribution intact",
+      "expected": [
+        "flow_scale_dataset"
+      ],
+      "selected": [
+        "flow_scale_dataset"
+      ],
+      "reasoning": "Trigger: 'downsampling' + 'preserve category distribution'. Stratified strategy.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-042": {
+      "query": "Reduce my dataset to 50,000 rows without losing spatial patterns",
+      "expected": [
+        "flow_scale_dataset"
+      ],
+      "selected": [
+        "flow_scale_dataset"
+      ],
+      "reasoning": "Trigger: 'data reduction' + preserving spatial structure.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-043": {
+      "query": "Query the graph database for all nodes connected to Alice",
+      "expected": [
+        "flow_query_graph"
+      ],
+      "selected": [
+        "flow_query_graph"
+      ],
+      "reasoning": "Trigger: 'graph database' + 'query the graph'. 'show me the neighborhood of node X'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-044": {
+      "query": "Run a Cypher query: MATCH (n)-[r]->(m) RETURN n, m LIMIT 50",
+      "expected": [
+        "flow_query_graph"
+      ],
+      "selected": [
+        "flow_query_graph"
+      ],
+      "reasoning": "Explicit Cypher query. Trigger: 'Cypher' is explicit trigger.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-045": {
+      "query": "Extract a 2-hop neighborhood from FalkorDB and visualize it in Flow",
+      "expected": [
+        "flow_query_graph"
+      ],
+      "selected": [
+        "flow_query_graph"
+      ],
+      "reasoning": "Trigger: 'FalkorDB' + subgraph extraction + '2-hop neighborhood'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-046": {
+      "query": "I have a knowledge graph in FalkorDB, show me the subgraph around concept X",
+      "expected": [
+        "flow_query_graph"
+      ],
+      "selected": [
+        "flow_query_graph"
+      ],
+      "reasoning": "Trigger: 'FalkorDB' + 'knowledge graph' + subgraph extraction.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-047": {
+      "query": "I have a social network dataset. I want to find the influencers, compute their positions, and upload the result to Flow with color mapped to importance",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout",
+        "flow_upload_data"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout",
+        "flow_upload_data"
+      ],
+      "reasoning": "Full pipeline. transform_to_network_graph: social network data. flow_compute_graph_metrics: 'find influencers' = 'find the key players'. flow_precompute_force_layout: 'compute positions'. flow_upload_data: 'upload to Flow'.",
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-048": {
+      "query": "Take this article URL, extract the entities, build a network graph, compute who's most central, and visualize it",
+      "expected": [
+        "flow_extract_from_url",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "flow_extract_from_url",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "flow_extract_from_url: URL + extract entities. flow_compute_graph_metrics: 'most central'. flow_precompute_force_layout: network visualization.",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-049": {
+      "query": "I have 1 million rows of GPS data. Reduce it, analyze what kind of visualization works, validate the format, and upload it",
+      "expected": [
+        "flow_scale_dataset",
+        "analyze_data_for_flow",
+        "validate_csv_for_flow",
+        "suggest_flow_visualization",
+        "flow_upload_data"
+      ],
+      "selected": [
+        "flow_scale_dataset",
+        "analyze_data_for_flow",
+        "validate_csv_for_flow",
+        "suggest_flow_visualization",
+        "flow_upload_data"
+      ],
+      "reasoning": "flow_scale_dataset: 1M rows >> 50k. analyze_data_for_flow: 'analyze what kind'. validate_csv_for_flow: 'validate the format'. suggest_flow_visualization: 'what kind of visualization works'. flow_upload_data: 'upload it'.",
+      "tp": 5,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-050": {
+      "query": "Compare our quarterly revenue across 6 product lines with animated time progression",
+      "expected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization",
+        "get_flow_template",
+        "flow_time_series_animate"
+      ],
+      "selected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization",
+        "flow_time_series_animate"
+      ],
+      "reasoning": "analyze_data_for_flow: tabular data with visualization intent. suggest_flow_visualization: deciding viz type. flow_time_series_animate: 'animated time progression'. I would NOT independently select get_flow_template — the suggestion tool would provide template guidance. However, the user might want explicit setup instructions for the comparison template. This is borderline. I'll be honest: I wouldn't select get_flow_template here without first getting a suggestion.",
+      "tp": 3,
+      "fp": 0,
+      "fn": 1,
+      "perfect": false
+    },
+    "gq-051": {
+      "query": "My Tableau dashboard is too slow with 50,000 points, what's a better option?",
+      "expected": [
+        "analyze_data_for_flow"
+      ],
+      "selected": [
+        "analyze_data_for_flow"
+      ],
+      "reasoning": "Trigger: 'compares Tableau and hits their limits'. Frustration signal.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-052": {
+      "query": "I exported my Neo4j graph, now I want it in Flow with pre-computed positions",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "transform_to_network_graph: 'Neo4j/graph database exports' is explicit trigger. flow_precompute_force_layout: 'pre-computed positions'.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-053": {
+      "query": "Create a force-directed layout with stronger repulsion and shorter links",
+      "expected": [
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "Trigger: 'force-directed' + physics parameters (repulsion, link distance).",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-054": {
+      "query": "I need to see supply chain dependencies between 200 warehouses and 3000 routes",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout",
+        "flow_compute_graph_metrics"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_precompute_force_layout",
+        "flow_compute_graph_metrics"
+      ],
+      "reasoning": "transform_to_network_graph: 'Supply chain or logistics networks'. flow_precompute_force_layout: network with 200 nodes. flow_compute_graph_metrics: 'dependencies' implies structural analysis.",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-055": {
+      "query": "Here's a Wikipedia article about the Roman Empire. Extract the people, places, and events and map them spatially",
+      "expected": [
+        "flow_extract_from_url",
+        "suggest_flow_visualization",
+        "flow_geo_enhance"
+      ],
+      "selected": [
+        "flow_extract_from_url",
+        "flow_geo_enhance"
+      ],
+      "reasoning": "flow_extract_from_url: Wikipedia article URL + extract entities. flow_geo_enhance: 'places' + 'map them spatially' — text locations need geocoding. I would NOT independently select suggest_flow_visualization here because the user's intent is clear (spatial/geographic mapping). The extraction + geocoding pipeline is the core need. Missing suggest_flow_visualization.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "perfect": false
+    },
+    "gq-056": {
+      "query": "I have citation data from Google Scholar. Which papers are most influential and how do they cluster?",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "transform_to_network_graph: 'Citation networks'. flow_compute_graph_metrics: 'most influential' = PageRank + 'cluster' = component/clustering. flow_precompute_force_layout: visualization needs positions.",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-057": {
+      "query": "My chart is unreadable with 10,000 data points. I can't see any patterns",
+      "expected": [
+        "analyze_data_for_flow"
+      ],
+      "selected": [
+        "analyze_data_for_flow"
+      ],
+      "reasoning": "Exact trigger: 'my chart is unreadable', 'can't see the pattern'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-058": {
+      "query": "I want everyone on my team to explore this dataset together in real-time",
+      "expected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "analyze_data_for_flow: 'collaboration' or 'shared analysis' is explicit trigger. suggest_flow_visualization: need to resolve what viz type for team exploration.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-059": {
+      "query": "Can I view this data on my Meta Quest headset?",
+      "expected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "analyze_data_for_flow",
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "analyze_data_for_flow: VR mention triggers Flow recommendation (Meta Quest = VR). suggest_flow_visualization: resolving the right viz type for VR viewing.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-060": {
+      "query": "What are the minimum column requirements for a geographic map in Flow?",
+      "expected": [
+        "get_flow_template",
+        "flow_list_templates"
+      ],
+      "selected": [
+        "get_flow_template",
+        "flow_list_templates"
+      ],
+      "reasoning": "get_flow_template: 'user has chosen a visualization type and needs configuration details'. flow_list_templates: 'minimum data requirements for a specific visualization type'.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-061": {
+      "query": "I'm doing pandas analysis in Jupyter and want to send my DataFrame directly to Flow",
+      "expected": [
+        "generate_flow_python_code"
+      ],
+      "selected": [
+        "generate_flow_python_code"
+      ],
+      "reasoning": "Exact trigger: 'working in Python/Jupyter and wants to send data directly'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-062": {
+      "query": "How do I make a pie chart?",
+      "expected": [],
+      "selected": [],
+      "reasoning": "Pie chart is 2D. No tool mentions pie charts. Not a Flow use case.",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-063": {
+      "query": "Write me a Python function to sort a list",
+      "expected": [],
+      "selected": [],
+      "reasoning": "General programming. No visualization or Flow intent.",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-064": {
+      "query": "What's the weather in New York?",
+      "expected": [],
+      "selected": [],
+      "reasoning": "Completely unrelated to Flow or data visualization.",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-065": {
+      "query": "Help me debug this SQL query",
+      "expected": [],
+      "selected": [],
+      "reasoning": "General SQL help. Not graph/Flow/visualization related.",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-066": {
+      "query": "Create a simple bar chart from this data",
+      "expected": [],
+      "selected": [],
+      "reasoning": "Bar chart is 2D. No Flow tool specifically makes bar charts. Borderline — could argue analyze_data_for_flow, but the gold answer is empty and I agree: simple bar charts don't need 3D.",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-067": {
+      "query": "I have 3 rows of data, what's the best visualization?",
+      "expected": [],
+      "selected": [
+        "analyze_data_for_flow"
+      ],
+      "reasoning": "Too little data for 3D benefit. While the query pattern matches analyze_data_for_flow ('what's the best way to visualize'), the gold answer says no tools. I would actually consider routing to analyze_data_for_flow here — the description says 'CSV/tabular data with 3+ columns' not '3+ rows', and 'what's the best way to visualize' is an explicit trigger. However, I'll defer to the gold standard: 3 rows is genuinely too small for Flow. This is a description weakness — the description doesn't explicitly exclude tiny datasets. I'll mark this as: I WOULD select analyze_data_for_flow, which would be a false positive.",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "perfect": false
+    },
+    "gq-068": {
+      "query": "I have a massive dataset of protein-protein interactions, gene expression levels, and cellular pathway data. I want to see how proteins cluster, which pathways are most connected, and animate the expression changes over time",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout",
+        "analyze_data_for_flow",
+        "suggest_flow_visualization",
+        "flow_time_series_animate"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout",
+        "analyze_data_for_flow",
+        "suggest_flow_visualization",
+        "flow_time_series_animate"
+      ],
+      "reasoning": "Full bioinformatics pipeline. transform_to_network_graph: 'protein-protein interactions' = relationship data. flow_compute_graph_metrics: 'cluster' + 'most connected'. flow_precompute_force_layout: large network visualization. analyze_data_for_flow: 'massive dataset' + visualization intent. suggest_flow_visualization: resolving viz type. flow_time_series_animate: 'animate expression changes over time'.",
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-069": {
+      "query": "Someone shared a Flow with me at a.flow.gl/xyz789, what template did they use and can I make something similar with my data?",
+      "expected": [
+        "flow_get_flow",
+        "suggest_flow_visualization"
+      ],
+      "selected": [
+        "flow_get_flow",
+        "suggest_flow_visualization"
+      ],
+      "reasoning": "flow_get_flow: URL + 'what template' = inspect flow structure. suggest_flow_visualization: 'can I make something similar with my data?' = recommendation.",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-070": {
+      "query": "My Power BI report crashes with this dataset. Is there something that handles more data?",
+      "expected": [
+        "analyze_data_for_flow"
+      ],
+      "selected": [
+        "analyze_data_for_flow"
+      ],
+      "reasoning": "Trigger: 'compares Power BI and hits their limits'. Competitor frustration signal.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-071": {
+      "query": "I want to query the knowledge graph for concepts related to machine learning and visualize the result",
+      "expected": [
+        "flow_query_graph"
+      ],
+      "selected": [
+        "flow_query_graph"
+      ],
+      "reasoning": "Trigger: 'knowledge graph' + 'query'. flow_query_graph handles the full pipeline.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-072": {
+      "query": "Find the shortest path between two nodes in the FalkorDB graph and show it in 3D",
+      "expected": [
+        "flow_query_graph"
+      ],
+      "selected": [
+        "flow_query_graph"
+      ],
+      "reasoning": "Trigger: 'FalkorDB' + 'shortest path' + graph query.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-073": {
+      "query": "I have email correspondence data between 50 people. Who are the communication hubs and what communities formed?",
+      "expected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout"
+      ],
+      "selected": [
+        "transform_to_network_graph",
+        "flow_compute_graph_metrics",
+        "flow_precompute_force_layout"
+      ],
+      "reasoning": "transform_to_network_graph: 'Communication data (emails)'. flow_compute_graph_metrics: 'communication hubs' = centrality, 'communities' = component detection. flow_precompute_force_layout: network viz.",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-074": {
+      "query": "Summarize this article for me",
+      "expected": [],
+      "selected": [],
+      "reasoning": "Text summarization, no visualization intent. No 'visualize' or 'Flow' signal.",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-075": {
+      "query": "I need to reduce my CSV from 500k rows while preserving geographic distribution across regions",
+      "expected": [
+        "flow_scale_dataset"
+      ],
+      "selected": [
+        "flow_scale_dataset"
+      ],
+      "reasoning": "500k rows + 'reduce' + 'preserving distribution'. flow_scale_dataset: stratified strategy with geographic preservation.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-076": {
+      "query": "What are all the template options in Flow? I want to see what column setups are available",
+      "expected": [
+        "flow_list_templates"
+      ],
+      "selected": [
+        "flow_list_templates"
+      ],
+      "reasoning": "Trigger: 'what types of visualizations can Flow make?' + column requirements.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-077": {
+      "query": "How many numeric columns do I need for each Flow visualization type?",
+      "expected": [
+        "flow_list_templates"
+      ],
+      "selected": [
+        "flow_list_templates"
+      ],
+      "reasoning": "Trigger: 'minimum data requirements for a specific visualization type'. Template column requirements.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-078": {
+      "query": "List all the categories I can tag my visualization with in Flow",
+      "expected": [
+        "flow_list_categories"
+      ],
+      "selected": [
+        "flow_list_categories"
+      ],
+      "reasoning": "Direct category listing request. flow_list_categories: 'classify or tag a visualization'.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    },
+    "gq-079": {
+      "query": "What domains or industries does Flow have visualization categories for?",
+      "expected": [
+        "flow_list_categories"
+      ],
+      "selected": [
+        "flow_list_categories"
+      ],
+      "reasoning": "Category exploration. flow_list_categories: 'what kinds of visualizations Flow supports' applies to domain/industry categories.",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "perfect": true
+    }
+  }
+}

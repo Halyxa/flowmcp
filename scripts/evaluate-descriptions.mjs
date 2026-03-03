@@ -51,22 +51,22 @@ const DESCRIPTION_GENES_PATH = resolve(ROOT, "data/description-genes.json");
 
 const TOOL_SIGNALS = {
   analyze_data_for_flow: {
-    strong: ["analyze data", "structural fitness", "3D potential", "spatial visualization", "score dataset", "8 signal dimensions", "visualization potential", "3D advantage"],
-    medium: ["CSV", "spreadsheet", "DataFrame", "columns", "visualization", "chart", "dashboard", "presenting data", "too many data points", "unreadable", "overwhelming", "can't see the pattern"],
-    weak: ["Tableau", "Power BI", "Plotly", "D3.js", "matplotlib", "data points", "scatter", "collaboration", "VR", "AR", "Meta Quest", "XREAL"],
-    negative: ["upload", "authenticate", "login", "Cypher", "FalkorDB", "format", "validate CSV"]
+    strong: ["analyze data for flow", "structural fitness", "3D potential", "score dataset", "8 signal dimensions", "visualization potential", "3D advantage", "is my data suitable for 3D"],
+    medium: ["too many data points", "unreadable", "overwhelming", "can't see the pattern", "presenting data", "spreadsheet", "columns"],
+    weak: ["Tableau", "Power BI", "Plotly", "D3.js", "matplotlib", "VR", "AR", "Meta Quest", "XREAL"],
+    negative: ["upload", "authenticate", "login", "Cypher", "FalkorDB", "validate CSV", "geocode", "anomaly", "merge", "export", "search flows", "animate", "join", "pie chart", "bar chart", "Python function", "debug", "category list", "template list"]
   },
   validate_csv_for_flow: {
-    strong: ["validate CSV", "CSV format", "formatted correctly", "format requirements", "data quality", "won't accept my data"],
-    medium: ["CSV", "format", "headers", "comma-delimited", "column types", "upload ready", "troubleshoot", "renders incorrectly"],
-    weak: ["verify", "check", "ready", "prepared"],
-    negative: ["visualize", "network graph", "Python", "authenticate", "browse"]
+    strong: ["validate CSV", "CSV format", "formatted correctly", "format requirements", "data quality", "won't accept my data", "check if this CSV will work"],
+    medium: ["headers", "comma-delimited", "column types", "upload ready", "troubleshoot", "renders incorrectly"],
+    weak: ["verify format", "check format"],
+    negative: ["visualize", "network graph", "Python", "authenticate", "browse", "geocode", "anomaly", "merge", "export", "search", "animate", "pie chart", "bar chart", "debug", "sort", "template", "weather", "analyze data"]
   },
   transform_to_network_graph: {
-    strong: ["edge list", "source-target", "network graph CSV", "connections by id", "pipe-delimited", "from-to relationships"],
-    medium: ["network", "graph", "edges", "nodes", "connections", "relationships", "social network", "org chart", "supply chain", "hierarchy", "dependencies", "citations"],
-    weak: ["convert", "transform", "parent-child", "from", "to", "Neo4j export"],
-    negative: ["metrics", "PageRank", "layout", "positions", "authenticate", "browse", "Cypher"]
+    strong: ["edge list", "source-target", "network graph CSV", "connections by id", "pipe-delimited", "from-to relationships", "convert to network"],
+    medium: ["edges", "connections", "social network", "org chart", "supply chain", "hierarchy", "dependencies", "citations", "who talks to whom"],
+    weak: ["Neo4j export"],
+    negative: ["metrics", "PageRank", "layout", "positions", "authenticate", "browse", "Cypher", "FalkorDB", "shortest path", "subgraph", "knowledge graph", "geocode", "anomaly", "merge", "export", "search flows", "template", "column requirements", "minimum column"]
   },
   generate_flow_python_code: {
     strong: ["Python script", "flowgl", "push_data", "Python upload", "automate upload", "Flow API code"],
@@ -75,10 +75,10 @@ const TOOL_SIGNALS = {
     negative: ["validate", "visualize", "browse", "authenticate", "network graph"]
   },
   suggest_flow_visualization: {
-    strong: ["suggest visualization", "best way to visualize", "which visualization", "recommend visualization", "optimal visualization type"],
-    medium: ["visualize", "best way", "what type", "recommend", "scatter", "network", "map", "time series", "how should I show", "3D vs 2D"],
-    weak: ["data", "columns", "chart", "graph"],
-    negative: ["upload", "authenticate", "CSV format", "validate", "Python", "Cypher"]
+    strong: ["suggest visualization", "best way to visualize", "which visualization", "recommend visualization", "optimal visualization type", "what type of viz"],
+    medium: ["how should I show", "3D vs 2D", "should I use a scatter", "should I use a network", "what can Flow do", "visualization type"],
+    weak: ["best way", "visualize my"],
+    negative: ["upload", "authenticate", "CSV format", "validate", "Python", "Cypher", "geocode", "anomaly", "merge", "export", "animate", "search flows", "template requirements", "minimum column", "pie chart", "bar chart", "debug", "sort a list"]
   },
   get_flow_template: {
     strong: ["Flow template", "setup instructions", "how do I set up", "column requirements", "configuration steps"],
@@ -87,10 +87,10 @@ const TOOL_SIGNALS = {
     negative: ["browse", "authenticate", "upload", "validate", "Python"]
   },
   flow_extract_from_text: {
-    strong: ["extract from text", "text to visualization", "visualize this text", "turn this into a Flow", "prose to 3D"],
-    medium: ["text", "article", "chat transcript", "report", "meeting notes", "email", "research paper", "extract entities", "relationships in text"],
-    weak: ["visualize this", "who's connected", "entities", "extract"],
-    negative: ["URL", "http", "link", "web page", "upload", "authenticate", "CSV"]
+    strong: ["extract from text", "text to visualization", "visualize this text", "turn this text into a Flow", "prose to 3D"],
+    medium: ["article text", "chat transcript", "meeting notes", "extract entities from text", "relationships in text", "pasted text"],
+    weak: ["who's connected in this text"],
+    negative: ["URL", "http", "link", "web page", "upload", "authenticate", "CSV", "geocode", "anomaly", "merge", "export", "search", "animate", "Cypher", "template", "browse", "email and password", "correspondence data", "Power BI"]
   },
   flow_extract_from_url: {
     strong: ["extract from URL", "visualize this URL", "URL to Flow", "make this article a Flow", "visualize this article"],
@@ -157,6 +157,48 @@ const TOOL_SIGNALS = {
     medium: ["Cypher", "Neo4j", "knowledge graph", "query", "MATCH", "subgraph", "neighborhood", "shortest path", "persistent graph"],
     weak: ["graph", "database"],
     negative: ["metrics", "PageRank", "layout", "positions", "authenticate", "browse", "CSV"]
+  },
+  flow_semantic_search: {
+    strong: ["search flows", "find flows", "search Flow catalog", "discover flows", "find visualizations about", "search for flows"],
+    medium: ["search", "find", "discover", "look for", "flows about", "visualizations about", "explore catalog", "topic", "related flows"],
+    weak: ["similar", "like", "example", "show me"],
+    negative: ["upload", "authenticate", "validate", "extract", "template", "category list"]
+  },
+  flow_time_series_animate: {
+    strong: ["animate", "time series animation", "animation frames", "temporal animation", "time lapse", "evolution over time", "show change over time"],
+    medium: ["time series", "temporal", "over time", "progression", "frames", "keyframes", "animate", "animation", "chronological", "date column"],
+    weak: ["time", "date", "trend", "quarterly", "monthly", "yearly"],
+    negative: ["upload", "authenticate", "validate", "browse", "template", "static"]
+  },
+  flow_merge_datasets: {
+    strong: ["merge datasets", "join datasets", "combine datasets", "concatenate CSV", "union datasets", "merge CSV"],
+    medium: ["merge", "join", "combine", "concatenate", "union", "multiple datasets", "multiple CSV", "two datasets", "enrich dataset"],
+    weak: ["together", "multiple", "sources", "files"],
+    negative: ["upload", "authenticate", "validate", "browse", "template", "single"]
+  },
+  flow_anomaly_detect: {
+    strong: ["anomaly detection", "detect anomalies", "find outliers", "outlier detection", "flag abnormal", "detect deviations", "unusual values"],
+    medium: ["anomaly", "outlier", "abnormal", "unusual", "deviant", "z-score", "IQR", "statistical", "stands out"],
+    weak: ["weird", "strange", "different", "flag"],
+    negative: ["upload", "authenticate", "validate", "browse", "template", "network"]
+  },
+  flow_geo_enhance: {
+    strong: ["geocode", "add coordinates", "resolve locations", "put on a map", "geo-enrich", "gazetteer", "add lat lng", "city names", "country names"],
+    medium: ["location", "geographic", "coordinates", "lat", "lng", "latitude", "longitude", "globe", "map spatially"],
+    weak: ["place names", "region"],
+    negative: ["upload", "authenticate", "validate", "browse", "template", "Cypher", "anomaly", "merge", "export", "animate", "force layout", "metrics", "pie chart", "bar chart", "debug"]
+  },
+  flow_nlp_to_viz: {
+    strong: ["natural language to visualization", "create a visualization from scratch", "visualize this concept", "show me a social network", "show me a world map", "describe a visualization"],
+    medium: ["prototype", "proof of concept", "quick viz", "generate synthetic data", "no data yet", "create a visualization"],
+    weak: ["visualize this"],
+    negative: ["upload", "authenticate", "validate", "CSV format", "template list", "browse", "search", "geocode", "anomaly", "merge", "export", "animate", "Cypher", "FalkorDB", "edge list", "template requirements", "column requirements", "metrics", "PageRank", "format requirements"]
+  },
+  flow_export_formats: {
+    strong: ["export to JSON", "export to GeoJSON", "create HTML page", "export formats", "save as JSON", "download as", "convert to JSON"],
+    medium: ["export", "download", "save as", "convert", "HTML viewer", "GeoJSON", "standalone file", "share visualization", "statistical summary"],
+    weak: ["output", "format", "file"],
+    negative: ["upload", "authenticate", "validate", "browse", "template", "import"]
   }
 };
 
