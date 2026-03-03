@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -2543,5 +2543,234 @@ describe("flowSortRows", () => {
   it("throws on missing column", () => {
     const csv = "val\n1";
     expect(() => flowSortRows({ csv_content: csv, sort_by: "missing" })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 49: flow_unpivot
+// ============================================================================
+
+describe("flowUnpivot", () => {
+  it("melts wide columns to long format", () => {
+    const csv = "name,q1,q2,q3\nAlice,10,20,30\nBob,40,50,60";
+    const result = flowUnpivot({
+      csv_content: csv,
+      id_columns: ["name"],
+      value_columns: ["q1", "q2", "q3"],
+      variable_name: "quarter",
+      value_name: "amount",
+    });
+    const lines = result.csv.trim().split("\n");
+    // header: name,quarter,amount
+    expect(lines[0]).toBe("name,quarter,amount");
+    // 2 rows * 3 value columns = 6 data rows
+    expect(lines.length).toBe(7); // 1 header + 6 data
+    expect(result.row_count).toBe(6);
+  });
+
+  it("uses default variable/value names", () => {
+    const csv = "id,a,b\n1,10,20";
+    const result = flowUnpivot({
+      csv_content: csv,
+      id_columns: ["id"],
+      value_columns: ["a", "b"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("id,variable,value");
+  });
+
+  it("preserves id column values in each row", () => {
+    const csv = "name,x,y\nAlice,1,2\nBob,3,4";
+    const result = flowUnpivot({
+      csv_content: csv,
+      id_columns: ["name"],
+      value_columns: ["x", "y"],
+    });
+    const lines = result.csv.trim().split("\n");
+    // First two data rows should be Alice with x and y
+    expect(lines[1]).toContain("Alice");
+    expect(lines[2]).toContain("Alice");
+    // Next two should be Bob
+    expect(lines[3]).toContain("Bob");
+    expect(lines[4]).toContain("Bob");
+  });
+
+  it("supports multiple id columns", () => {
+    const csv = "region,year,sales,profit\nUS,2024,100,10\nEU,2024,200,20";
+    const result = flowUnpivot({
+      csv_content: csv,
+      id_columns: ["region", "year"],
+      value_columns: ["sales", "profit"],
+      variable_name: "metric",
+      value_name: "amount",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("region,year,metric,amount");
+    expect(result.row_count).toBe(4); // 2 rows * 2 value cols
+  });
+
+  it("returns summary with row count", () => {
+    const csv = "id,a,b\n1,10,20\n2,30,40";
+    const result = flowUnpivot({
+      csv_content: csv,
+      id_columns: ["id"],
+      value_columns: ["a", "b"],
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.row_count).toBe(4);
+  });
+
+  it("handles values with commas by escaping", () => {
+    const csv = 'id,a\n1,"hello, world"';
+    const result = flowUnpivot({
+      csv_content: csv,
+      id_columns: ["id"],
+      value_columns: ["a"],
+    });
+    expect(result.row_count).toBe(1);
+    // Value should be properly escaped in output
+    expect(result.csv).toContain("hello, world");
+  });
+
+  it("throws on missing id column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowUnpivot({
+      csv_content: csv,
+      id_columns: ["missing"],
+      value_columns: ["a"],
+    })).toThrow();
+  });
+
+  it("throws on missing value column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowUnpivot({
+      csv_content: csv,
+      id_columns: ["a"],
+      value_columns: ["missing"],
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 50: flow_join_datasets
+// ============================================================================
+
+describe("flowJoinDatasets", () => {
+  it("performs inner join on shared key", () => {
+    const left = "id,name\n1,Alice\n2,Bob\n3,Carol";
+    const right = "id,score\n1,95\n2,80\n4,70";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "inner",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("id,name,score");
+    // Inner join: only ids 1 and 2 match
+    expect(result.row_count).toBe(2);
+  });
+
+  it("performs left join preserving all left rows", () => {
+    const left = "id,name\n1,Alice\n2,Bob\n3,Carol";
+    const right = "id,score\n1,95\n2,80";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "left",
+    });
+    // All 3 left rows preserved
+    expect(result.row_count).toBe(3);
+    // Carol should have empty score
+    const lines = result.csv.trim().split("\n");
+    const carolLine = lines.find(l => l.includes("Carol"));
+    expect(carolLine).toBeTruthy();
+  });
+
+  it("performs right join preserving all right rows", () => {
+    const left = "id,name\n1,Alice";
+    const right = "id,score\n1,95\n2,80\n3,70";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "right",
+    });
+    // All 3 right rows preserved
+    expect(result.row_count).toBe(3);
+  });
+
+  it("performs full outer join", () => {
+    const left = "id,name\n1,Alice\n2,Bob";
+    const right = "id,score\n2,80\n3,70";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "full",
+    });
+    // id 1 (left only), id 2 (both), id 3 (right only)
+    expect(result.row_count).toBe(3);
+  });
+
+  it("defaults to inner join", () => {
+    const left = "id,val\n1,a\n2,b";
+    const right = "id,val2\n2,x\n3,y";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+    });
+    // Default inner: only id 2
+    expect(result.row_count).toBe(1);
+  });
+
+  it("handles duplicate non-key column names with _right suffix", () => {
+    const left = "id,val\n1,a";
+    const right = "id,val\n1,b";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "inner",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("id,val,val_right");
+  });
+
+  it("returns summary with match stats", () => {
+    const left = "id,name\n1,Alice\n2,Bob";
+    const right = "id,score\n1,95";
+    const result = flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "left",
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.matched_rows).toBe(1);
+  });
+
+  it("throws on missing join key in left CSV", () => {
+    const left = "name\nAlice";
+    const right = "id,score\n1,95";
+    expect(() => flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "inner",
+    })).toThrow();
+  });
+
+  it("throws on missing join key in right CSV", () => {
+    const left = "id,name\n1,Alice";
+    const right = "score\n95";
+    expect(() => flowJoinDatasets({
+      left_csv: left,
+      right_csv: right,
+      join_key: "id",
+      join_type: "inner",
+    })).toThrow();
   });
 });

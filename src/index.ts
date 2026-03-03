@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2316,6 +2316,85 @@ Output: Sorted CSV with row_count, sort_column, sort_order, and summary.`,
           required: ["csv_content", "sort_by"],
         },
       },
+      // Tool 49: flow_unpivot
+      {
+        name: "flow_unpivot",
+        description: `Melt wide-format CSV into long format. Converts column names into row values — the reverse of pivot/crosstab. Transforms datasets where measurements are spread across columns (e.g., q1,q2,q3,q4) into tidy long format with variable and value columns.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "melt", "unpivot", "reshape wide to long", or "tidy" data
+- User has quarterly/monthly/yearly columns that should become rows
+- User asks to "stack columns" or "flatten wide format"
+- User needs to convert crosstab/pivot output back to normalized form
+
+Input: CSV data, id_columns (preserved per row), value_columns (melted to rows), optional variable_name and value_name.
+Output: Long-format CSV with row_count, id_columns, variable_name, value_name, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "Wide-format CSV data to unpivot",
+            },
+            id_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to keep as identifiers (not melted)",
+            },
+            value_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to melt into variable/value rows",
+            },
+            variable_name: {
+              type: "string",
+              description: "Name for the variable column (default: 'variable')",
+            },
+            value_name: {
+              type: "string",
+              description: "Name for the value column (default: 'value')",
+            },
+          },
+          required: ["csv_content", "id_columns", "value_columns"],
+        },
+      },
+      // Tool 50: flow_join_datasets
+      {
+        name: "flow_join_datasets",
+        description: `Join two CSV datasets on a shared key column using SQL-style join semantics (inner, left, right, full outer). Combines columns from both datasets, handles duplicate column names with _right suffix, and reports match statistics.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "join", "merge", "combine", or "link" two datasets
+- User wants to enrich one dataset with columns from another
+- User asks for "VLOOKUP" or "match" across datasets
+- User needs to combine related tables on a shared ID/key
+
+Input: Two CSV datasets, join_key (column present in both), join_type (inner/left/right/full, default: inner).
+Output: Joined CSV with row_count, matched_rows, join_type, join_key, column lists, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            left_csv: {
+              type: "string",
+              description: "First (left) CSV dataset",
+            },
+            right_csv: {
+              type: "string",
+              description: "Second (right) CSV dataset",
+            },
+            join_key: {
+              type: "string",
+              description: "Column name present in both datasets to join on",
+            },
+            join_type: {
+              type: "string",
+              enum: ["inner", "left", "right", "full"],
+              description: "Join type: inner (default), left, right, or full outer",
+            },
+          },
+          required: ["left_csv", "right_csv", "join_key"],
+        },
+      },
     ],
   };
 });
@@ -2832,6 +2911,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_sort_rows": {
       try {
         const result = flowSortRows(args as unknown as SortRowsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_unpivot": {
+      try {
+        const result = flowUnpivot(args as unknown as UnpivotInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_join_datasets": {
+      try {
+        const result = flowJoinDatasets(args as unknown as JoinDatasetsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5833,7 +5930,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 48, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 50, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

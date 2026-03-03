@@ -2827,3 +2827,209 @@ export function flowSortRows(input: SortRowsInput): SortRowsResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 49: flow_unpivot — MELT WIDE FORMAT TO LONG FORMAT
+// ============================================================================
+
+export interface UnpivotInput {
+  csv_content: string;
+  id_columns: string[];
+  value_columns: string[];
+  variable_name?: string;
+  value_name?: string;
+}
+
+export interface UnpivotResult {
+  csv: string;
+  row_count: number;
+  id_columns: string[];
+  variable_name: string;
+  value_name: string;
+  summary: string;
+}
+
+export function flowUnpivot(input: UnpivotInput): UnpivotResult {
+  const { csv_content, id_columns, value_columns, variable_name = "variable", value_name = "value" } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+
+  // Validate id columns exist
+  for (const col of id_columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`ID column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  // Validate value columns exist
+  for (const col of value_columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Value column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const idIndices = id_columns.map(c => headers.indexOf(c));
+  const valIndices = value_columns.map(c => headers.indexOf(c));
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Build output: for each row, for each value column, emit one long-format row
+  const outputHeader = [...id_columns, variable_name, value_name].map(h => csvEscapeField(h)).join(",");
+  const outputRows: string[] = [];
+
+  for (const row of rows) {
+    const idValues = idIndices.map(i => row[i] || "");
+    for (let vi = 0; vi < value_columns.length; vi++) {
+      const valColName = value_columns[vi];
+      const cellValue = row[valIndices[vi]] || "";
+      const outRow = [...idValues, valColName, cellValue].map(v => csvEscapeField(v)).join(",");
+      outputRows.push(outRow);
+    }
+  }
+
+  const rowCount = outputRows.length;
+  const summary = `Unpivoted ${rows.length} rows × ${value_columns.length} value columns → ${rowCount} long-format rows.`;
+
+  return {
+    csv: [outputHeader, ...outputRows].join("\n"),
+    row_count: rowCount,
+    id_columns,
+    variable_name,
+    value_name,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 50: flow_join_datasets — SQL-STYLE JOINS BETWEEN TWO CSVs
+// ============================================================================
+
+export interface JoinDatasetsInput {
+  left_csv: string;
+  right_csv: string;
+  join_key: string;
+  join_type?: "inner" | "left" | "right" | "full";
+}
+
+export interface JoinDatasetsResult {
+  csv: string;
+  row_count: number;
+  matched_rows: number;
+  join_type: string;
+  join_key: string;
+  left_columns: string[];
+  right_columns: string[];
+  summary: string;
+}
+
+export function flowJoinDatasets(input: JoinDatasetsInput): JoinDatasetsResult {
+  const { left_csv, right_csv, join_key, join_type = "inner" } = input;
+
+  // Parse left CSV
+  const leftLines = left_csv.trim().split("\n").filter(l => l.trim());
+  if (leftLines.length < 1) throw new Error("Left CSV must have at least a header row");
+  const leftHeaders = parseCSVLine(leftLines[0]);
+  if (!leftHeaders.includes(join_key)) {
+    throw new Error(`Join key "${join_key}" not found in left CSV. Available: ${leftHeaders.join(", ")}`);
+  }
+  const leftKeyIdx = leftHeaders.indexOf(join_key);
+  const leftRows = leftLines.slice(1).map(l => parseCSVLine(l));
+
+  // Parse right CSV
+  const rightLines = right_csv.trim().split("\n").filter(l => l.trim());
+  if (rightLines.length < 1) throw new Error("Right CSV must have at least a header row");
+  const rightHeaders = parseCSVLine(rightLines[0]);
+  if (!rightHeaders.includes(join_key)) {
+    throw new Error(`Join key "${join_key}" not found in right CSV. Available: ${rightHeaders.join(", ")}`);
+  }
+  const rightKeyIdx = rightHeaders.indexOf(join_key);
+  const rightRows = rightLines.slice(1).map(l => parseCSVLine(l));
+
+  // Build right non-key columns (exclude join key from right to avoid duplication)
+  const rightNonKeyIndices: number[] = [];
+  const rightNonKeyNames: string[] = [];
+  for (let i = 0; i < rightHeaders.length; i++) {
+    if (i !== rightKeyIdx) {
+      let name = rightHeaders[i];
+      // Handle name collisions with left columns
+      if (leftHeaders.includes(name)) {
+        name = name + "_right";
+      }
+      rightNonKeyNames.push(name);
+      rightNonKeyIndices.push(i);
+    }
+  }
+
+  // Build output header: all left columns + right non-key columns
+  const outHeaders = [...leftHeaders, ...rightNonKeyNames];
+
+  // Index right rows by key for O(n) lookup
+  const rightIndex = new Map<string, string[][]>();
+  for (const row of rightRows) {
+    const key = row[rightKeyIdx] || "";
+    if (!rightIndex.has(key)) rightIndex.set(key, []);
+    rightIndex.get(key)!.push(row);
+  }
+
+  const outputRows: string[][] = [];
+  let matched = 0;
+  const matchedRightKeys = new Set<string>();
+
+  // Process left rows
+  for (const leftRow of leftRows) {
+    const key = leftRow[leftKeyIdx] || "";
+    const rightMatches = rightIndex.get(key);
+
+    if (rightMatches && rightMatches.length > 0) {
+      // Matched rows
+      for (const rightRow of rightMatches) {
+        const rightVals = rightNonKeyIndices.map(i => rightRow[i] || "");
+        outputRows.push([...leftRow, ...rightVals]);
+        matched++;
+      }
+      matchedRightKeys.add(key);
+    } else if (join_type === "left" || join_type === "full") {
+      // Left row with no right match
+      const emptyRight = rightNonKeyIndices.map(() => "");
+      outputRows.push([...leftRow, ...emptyRight]);
+    }
+    // For inner join, unmatched left rows are skipped
+  }
+
+  // For right and full joins, add unmatched right rows
+  if (join_type === "right" || join_type === "full") {
+    for (const rightRow of rightRows) {
+      const key = rightRow[rightKeyIdx] || "";
+      if (!matchedRightKeys.has(key)) {
+        // Build left-side empty values, but fill in the join key at the right position
+        const leftVals = leftHeaders.map((_, i) => {
+          if (i === leftKeyIdx) return key;
+          return "";
+        });
+        const rightVals = rightNonKeyIndices.map(i => rightRow[i] || "");
+        outputRows.push([...leftVals, ...rightVals]);
+      }
+    }
+  }
+
+  // Build CSV output
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = outputRows.map(row => row.map(v => csvEscapeField(v)).join(","));
+
+  const rowCount = outputRows.length;
+  const summary = `${join_type.toUpperCase()} JOIN on "${join_key}": ${rowCount} result rows, ${matched} matched.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rowCount,
+    matched_rows: matched,
+    join_type,
+    join_key,
+    left_columns: leftHeaders,
+    right_columns: rightHeaders,
+    summary,
+  };
+}
