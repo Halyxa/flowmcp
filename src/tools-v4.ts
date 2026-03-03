@@ -4575,3 +4575,185 @@ export function flowStandardize(input: StandardizeInput): StandardizeResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 69: flow_ratio_columns — CALCULATE RATIOS BETWEEN COLUMNS
+// ============================================================================
+
+export interface RatioColumnsInput {
+  csv_content: string;
+  /** Numerator column */
+  numerator: string;
+  /** Denominator column */
+  denominator: string;
+  /** Custom output column name (default: {numerator}_per_{denominator}) */
+  output_column?: string;
+}
+
+export interface RatioColumnsResult {
+  csv: string;
+  row_count: number;
+  computed_count: number;
+  zero_denominator_count: number;
+  summary: string;
+}
+
+export function flowRatioColumns(input: RatioColumnsInput): RatioColumnsResult {
+  const { csv_content, numerator, denominator, output_column } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const numIdx = headers.indexOf(numerator);
+  const denIdx = headers.indexOf(denominator);
+
+  if (numIdx === -1) throw new Error(`Numerator column "${numerator}" not found. Available: ${headers.join(", ")}`);
+  if (denIdx === -1) throw new Error(`Denominator column "${denominator}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  const colName = output_column || `${numerator}_per_${denominator}`;
+  let computedCount = 0;
+  let zeroDenCount = 0;
+
+  const ratios: string[] = rows.map(row => {
+    const numVal = Number(row[numIdx] ?? "");
+    const denVal = Number(row[denIdx] ?? "");
+
+    if (isNaN(numVal) || isNaN(denVal)) return "";
+
+    if (denVal === 0) {
+      zeroDenCount++;
+      return "";
+    }
+
+    computedCount++;
+    return String(+(numVal / denVal).toFixed(6));
+  });
+
+  const outHeaders = [...headers, colName];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), ratios[i]].join(",");
+  });
+
+  const summary = `Ratio "${numerator}" / "${denominator}": ${computedCount} computed, ${zeroDenCount} zero-denominator (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    computed_count: computedCount,
+    zero_denominator_count: zeroDenCount,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 70: flow_discretize — CONVERT CONTINUOUS TO CATEGORICAL BINS
+// ============================================================================
+
+export interface DiscretizeInput {
+  csv_content: string;
+  /** Numeric column to discretize */
+  column: string;
+  /** Binning method */
+  method: "equal_width" | "quantile" | "custom";
+  /** Number of bins (for equal_width and quantile methods) */
+  bins?: number;
+  /** Custom breakpoints (for custom method) */
+  breakpoints?: number[];
+}
+
+export interface DiscretizeResult {
+  csv: string;
+  row_count: number;
+  bin_count: number;
+  summary: string;
+}
+
+export function flowDiscretize(input: DiscretizeInput): DiscretizeResult {
+  const { csv_content, column, method, bins = 4, breakpoints } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  const values: number[] = rows
+    .map(row => Number(row[colIdx] ?? ""))
+    .filter(v => !isNaN(v));
+
+  // Determine bin edges
+  let edges: number[];
+
+  if (method === "custom" && breakpoints && breakpoints.length > 0) {
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    edges = [minVal, ...breakpoints.sort((a, b) => a - b), maxVal + 0.001];
+  } else if (method === "quantile") {
+    const sorted = [...values].sort((a, b) => a - b);
+    edges = [sorted[0]];
+    for (let i = 1; i <= bins; i++) {
+      const idx = Math.min(Math.floor((i / bins) * sorted.length), sorted.length - 1);
+      const val = sorted[idx];
+      if (val !== edges[edges.length - 1]) {
+        edges.push(val);
+      }
+    }
+    if (edges[edges.length - 1] <= sorted[sorted.length - 1]) {
+      edges[edges.length - 1] = sorted[sorted.length - 1] + 0.001;
+    }
+  } else {
+    // equal_width
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const width = (maxVal - minVal) / bins;
+    edges = [];
+    for (let i = 0; i <= bins; i++) {
+      edges.push(minVal + i * width);
+    }
+    edges[edges.length - 1] = maxVal + 0.001; // Include max
+  }
+
+  // Create bin labels
+  const binLabels: string[] = [];
+  for (let i = 0; i < edges.length - 1; i++) {
+    binLabels.push(`[${edges[i].toFixed(1)}, ${edges[i + 1].toFixed(1)})`);
+  }
+
+  // Assign bins
+  const binAssignments: string[] = rows.map(row => {
+    const val = Number(row[colIdx] ?? "");
+    if (isNaN(val)) return "";
+
+    for (let i = 0; i < edges.length - 1; i++) {
+      if (val >= edges[i] && val < edges[i + 1]) {
+        return binLabels[i];
+      }
+    }
+    // Edge case: value equals max edge
+    return binLabels[binLabels.length - 1] || "";
+  });
+
+  const binColName = `${column}_bin`;
+  const outHeaders = [...headers, binColName];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), csvEscapeField(binAssignments[i])].join(",");
+  });
+
+  const actualBins = new Set(binAssignments.filter(b => b)).size;
+  const summary = `Discretized "${column}" into ${actualBins} bins using ${method} method (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    bin_count: actualBins,
+    summary,
+  };
+}

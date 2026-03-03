@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2993,6 +2993,82 @@ Output: CSV with appended standardized columns, columns_standardized count, summ
           required: ["csv_content", "columns", "method"],
         },
       },
+      {
+        name: "flow_ratio_columns",
+        description: `Calculate the ratio between two numeric columns (numerator / denominator). Handles zero-denominator gracefully. Common for business metrics like revenue per employee, cost per unit, or conversion rates.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "calculate ratio", "divide columns", "rate per", or "proportion between"
+- User needs business metrics like "revenue per employee" or "cost per unit"
+- User asks for "conversion rate", "efficiency ratio", or "per capita" calculations
+- User wants to create a derived metric from two existing columns
+
+Input: CSV data, numerator column, denominator column, optional output_column name.
+Output: CSV with appended ratio column, computed_count, zero_denominator_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric columns",
+            },
+            numerator: {
+              type: "string",
+              description: "Column to use as numerator",
+            },
+            denominator: {
+              type: "string",
+              description: "Column to use as denominator",
+            },
+            output_column: {
+              type: "string",
+              description: "Custom output column name (default: {numerator}_per_{denominator})",
+            },
+          },
+          required: ["csv_content", "numerator", "denominator"],
+        },
+      },
+      {
+        name: "flow_discretize",
+        description: `Convert a continuous numeric column into categorical bins. Supports equal-width binning, quantile (equal-frequency) binning, or custom breakpoints. Appends a _bin column with labeled ranges. Different from flow_bin_data (which produces histogram counts) — this labels each row.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "bin values", "discretize", "create categories from numbers", or "bucket the data"
+- User wants to convert continuous data to categorical for visualization
+- User asks for "equal-width bins", "quantile bins", or "custom breakpoints"
+- User needs to group numeric values into labeled ranges
+
+Input: CSV data, column, method (equal_width/quantile/custom), bins count or breakpoints.
+Output: CSV with appended _bin column, row_count, bin_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric column to discretize",
+            },
+            column: {
+              type: "string",
+              description: "Numeric column to bin",
+            },
+            method: {
+              type: "string",
+              enum: ["equal_width", "quantile", "custom"],
+              description: "Binning method",
+            },
+            bins: {
+              type: "number",
+              description: "Number of bins (for equal_width and quantile, default: 4)",
+            },
+            breakpoints: {
+              type: "array",
+              items: { type: "number" },
+              description: "Custom breakpoints (for custom method)",
+            },
+          },
+          required: ["csv_content", "column", "method"],
+        },
+      },
     ],
   };
 });
@@ -3689,6 +3765,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_standardize": {
       try {
         const result = flowStandardize(args as unknown as StandardizeInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_ratio_columns": {
+      try {
+        const result = flowRatioColumns(args as unknown as RatioColumnsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_discretize": {
+      try {
+        const result = flowDiscretize(args as unknown as DiscretizeInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6690,7 +6784,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 68, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 70, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

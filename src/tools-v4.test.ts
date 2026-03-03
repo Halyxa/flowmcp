@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -4265,6 +4265,162 @@ describe("flow_standardize", () => {
       csv_content: csv,
       columns: ["x"],
       method: "robust",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 69: flow_ratio_columns
+// ============================================================================
+
+describe("flow_ratio_columns", () => {
+  it("calculates ratio between two columns", () => {
+    const csv = "name,revenue,employees\nA,1000,10\nB,2000,20\nC,3000,15";
+    const result = flowRatioColumns({
+      csv_content: csv,
+      numerator: "revenue",
+      denominator: "employees",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("revenue_per_employees");
+    // A: 1000/10 = 100
+    expect(lines[1]).toContain("100");
+    expect(result.computed_count).toBe(3);
+  });
+
+  it("handles zero denominator", () => {
+    const csv = "a,b\n10,0\n20,5";
+    const result = flowRatioColumns({
+      csv_content: csv,
+      numerator: "a",
+      denominator: "b",
+    });
+    expect(result.zero_denominator_count).toBe(1);
+    const lines = result.csv.trim().split("\n");
+    // Zero denominator should produce empty
+    expect(lines[1]).toMatch(/,$/);
+  });
+
+  it("uses custom output column name", () => {
+    const csv = "a,b\n10,2";
+    const result = flowRatioColumns({
+      csv_content: csv,
+      numerator: "a",
+      denominator: "b",
+      output_column: "ratio_ab",
+    });
+    expect(result.csv).toContain("ratio_ab");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowRatioColumns({
+        csv_content: csv,
+        numerator: "missing",
+        denominator: "b",
+      })
+    ).toThrow();
+  });
+
+  it("handles non-numeric values", () => {
+    const csv = "a,b\n10,5\nabc,3";
+    const result = flowRatioColumns({
+      csv_content: csv,
+      numerator: "a",
+      denominator: "b",
+    });
+    expect(result.computed_count).toBe(1);
+  });
+
+  it("returns summary", () => {
+    const csv = "a,b\n10,2\n20,4";
+    const result = flowRatioColumns({
+      csv_content: csv,
+      numerator: "a",
+      denominator: "b",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 70: flow_discretize
+// ============================================================================
+
+describe("flow_discretize", () => {
+  it("discretizes with equal-width bins", () => {
+    const csv = "x\n0\n25\n50\n75\n100";
+    const result = flowDiscretize({
+      csv_content: csv,
+      column: "x",
+      method: "equal_width",
+      bins: 4,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_bin");
+    expect(result.row_count).toBe(5);
+    expect(result.bin_count).toBe(4);
+  });
+
+  it("discretizes with quantile bins", () => {
+    const csv = "x\n1\n2\n3\n4\n5\n6\n7\n8";
+    const result = flowDiscretize({
+      csv_content: csv,
+      column: "x",
+      method: "quantile",
+      bins: 4,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_bin");
+    // Should create 4 bins with roughly equal count
+    expect(result.bin_count).toBeLessThanOrEqual(4);
+  });
+
+  it("discretizes with custom breakpoints", () => {
+    const csv = "x\n5\n15\n25\n35\n45";
+    const result = flowDiscretize({
+      csv_content: csv,
+      column: "x",
+      method: "custom",
+      breakpoints: [10, 20, 30],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_bin");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() =>
+      flowDiscretize({
+        csv_content: csv,
+        column: "missing",
+        method: "equal_width",
+        bins: 3,
+      })
+    ).toThrow();
+  });
+
+  it("preserves original columns", () => {
+    const csv = "name,score\nAlice,85\nBob,92";
+    const result = flowDiscretize({
+      csv_content: csv,
+      column: "score",
+      method: "equal_width",
+      bins: 2,
+    });
+    expect(result.csv).toContain("name");
+    expect(result.csv).toContain("Alice");
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n1\n2\n3\n4\n5";
+    const result = flowDiscretize({
+      csv_content: csv,
+      column: "x",
+      method: "equal_width",
+      bins: 2,
     });
     expect(result.summary).toBeTruthy();
   });
