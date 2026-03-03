@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowRunningTotal, flowZscore } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, RunningTotalInput, ZscoreInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -5007,6 +5007,146 @@ describe("flow_rank_values", () => {
       csv_content: csv,
       column: "score",
       method: "dense",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// Tool 79: flow_running_total
+// ============================================================================
+describe("flow_running_total", () => {
+  it("computes running total for a column", () => {
+    const csv = "month,revenue\nJan,100\nFeb,200\nMar,150";
+    const result = flowRunningTotal({
+      csv_content: csv,
+      column: "revenue",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const rtIdx = header.indexOf("revenue_running_total");
+    expect(rtIdx).toBeGreaterThanOrEqual(0);
+    expect(lines[1].split(",")[rtIdx]).toBe("100");
+    expect(lines[2].split(",")[rtIdx]).toBe("300");
+    expect(lines[3].split(",")[rtIdx]).toBe("450");
+  });
+
+  it("uses custom output column name", () => {
+    const csv = "a,b\n1,10\n2,20";
+    const result = flowRunningTotal({
+      csv_content: csv,
+      column: "b",
+      output_column: "cumsum",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("cumsum");
+  });
+
+  it("handles non-numeric values gracefully", () => {
+    const csv = "name,value\nA,10\nB,abc\nC,30";
+    const result = flowRunningTotal({
+      csv_content: csv,
+      column: "value",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const rtIdx = header.indexOf("value_running_total");
+    // A=10, B=abc (skip), C=30 → totals: 10, 10, 40
+    expect(lines[1].split(",")[rtIdx]).toBe("10");
+    expect(lines[2].split(",")[rtIdx]).toBe("10");
+    expect(lines[3].split(",")[rtIdx]).toBe("40");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowRunningTotal({
+      csv_content: csv,
+      column: "nonexistent",
+    })).toThrow();
+  });
+
+  it("returns summary with final total", () => {
+    const csv = "a,b\n1,10\n2,20\n3,30";
+    const result = flowRunningTotal({
+      csv_content: csv,
+      column: "b",
+    });
+    expect(result.summary).toContain("60");
+    expect(result.final_total).toBe(60);
+  });
+});
+
+// ============================================================================
+// Tool 80: flow_zscore
+// ============================================================================
+describe("flow_zscore", () => {
+  it("computes z-scores for a column", () => {
+    const csv = "name,value\nA,10\nB,20\nC,30";
+    const result = flowZscore({
+      csv_content: csv,
+      columns: ["value"],
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const zIdx = header.indexOf("value_zscore");
+    expect(zIdx).toBeGreaterThanOrEqual(0);
+    // Mean=20, std≈8.165 → z(10)≈-1.225, z(20)=0, z(30)≈1.225
+    const z1 = Number(lines[1].split(",")[zIdx]);
+    const z2 = Number(lines[2].split(",")[zIdx]);
+    const z3 = Number(lines[3].split(",")[zIdx]);
+    expect(z2).toBeCloseTo(0, 2);
+    expect(z1).toBeCloseTo(-z3, 2);
+    expect(z1).toBeLessThan(0);
+  });
+
+  it("handles multiple columns", () => {
+    const csv = "a,b,c\n1,10,100\n2,20,200\n3,30,300";
+    const result = flowZscore({
+      csv_content: csv,
+      columns: ["b", "c"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("b_zscore");
+    expect(header).toContain("c_zscore");
+  });
+
+  it("handles zero variance (all same values)", () => {
+    const csv = "name,value\nA,5\nB,5\nC,5";
+    const result = flowZscore({
+      csv_content: csv,
+      columns: ["value"],
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const zIdx = header.indexOf("value_zscore");
+    // All same → z-score should be 0
+    expect(lines[1].split(",")[zIdx]).toBe("0");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowZscore({
+      csv_content: csv,
+      columns: ["nonexistent"],
+    })).toThrow();
+  });
+
+  it("preserves other columns", () => {
+    const csv = "name,value,extra\nA,10,x\nB,20,y";
+    const result = flowZscore({
+      csv_content: csv,
+      columns: ["value"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("A");
+    expect(lines[1]).toContain("x");
+  });
+
+  it("returns summary", () => {
+    const csv = "name,value\nA,10\nB,20";
+    const result = flowZscore({
+      csv_content: csv,
+      columns: ["value"],
     });
     expect(result.summary).toBeTruthy();
   });

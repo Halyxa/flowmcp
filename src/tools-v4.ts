@@ -5425,3 +5425,118 @@ export function flowRankValues(input: RankValuesInput): RankValuesResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 79: flow_running_total — CUMULATIVE SUM FOR TIME-SERIES
+// ============================================================================
+
+export interface RunningTotalInput {
+  csv_content: string;
+  column: string;
+  output_column?: string;
+}
+
+export interface RunningTotalResult {
+  csv: string;
+  row_count: number;
+  final_total: number;
+  summary: string;
+}
+
+export function flowRunningTotal(input: RunningTotalInput): RunningTotalResult {
+  const lines = input.csv_content.trim().split("\n");
+  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  const colIdx = headers.indexOf(input.column);
+  if (colIdx < 0) throw new Error(`Column "${input.column}" not found. Available: ${headers.join(", ")}`);
+
+  const outCol = input.output_column || `${input.column}_running_total`;
+
+  let total = 0;
+  const totals: number[] = [];
+  for (const row of rows) {
+    const v = Number(row[colIdx]);
+    if (!isNaN(v)) total += v;
+    totals.push(total);
+  }
+
+  const outHeaders = [...headers, outCol];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((r, i) => [...r.map(v => csvEscapeField(v)), String(totals[i])].join(","));
+
+  const summary = `Running total of "${input.column}": final total = ${total} across ${rows.length} rows.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    final_total: total,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 80: flow_zscore — Z-SCORE STANDARDIZATION
+// ============================================================================
+
+export interface ZscoreInput {
+  csv_content: string;
+  columns: string[];
+}
+
+export interface ZscoreResult {
+  csv: string;
+  row_count: number;
+  summary: string;
+}
+
+export function flowZscore(input: ZscoreInput): ZscoreResult {
+  const lines = input.csv_content.trim().split("\n");
+  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate columns
+  for (const col of input.columns) {
+    if (!headers.includes(col)) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+  }
+
+  // Compute z-scores per column
+  const zScores: Map<string, number[]> = new Map();
+
+  for (const col of input.columns) {
+    const colIdx = headers.indexOf(col);
+    const values = rows.map(r => Number(r[colIdx]));
+    const validValues = values.filter(v => !isNaN(v));
+
+    const mean = validValues.reduce((a, b) => a + b, 0) / validValues.length;
+    const variance = validValues.reduce((a, b) => a + (b - mean) ** 2, 0) / validValues.length;
+    const std = Math.sqrt(variance);
+
+    const zs = values.map(v => {
+      if (isNaN(v) || std === 0) return 0;
+      return Math.round(((v - mean) / std) * 10000) / 10000;
+    });
+
+    zScores.set(col, zs);
+  }
+
+  const outHeaders = [...headers, ...input.columns.map(c => `${c}_zscore`)];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((r, i) => {
+    const base = r.map(v => csvEscapeField(v));
+    const zCols = input.columns.map(c => String(zScores.get(c)![i]));
+    return [...base, ...zCols].join(",");
+  });
+
+  const summary = `Z-scores computed for ${input.columns.length} column(s) across ${rows.length} rows.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    summary,
+  };
+}
