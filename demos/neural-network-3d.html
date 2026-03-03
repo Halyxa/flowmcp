@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Network Architecture — 160 Nodes, 2610 Connections</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #08090d; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e0e0e0; }
+  canvas { display: block; }
+
+  #ui-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 10;
+  }
+  #ui-overlay > * { pointer-events: auto; }
+
+  #header {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 20px 24px;
+    background: linear-gradient(180deg, rgba(8,9,13,0.92) 0%, rgba(8,9,13,0) 100%);
+  }
+  #header h1 {
+    font-size: 20px; font-weight: 600; color: #fff;
+    letter-spacing: -0.3px; margin-bottom: 4px;
+  }
+  #header .subtitle {
+    font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 400;
+  }
+
+  #stats-panel {
+    position: absolute; top: 20px; right: 24px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 14px 18px; min-width: 160px;
+  }
+  #stats-panel .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; padding: 3px 0;
+  }
+  #stats-panel .stat-label { color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+  #stats-panel .stat-value { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #fps-value { color: #4fd1c5; }
+
+  #tooltip {
+    position: absolute; display: none;
+    background: rgba(15,17,25,0.94); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 12px 16px; max-width: 280px;
+    font-size: 12px; line-height: 1.5;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    pointer-events: none; z-index: 100;
+  }
+  .tt-header {
+    font-weight: 600; color: #fff; margin-bottom: 6px;
+    padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .tt-row { display: flex; justify-content: space-between; gap: 16px; padding: 1px 0; }
+  .tt-key { color: rgba(255,255,255,0.45); }
+  .tt-val { color: #e0e0e0; font-weight: 500; text-align: right; }
+  .tt-more { color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 4px; }
+
+  #controls-panel {
+    position: absolute; bottom: 20px; left: 24px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 14px 18px; font-size: 11px; line-height: 1.8;
+  }
+  #controls-panel .ctrl-title {
+    font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 4px; font-size: 10px;
+  }
+  .ctrl-key {
+    display: inline-block; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+    padding: 0 6px; font-size: 10px; font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-right: 6px; color: rgba(255,255,255,0.7);
+  }
+
+  #footer {
+    position: absolute; bottom: 20px; right: 24px;
+    font-size: 10px; color: rgba(255,255,255,0.25);
+    text-align: right;
+  }
+
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #08090d; display: flex; align-items: center; justify-content: center;
+    z-index: 1000; transition: opacity 0.8s ease;
+  }
+  .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .loading-spinner {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #4fd1c5;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="loading-overlay" id="loader"><div class="loading-spinner"></div></div>
+<div id="ui-overlay">
+  <div id="header">
+    <h1>Neural Network Architecture — 160 Nodes, 2610 Connections</h1>
+    <div class="subtitle">160 data points &middot; 7 dimensions</div>
+  </div>
+  <div id="stats-panel">
+    <div class="stat-row"><span class="stat-label">FPS</span><span class="stat-value" id="fps-value">--</span></div>
+    <div class="stat-row"><span class="stat-label">Points</span><span class="stat-value">160</span></div>
+    <div class="stat-row"><span class="stat-label">Columns</span><span class="stat-value">7</span></div>
+    <div class="stat-row"><span class="stat-label">Rotation</span><span class="stat-value" id="rotation-status">ON</span></div>
+  </div>
+  <div id="tooltip"></div>
+  <div id="controls-panel">
+    <div class="ctrl-title">Controls</div>
+    <div><span class="ctrl-key">Drag</span> Rotate view</div>
+    <div><span class="ctrl-key">Scroll</span> Zoom in/out</div>
+    <div><span class="ctrl-key">R</span> Reset camera</div>
+    <div><span class="ctrl-key">Space</span> Toggle auto-rotate</div>
+  </div>
+  <div id="footer">Powered by Three.js &middot; Flow Immersive</div>
+</div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// --- Data parsing ---
+const csvText = "id,x,y,z,group,label,connections by id\n1,-0.1227,0.4452,0.0000,input,sensor,37|25|26|23|36|60|47|51|33|53|43|34|40|52|31|57|27|22|56|48|59|29|50|54|35|21\n2,-0.1380,0.4138,0.0000,input,embedding,43|28|52|42|45|33|44|23|31|27|32|59|37|40\n3,-0.0713,0.4487,0.0000,input,sensor,26|33|29|52|35|25|46|41|51|58|49|31|59|36|24|50\n4,-0.1028,0.4694,0.0000,input,embedding,26|24|36|49|32|56|38|23|59|60|58|35|46|39|43|37|53|30|28\n5,-0.1191,0.4267,0.0000,input,feature,32|28|31|33|21|41|38|22|26|59|34|54|60|35|29|37|52|42|56|44|30|55|51|25|40|39\n6,-0.0900,0.4856,0.0000,input,embedding,26|58|43|22|33|39|37|45|54|59|21|36|35|51\n7,-0.1521,0.3939,0.0000,input,feature,46|29|49|60|43|33|53|39|23|47|37|34|38|52|54|56|27|22\n8,-0.1386,0.4106,0.0000,input,sensor,36|34|30|38|22|28|53|51|37|47|55|45|50|31|52|40\n9,-0.1359,0.3777,0.0000,input,feature,31|54|21|22|29|47|52|30|28|46|36|56|40\n10,-0.1466,0.3947,0.0000,input,feature,49|46|35|28|24|59|52|32|56|34|23|43|57|51|27|60|25\n11,-0.1508,0.3853,0.0000,input,embedding,41|56|32|43|48|52|34|38|59|55|21|44|37|36|49|54\n12,-0.1509,0.3824,0.0000,input,embedding,52|35|24|27|48|59|23|33|60|25|53|34|41|29|32|44|22|46|49|42|39|28|47|55\n13,-0.1145,0.4697,0.0000,input,sensor,33|30|52|21|53|43|38|27|48|24|42|44|46|59|58|22|26\n14,-0.1405,0.3725,0.0000,input,feature,21|30|55|25|34|44|35|50|46|38|40|56|33|36|29|54|57|60|43|28\n15,-0.1085,0.4497,0.0000,input,embedding,45|60|52|35|55|41|24|43|33|42|51|38|29|23|34|36|50|27|31|30|49|40|26|37\n16,-0.1495,0.3648,0.0000,input,feature,40|32|31|55|21|49|25|22|23|54|38|44\n17,-0.1487,0.4001,0.0000,input,embedding,52|49|31|36|23|59|47|24|46|48|22|30|38|37|39|25|33|32|53\n18,-0.1463,0.3967,0.0000,input,sensor,28|44|55|39|50|48|34|43|51|40|52|21|32|54|57|56|30|42|27|38|46|22|58|45|23|24\n19,-0.1159,0.4280,0.0000,input,feature,34|35|25|33|21|60|24|29|47|36|55|22|54|46|23|26|44|57|40|50|51|52|30|41|27\n20,-0.1465,0.3839,0.0000,input,embedding,47|42|33|43|34|57|60|55|21|54|30|25|53|22|35|46|52|36|27|37|50|23|38|58|24|49\n21,-27.5737,-11.8116,0.0000,hidden_1,relu,1|5|6|9|11|13|14|16|18|19|20|105|90|71|62|98|97|75|94|86|68|102|106|77|96|81|63|93|67\n22,27.3582,12.3733,0.0000,hidden_1,tanh,1|5|6|7|8|9|12|13|16|17|18|19|20|64|68|81|75|98|88|96|110|103|80|63|83|86|77|62|67|93|90|106|105|70|74|104|87|84|99|61\n23,-29.7243,5.5533,0.0000,hidden_1,sigmoid,1|2|4|7|10|12|15|16|17|18|19|20|103|97|107|70|99|61|98|76|106|75|74|95|83|65|73|77|62|84|63|72|64|68|104|79|110|78|87\n24,5.8417,-28.9868,0.0000,hidden_1,sigmoid,3|4|10|12|13|15|17|18|19|20|68|67|106|79|66|97|70|100|108|109|95|107|98|84|65|72|78\n25,21.6571,20.9658,0.0000,hidden_1,sigmoid,1|3|5|10|12|14|16|17|19|20|92|85|70|76|97|64|110|109|101|77|83|86|62|82|65|106|95|100|67|96|84|102|88|74|105|90|72|79|69|91|93|63|80\n26,-17.8804,-22.9396,0.0000,hidden_1,relu,1|3|4|5|6|13|15|19|90|105|107|92|66|91|86|103|101|109|89|68|71|104|79|85|94|67|70|100|96|77|73|87|84|80|69|78|110|97|137|116\n27,24.2821,-17.0089,0.0000,hidden_1,tanh,1|2|7|10|12|13|15|18|19|20|85|64|83|62|81|87|106|90|94|105|101|76|66|108|98|110|86|89|97|71|92|104|100|79|65\n28,11.3198,28.1396,0.0000,hidden_1,relu,2|4|5|8|9|10|12|14|18|64|63|83|89|88|62|61|109|103|99|77|70|72|91|95|84|86|66|87|78|108|106|65|85|73|96|102|74|82|69|92|101|107\n29,-4.5241,-29.3207,0.0000,hidden_1,relu,1|3|5|7|9|12|14|15|19|90|102|107|93|62|84|67|86|76|105|77|61|106|64|85|68|75|71|89|74|81|70|104|79|109\n30,19.4225,23.1605,0.0000,hidden_1,relu,4|5|8|9|13|14|15|17|18|19|20|73|77|65|81|93|67|108|80|96|87|64|103|63|69|102|97|75|101|78|107|90|91|72|86\n31,-28.7178,9.4895,0.0000,hidden_1,relu,1|2|3|5|8|9|15|16|17|64|61|106|85|82|102|71|76|92|97|86|107|80|81|96|66\n32,25.0096,-15.9398,0.0000,hidden_1,sigmoid,2|4|5|10|11|12|16|17|18|65|90|92|96|107|106|87|88|98|62|64|72|79|61|105|75|69|68\n33,20.2768,22.3866,0.0000,hidden_1,relu,1|2|3|5|6|7|12|13|14|15|17|19|20|93|61|107|62|99|89|79|87|103|67|85|100|106|109|88|66|108\n34,-26.7418,-13.5188,0.0000,hidden_1,relu,1|5|7|8|10|11|12|14|15|18|19|20|75|77|100|82|78|103|85|104|71|109|70|102|89|99|96|94|87|101|68|63|106|86|65|98|105|64|74\n35,29.5858,-3.6188,0.0000,hidden_1,relu,1|3|4|5|6|10|12|14|15|19|20|98|88|92|110|61|86|95|67|83|102|94|89|101|82|90|107|72|100|80|109|96|65|62|97|68|106|81|87|93|108|77|71\n36,-23.7456,18.8914,0.0000,hidden_1,tanh,1|3|4|6|8|9|11|14|15|17|19|20|107|71|88|102|61|98|84|77|85|66|94|93|101|83|75|87|91|65|72|90|97|80|106|105|103|69|79|104\n37,-4.3719,-29.2649,0.0000,hidden_1,sigmoid,1|2|4|5|6|7|8|11|15|17|20|63|87|73|78|92|107|102|82|109|70|88|90|86|62|94|74|91|98|69|67|99|85|61|108|106|84\n38,23.7921,18.4843,0.0000,hidden_1,tanh,4|5|7|8|11|13|14|15|16|17|18|20|70|76|72|63|106|80|67|62|109|102|88|96|94|104|100|81|66|108|65|75|97|95|73|83|110|107|93|101|61|79\n39,-29.5296,6.4466,0.0000,hidden_1,sigmoid,4|5|6|7|12|17|18|107|105|68|67|98|81|96|72|100|74|85|88|102|89|92|79|70|76|66|104|75|93|69|65|110|82|83|94|109|90\n40,20.2194,-21.6654,0.0000,hidden_1,tanh,1|2|5|8|9|14|15|16|18|19|100|102|89|63|99|105|98|62|83|107|80|78|68|81|67|77|92|87|91|103|96|66|72|97|104\n41,-20.7090,22.2080,0.0000,hidden_1,sigmoid,3|5|11|12|15|19|77|74|81|61|62|63|84|97|101|102|64|99|71|89|78|98|80|108|79|86|65|66|85|106|109|76|92|93|107|105|110\n42,-26.7092,-13.5394,0.0000,hidden_1,tanh,2|5|12|13|15|18|20|97|86|94|78|74|63|88|105|107|71|72|68|102|101|76|106|108|109|64|81|95|65|75|84|73|92|104|110|62|103|69|96|93|80\n43,29.8043,-1.3535,0.0000,hidden_1,tanh,1|2|4|6|7|10|11|13|14|15|18|20|64|66|81|87|69|62|70|76|92|71|77|90|95|94|67|110|68|102|104|106\n44,-30.1470,0.9051,0.0000,hidden_1,sigmoid,2|5|11|12|13|14|16|18|19|86|84|74|79|75|64|77|110|94|95|63|93|62|66|106|71|76|104|102|65|92|97|68|107|78|61|83|91|108|105|103|69|90\n45,0.2596,-29.4671,0.0000,hidden_1,relu,2|6|8|15|18|61|73|65|64|106|107|76|63|96|109|82|110|99|94|101|85|86|100\n46,8.5192,29.1477,0.0000,hidden_1,sigmoid,3|4|7|9|10|12|13|14|17|18|19|20|73|87|70|92|63|72|66|96|78|71|99|90|79|85|62|93|76|102|104|97|106|105|68|65|80|107|86|75|94\n47,-28.8454,-8.3611,0.0000,hidden_1,relu,1|7|8|9|12|17|19|20|62|84|66|107|95|109|67|64|73|61|65|97|110|90|100|78|86|98|63|99|82|80|102|101|106|103|76|93|71|77\n48,26.7005,-12.8616,0.0000,hidden_1,tanh,1|11|12|13|17|18|72|73|80|95|74|94|64|71|96|100|110|90|79|61|98|83|70|63|68|104|85|107|106|76|78|103|66|89|69\n49,-28.4917,10.2960,0.0000,hidden_1,relu,3|4|7|10|11|12|15|16|17|20|68|71|76|61|103|62|104|69|72|105|100|85|110|89|102|99|92|87|73|90|106|95|80|70|97\n50,1.4710,-29.5528,0.0000,hidden_1,sigmoid,1|3|8|14|15|18|19|20|71|63|69|97|70|87|82|84|90|99|103|94|67|72|93\n51,20.4350,22.3257,0.0000,hidden_1,tanh,1|3|5|6|8|10|15|18|19|96|75|65|84|64|70|92|110|107|105|73|91|69|68|89|101|106|104|109\n52,-30.0670,-1.7422,0.0000,hidden_1,sigmoid,1|2|3|5|7|8|9|10|11|12|13|15|17|18|19|20|67|65|108|72|71|105|97|61|93|62|64|79|106|101|69|99|110|77\n53,13.2550,-26.3855,0.0000,hidden_1,sigmoid,1|4|7|8|12|13|17|20|73|110|85|104|89|108|103|105|75|83|61|100|96|109|62|88|78|68|99|64|77|71|102\n54,11.5538,28.0425,0.0000,hidden_1,relu,1|5|6|7|9|11|14|16|18|19|20|104|73|103|69|83|63|80|86|88|87|91|76|68|66|108|67|107|81|95|82|90|62|64|77|106|102|93|84\n55,-27.9033,-11.0413,0.0000,hidden_1,relu,5|8|11|12|14|15|16|18|19|20|63|68|72|71|81|101|90|92|75|61|74|64|82|83|87|62|89|77|104|93|106|84|65|85|105|96|78|102|110|86\n56,29.7710,-1.4167,0.0000,hidden_1,sigmoid,1|4|5|7|9|10|11|14|18|71|92|63|87|82|80|85|100|86|74|93|98|66|64|73|109|78|83|91|72|99|77|76\n57,-30.0659,2.6275,0.0000,hidden_1,sigmoid,1|10|14|18|19|20|108|70|87|103|100|106|63|102|84|67|99|88|61|92|68|62|81|77|97\n58,9.7890,-27.9430,0.0000,hidden_1,tanh,3|4|6|13|18|20|107|75|72|90|91|101|61|88|84|106|67|82|80|70|96|85|98|100|81|62|95|110|78|102|109|63\n59,23.6184,18.7594,0.0000,hidden_1,tanh,1|2|3|4|5|6|10|11|12|13|17|71|94|73|80|91|106|101|110|64|70|105|107|88|67|82|90|78|100|109|68|86|95|98|77|74|79|104|87|75|63|97|66|76\n60,-30.1564,0.1221,0.0000,hidden_1,sigmoid,1|4|5|7|10|12|14|15|19|20|68|61|108|92|100|97|94|110|77|106|62|71|84|102|91|75|79|73|96|69|78|93|67|85|82\n61,-0.1735,0.3780,0.0000,hidden_2,relu,22|23|28|29|31|32|33|35|36|37|38|41|44|45|47|48|49|52|53|55|57|58|60|143|118|133|114|127|113|125|137|148|145|120|134|123|136|147|112|144|128|122|150|139\n62,-0.1808,0.3636,0.0000,hidden_2,relu,21|22|23|25|27|28|29|32|33|35|37|38|40|41|42|43|44|46|47|49|52|53|54|55|57|58|60|118|138|113|145|127|134|116|144|139|114|146|147|125|117\n63,-0.1597,0.3865,0.0000,hidden_2,relu,21|22|23|25|28|30|34|37|38|40|41|42|44|45|46|47|48|50|54|55|56|57|58|59|129|148|133|135|146|147|140|144|112|145|130|125\n64,-0.1631,0.4021,0.0000,hidden_2,relu,22|23|25|27|28|29|30|31|32|34|41|42|43|44|45|47|48|51|52|53|54|55|56|59|134|121|150|128|119|141|111|137|126|135|145|139|124|146|147|148|120|130|138|112|131|113\n65,-0.1766,0.4111,0.0000,hidden_2,dropout,23|24|25|27|28|30|32|34|35|36|38|39|41|42|44|45|46|47|51|52|55|117|112|111|144|120|122|133|135|150|148|119|113|129|123|147|145|134|116|130\n66,-0.1340,0.4104,0.0000,hidden_2,attention,24|26|27|28|31|33|36|38|39|40|41|43|44|46|47|48|54|56|59|134|114|141|118|131|123|148|119|111|145|127|128\n67,-0.1677,0.4145,0.0000,hidden_2,relu,21|22|24|25|26|29|30|33|35|37|38|39|40|43|47|50|52|54|57|58|59|60|115|117|140|148|120|122|139|119|123|142|124|118|137|128|149|132|141|127|125|116|133|144|113\n68,-0.1593,0.4536,0.0000,hidden_2,dropout,21|22|23|24|26|29|32|34|35|39|40|42|43|44|46|48|49|51|53|54|55|57|59|60|146|119|124|134|120|130|137|139|149|141|116|129|115|122|147|123\n69,-0.1646,0.4222,0.0000,hidden_2,dropout,25|26|28|30|32|36|37|39|42|43|44|48|49|50|51|52|54|60|133|146|112|114|127|111|142|115|128|125|119|139|130|132|113|118|137|116|136|121|129|147|117|140\n70,-0.1457,0.4535,0.0000,hidden_2,attention,22|23|24|25|26|28|29|34|37|38|39|43|46|48|49|50|51|57|58|59|131|123|141|111|112|122|119|146|148|142|130|137\n71,-0.1344,0.4105,0.0000,hidden_2,dropout,21|26|27|29|31|34|35|36|41|42|43|44|46|47|48|49|50|52|53|55|56|59|60|111|142|127|138|150|132|112|113|131|139|143|134|148|140|126|121|124|129|114\n72,-0.1931,0.3991,0.0000,hidden_2,dropout,23|24|25|28|30|32|35|36|38|39|40|42|46|48|49|50|52|55|56|58|121|126|114|135|130|137|113|119|125|138|122|142|148|117|150|143|123|129|145|140|127|131|116\n73,-0.5449,3.0303,0.0000,hidden_2,relu,23|26|28|30|37|38|42|45|46|47|48|49|51|53|54|56|59|60|114|142|126|134|127|112|115|131|117|113|135|118|144|128|129|123|145|138|132|148|111|119|122|116|137|130|139|156|158\n74,-0.1891,0.4232,0.0000,hidden_2,dropout,22|23|25|28|29|34|37|39|41|42|44|48|55|56|59|124|113|133|112|120|137|116|143|130|150|142|146|138|111\n75,-0.1659,0.3817,0.0000,hidden_2,dropout,21|22|23|29|30|32|34|36|38|39|42|44|46|51|53|55|58|59|60|120|138|146|119|132|128|142|144|124|130|137|135|111|114|125|123|127|122|139\n76,-0.1493,0.3926,0.0000,hidden_2,relu,23|25|27|29|31|38|39|41|42|43|44|45|46|47|48|49|54|56|59|115|119|129|122|135|130|136|146|144|134|132|111|147|149|141|148|120|124\n77,-0.1305,0.3826,0.0000,hidden_2,dropout,21|22|23|25|26|28|29|30|34|35|36|40|41|43|44|47|52|53|54|55|56|57|59|60|150|138|111|118|114|139|119|129|141|128|148|132|136|127|149\n78,-0.1649,0.4176,0.0000,hidden_2,relu,23|24|26|28|30|34|37|40|41|42|44|46|47|48|53|55|56|58|59|60|136|127|131|124|129|119|113|149|138|133|112|117|116|130|143|125|128|146|118|111|150|126|114|137|121|139|142\n79,-0.1618,0.4308,0.0000,hidden_2,dropout,23|24|25|26|27|29|32|33|36|38|39|41|44|46|48|52|59|60|114|126|136|117|139|143|115|131|137|116|132|128|150|149|140|133|125|120|135|123|129|124|134|122|147\n80,-0.1602,0.4216,0.0000,hidden_2,dropout,22|25|26|30|31|35|36|38|40|41|42|46|47|48|49|54|56|58|59|142|136|146|122|128|126|130|150|129|135|147|144|113|114|117|115|141|123|112|145|116\n81,-0.1807,0.3769,0.0000,hidden_2,dropout,21|22|27|29|30|31|35|38|39|40|41|42|43|54|55|57|58|117|145|147|146|138|137|149|142|116|111|112|129|133|140|132|148|113|115|124|123|114|139|143|118|131|127\n82,-0.1725,0.3824,0.0000,hidden_2,attention,25|28|31|34|35|37|39|45|47|50|54|55|56|58|59|60|118|135|132|123|114|128|141|137|130|125|136|142|111|139|126|115|127|133|140|144|112|122|120|131|121\n83,-0.1919,0.3753,0.0000,hidden_2,relu,22|23|25|27|28|35|36|38|39|40|44|48|53|54|55|56|116|139|114|135|120|146|112|140|136|138|127|141|132|144|129|113|131|137|149|134|115|133|123|124|142|118|111\n84,-0.1654,0.4271,0.0000,hidden_2,relu,22|23|24|25|26|28|29|36|37|41|42|44|47|50|51|54|55|57|58|60|128|111|146|140|133|117|130|114|137|141|115|139|112|144|124|123|143|136|147|145|126|132|118|113|116|122\n85,-0.1733,0.4321,0.0000,hidden_2,dropout,25|26|27|28|29|31|33|34|36|37|39|41|45|46|48|49|53|55|56|58|60|139|143|113|138|112|148|140|146|116|145|126|150|137|111|115|133|134|122|129|121|127|123|131\n86,-0.1826,0.4156,0.0000,hidden_2,attention,21|22|25|26|27|28|29|30|31|34|35|37|41|42|44|45|46|47|54|55|56|59|141|125|139|120|130|111|124|136|112|127|134|126|145|113|129|116|118|123|135|140|115|121|148|133|144|137\n87,-0.1475,0.4360,0.0000,hidden_2,relu,22|23|26|27|28|30|32|33|34|35|36|37|40|43|46|49|50|54|55|56|57|59|111|134|125|129|126|112|148|130|131|116|147|139|143\n88,-0.1673,0.3808,0.0000,hidden_2,attention,22|25|28|32|33|35|36|37|38|39|42|53|54|57|58|59|134|120|112|130|129|114|138|147|149|127|148|135|150|137\n89,-0.1550,0.3957,0.0000,hidden_2,dropout,26|27|28|29|33|34|35|39|40|41|48|49|51|53|55|126|128|144|133|129|115|148|130|139|149|114|120|123|135|118|127|117|138|137\n90,-0.1532,0.4030,0.0000,hidden_2,attention,21|22|25|26|27|29|30|32|35|36|37|39|43|44|46|47|48|49|50|54|55|58|59|118|138|127|146|117|143|114|144|124|140|150|125|128|130|122|142|145|123|129|113|126|137|139\n91,-0.1754,0.4381,0.0000,hidden_2,attention,25|26|28|30|36|37|40|44|51|54|56|58|59|60|117|112|127|124|150|148|123|134|116|126|136|138|137|129|141|144|133|122|125|115|143|128|146|114|131|140|130\n92,-0.1325,0.3964,0.0000,hidden_2,relu,25|26|27|28|31|32|35|37|39|40|41|42|43|44|46|49|51|55|56|57|60|140|120|127|126|148|118|143|138|121|150|125|149|114|113|115|146|129|132|123|145\n93,-0.1625,0.3709,0.0000,hidden_2,relu,21|22|25|29|30|33|35|36|38|39|41|42|44|46|47|50|52|54|55|56|60|136|125|121|112|119|144|142|147|141|126|114|149|134|148|128|118|150|111|137|129|124|123|139|115\n94,-0.1231,0.4340,0.0000,hidden_2,attention,21|26|27|34|35|36|37|38|39|42|43|44|45|46|48|50|59|60|122|114|148|144|126|115|143|113|131|112|118|134|121\n95,-0.1855,0.3774,0.0000,hidden_2,attention,23|24|25|28|35|38|42|43|44|47|48|49|54|58|59|113|131|150|143|118|129|123|148|114|112|115|135|122|121|125|117|145|111|134|127|147|136|116|139|124|126\n96,-0.1267,0.4319,0.0000,hidden_2,relu,21|22|25|26|28|30|31|32|34|35|38|39|40|42|45|46|48|51|53|55|58|60|145|149|122|124|148|138|111|112|117|132|114|121|147\n97,-0.1335,0.3901,0.0000,hidden_2,relu,21|23|24|25|26|27|30|31|35|36|38|40|41|42|44|46|47|49|50|52|57|59|60|117|118|127|129|147|143|149|115|123|114|120|133|136|122|126|113|141\n98,-0.1901,0.3712,0.0000,hidden_2,relu,21|22|23|24|27|32|34|35|36|37|39|40|41|47|48|56|58|59|111|112|140|121|147|145|131|133|128|141|138|142|146|137|118|126|139|116|149|148|136|144|117|113\n99,-0.1500,0.3989,0.0000,hidden_2,attention,22|23|28|33|34|37|40|41|45|46|47|49|50|52|53|56|57|114|118|140|148|143|139|133|117|113|141|129|142|145|136|146|123|120|150|119|130\n100,-0.1610,0.4663,0.0000,hidden_2,relu,24|25|26|27|33|34|35|38|39|40|45|47|48|49|53|56|57|58|59|60|111|122|143|141|138|140|142|119|146|130|137|120|117|148|144|150|115|116\n101,-0.1539,0.4158,0.0000,hidden_2,attention,25|26|27|28|30|34|35|36|38|41|42|45|47|51|52|55|58|59|127|113|120|144|126|118|146|115|111|139|138|116\n102,-0.2468,-0.9137,0.0000,hidden_2,attention,21|25|28|29|30|31|34|35|36|37|38|39|40|41|42|43|44|46|47|49|53|54|55|57|58|60|133|111|147|146|112|113|137|149|140|131|114|115|142|122|134|116|145|117|150|136|126|118|125|141|123|139|152\n103,-0.1189,0.4231,0.0000,hidden_2,attention,22|23|26|28|30|33|34|36|40|42|44|47|48|49|50|53|54|57|117|126|138|149|115|130|147|142|122|148|119|123|139|132|114|111\n104,-0.1683,0.4468,0.0000,hidden_2,relu,22|23|26|27|29|34|36|38|39|40|42|43|44|46|48|49|51|53|54|55|59|114|137|113|128|122|115|117|116|149|148|123|132|127|126|124|121\n105,-0.1423,0.3913,0.0000,hidden_2,relu,21|22|25|26|27|29|32|34|36|39|40|41|42|44|46|49|51|52|53|55|59|122|128|144|113|118|124|142|145|125|150|135|121|117|120|149|112|133|147|139|111|123|148|119|136\n106,-0.1844,0.3911,0.0000,hidden_2,dropout,21|22|23|24|25|27|28|29|31|32|33|34|35|36|37|38|41|42|43|44|45|46|47|48|49|51|52|54|55|57|58|59|60|137|121|113|145|146|134|129|128|144|130|118|112|127|140|139|116|135|111|117|150\n107,-0.1521,0.4223,0.0000,hidden_2,relu,23|24|26|28|29|30|31|32|33|35|36|37|38|39|40|41|42|44|45|46|47|48|51|54|58|59|144|129|140|127|112|138|121|130|132|131|122|133|139|125|134|120|115|147|116|141|114|111\n108,-0.1728,0.4083,0.0000,hidden_2,relu,24|27|28|30|33|35|37|38|41|42|44|52|53|54|57|60|134|127|123|113|145|148|112|129|119|130|122|111|120|142|136|133|137|125|131|114\n109,-0.1403,0.4056,0.0000,hidden_2,attention,24|25|26|28|29|33|34|35|37|38|39|41|42|45|47|51|53|56|58|59|120|114|133|119|113|126|146|135|112|139|115|117|149|127|129|132|144|138|147|143|123|111|145\n110,-0.1441,0.4190,0.0000,hidden_2,attention,22|23|25|26|27|35|38|39|41|42|43|44|45|47|48|49|51|52|53|55|58|59|60|144|141|150|114|148|142|112|125|149|132|135|113|143|128|115|147|111|134|124|131|127|122|121|133|119|130|117\n111,29.7936,1.3695,0.0000,hidden_3,relu,64|65|66|69|70|71|73|74|75|76|77|78|81|82|83|84|85|86|87|93|95|96|98|100|101|102|103|105|106|107|108|109|110|158|154|159|153|152|155\n112,-29.3517,7.4001,0.0000,hidden_3,relu,61|63|64|65|69|70|71|73|74|78|80|81|82|83|84|85|86|87|88|91|93|94|95|96|98|102|105|106|107|108|109|110|157|158|160|151|152\n113,6.3842,-28.8417,0.0000,hidden_3,batch_norm,61|62|64|65|67|69|71|72|73|74|78|80|81|83|84|85|86|90|92|94|95|97|98|99|101|102|104|105|106|108|109|110|158|152|151|155|159|154\n114,19.7469,22.8523,0.0000,hidden_3,batch_norm,61|62|66|69|71|72|73|75|77|78|79|80|81|82|83|84|88|89|90|91|92|93|94|95|96|97|99|102|103|104|107|108|109|110|151|152|160|153|158\n115,-30.1606,1.2256,0.0000,hidden_3,sigmoid,67|68|69|73|76|79|80|81|82|83|84|85|86|89|91|92|93|94|95|97|100|101|102|103|104|107|109|110|151|152|158\n116,26.8140,-11.6256,0.0000,hidden_3,relu,26|62|65|67|68|69|72|73|74|78|79|80|81|83|84|85|86|87|91|95|98|100|101|102|104|106|107|152|151|158|156\n117,-27.3520,13.0675,0.0000,hidden_3,sigmoid,62|65|67|69|72|73|78|79|80|81|84|89|90|91|95|96|97|98|99|100|102|103|104|105|106|109|110|158|160|151\n118,4.9863,-29.3631,0.0000,hidden_3,sigmoid,61|62|66|67|69|73|77|78|81|82|83|84|86|89|90|92|93|94|95|97|98|99|101|102|105|106|152|155|156|160|158|151\n119,15.1635,26.2964,0.0000,hidden_3,batch_norm,64|65|66|67|68|69|70|72|73|75|76|77|78|93|99|100|103|105|108|109|110|157|154|153\n120,-30.1114,2.1580,0.0000,hidden_3,batch_norm,61|64|65|67|68|74|75|76|79|82|83|86|88|89|92|97|99|100|101|105|107|108|109|157|151|159|154|158|152\n121,19.2835,-22.4467,0.0000,hidden_3,batch_norm,64|69|71|72|78|82|85|86|92|93|94|95|96|98|104|105|106|107|110|159|157|153\n122,18.7294,23.8061,0.0000,hidden_3,batch_norm,61|65|67|68|70|72|73|75|76|79|80|82|84|85|90|91|94|95|96|97|100|102|103|104|105|107|108|110|157|154|155|160|152\n123,-29.9343,-3.7828,0.0000,hidden_3,relu,61|65|66|67|68|70|72|73|75|79|80|81|82|83|84|85|86|89|90|91|92|93|95|97|99|102|103|104|105|108|109|156|152|158|160\n124,29.8156,-0.4114,0.0000,hidden_3,relu,64|67|68|71|74|75|76|78|79|81|83|84|86|90|91|93|95|96|104|105|110|151|152|160|154|155|157\n125,13.3664,27.1193,0.0000,hidden_3,relu,61|62|63|67|69|72|75|78|79|82|86|87|90|91|92|93|95|102|105|107|108|110|154|155|153|158|152\n126,6.2315,-28.9395,0.0000,hidden_3,batch_norm,64|71|72|73|78|79|80|82|84|85|86|87|89|90|91|92|93|94|95|97|98|101|102|103|104|109|158|151|153|157\n127,19.6446,22.6059,0.0000,hidden_3,batch_norm,61|62|66|67|69|71|72|73|75|77|78|81|82|83|85|86|88|89|90|91|92|95|97|101|104|106|107|108|109|110|155|154|157|158|156|159\n128,-29.7368,5.6046,0.0000,hidden_3,batch_norm,61|64|66|67|69|73|75|77|78|79|80|82|84|89|90|91|93|98|104|105|106|110|153|157|160|154|159|151\n129,12.0806,-26.9794,0.0000,hidden_3,sigmoid,63|65|68|69|71|72|73|76|77|78|79|80|81|83|85|86|87|88|89|90|91|92|93|95|97|99|106|107|108|109|154|160|158\n130,9.6315,28.8347,0.0000,hidden_3,batch_norm,63|64|65|68|69|70|72|73|74|75|76|78|80|82|84|86|87|88|89|90|91|99|100|103|106|107|108|110|153|152|151|157|158|155\n131,-3.2700,-29.3703,0.0000,hidden_3,batch_norm,64|66|70|71|72|73|78|79|81|82|83|85|87|91|94|95|98|102|107|108|110|158|152|157\n132,26.1653,14.9615,0.0000,hidden_3,batch_norm,67|69|71|73|75|76|77|79|81|82|83|84|92|96|103|104|107|109|110|157|155|160|152\n133,-30.1569,1.6674,0.0000,hidden_3,batch_norm,61|63|65|67|69|74|78|79|81|82|83|84|85|86|89|91|97|98|99|102|105|107|108|109|110|157|156|155|152|160|151\n134,-2.7907,-29.4424,0.0000,hidden_3,relu,61|62|64|65|66|68|71|73|76|79|83|85|86|87|88|91|93|94|95|102|106|107|108|110|152|157|151|154|158|155\n135,13.8786,26.7634,0.0000,hidden_3,relu,63|64|65|72|73|75|76|79|80|82|83|86|88|89|95|105|106|109|110|156|160|154|159|153|152\n136,-30.0754,2.6746,0.0000,hidden_3,relu,61|69|76|77|78|79|80|82|83|84|86|91|93|95|97|98|99|102|105|108|158|153|152\n137,25.1655,-15.1403,0.0000,hidden_3,batch_norm,26|61|64|67|68|69|70|72|73|74|75|78|79|81|82|83|84|85|86|88|89|90|91|93|98|100|102|104|106|108|153|156|159|158|155|152\n138,-15.6875,25.9999,0.0000,hidden_3,relu,62|64|71|72|73|74|75|77|78|81|83|85|88|89|90|91|92|96|98|100|101|103|107|109|157|151|152|156|155|153\n139,5.0824,-29.1806,0.0000,hidden_3,relu,61|62|64|67|68|69|71|73|75|77|78|79|81|82|83|84|85|86|87|89|90|93|95|98|99|101|102|103|105|106|107|109|153|158|154|160\n140,2.7911,30.2939,0.0000,hidden_3,batch_norm,63|67|69|71|72|79|81|82|83|84|85|86|90|91|92|98|99|100|102|106|107|153|152|157\n141,-30.1459,1.5095,0.0000,hidden_3,relu,64|66|67|68|70|76|77|80|82|83|84|86|91|93|97|98|99|100|102|107|110|155|152|151|159|160\n142,24.2451,-17.0760,0.0000,hidden_3,batch_norm,67|69|70|71|72|73|74|75|78|80|81|82|83|90|93|98|99|100|102|103|105|108|110|152|153|158|156|151\n143,14.9864,26.3861,0.0000,hidden_3,batch_norm,61|71|72|74|78|79|81|84|85|87|90|91|92|94|95|97|99|100|109|110|152|159|155|160|153\n144,-29.6934,-5.3769,0.0000,hidden_3,relu,61|62|63|65|67|73|75|76|80|82|83|84|86|89|90|91|93|94|98|100|101|105|106|107|109|110|156|155|153|158|159\n145,28.5962,-7.9137,0.0000,hidden_3,relu,61|62|63|64|65|66|72|73|80|81|84|85|86|90|92|95|96|98|99|102|105|106|108|109|151|156|152|153|158\n146,-28.0446,11.4440,0.0000,hidden_3,relu,62|63|64|68|69|70|74|75|76|78|80|81|83|84|85|90|91|92|98|99|100|101|102|106|109|153|154|155|158|152|159\n147,12.0519,-27.0591,0.0000,hidden_3,sigmoid,61|62|63|64|65|68|69|76|79|80|81|84|87|88|93|95|96|97|98|102|103|105|107|109|110|154|151|159|155\n148,20.0334,22.5698,0.0000,hidden_3,batch_norm,61|63|64|65|66|67|70|71|72|73|76|77|81|85|86|87|88|89|91|92|93|94|95|96|98|99|100|103|104|105|108|110|151|157|160|158\n149,-29.5433,6.2561,0.0000,hidden_3,sigmoid,67|68|76|77|78|79|81|83|88|89|92|93|96|97|98|102|103|104|105|109|110|158|156|155|152\n150,28.0490,-9.8523,0.0000,hidden_3,sigmoid,61|64|65|71|72|74|77|78|79|80|85|88|90|91|92|93|95|99|100|102|105|106|110|154|157|151\n151,-0.1982,0.3732,0.0000,output,linear,112|113|114|115|116|117|118|120|124|126|128|130|133|134|138|141|142|145|147|148|150\n152,-0.2980,3.2002,0.0000,output,softmax,102|111|112|113|114|115|116|118|120|122|123|124|125|130|131|132|133|134|135|136|137|138|140|141|142|143|145|146|149\n153,-0.1969,0.3971,0.0000,output,linear,111|114|119|121|125|126|128|130|135|136|137|138|139|140|142|143|144|145|146\n154,-0.1790,0.3609,0.0000,output,linear,111|113|119|120|122|124|125|127|128|129|134|135|139|146|147|150\n155,-0.1854,0.3755,0.0000,output,softmax,111|113|118|122|124|125|127|130|132|133|134|137|138|141|143|144|146|147|149\n156,-1.7306,-6.3451,0.0000,output,softmax,73|116|118|123|127|133|135|137|138|142|144|145|149\n157,-0.1570,0.3975,0.0000,output,linear,112|119|120|121|122|124|126|127|128|130|131|132|133|134|138|140|148|150\n158,-0.3063,-2.1078,0.0000,output,linear,73|111|112|113|114|115|116|117|118|120|123|125|126|127|129|130|131|134|136|137|139|142|144|145|146|148|149\n159,-0.2341,0.3523,0.0000,output,softmax,111|113|120|121|127|128|135|137|141|143|144|146|147\n160,-0.1524,0.3521,0.0000,output,linear,112|114|117|118|122|123|124|128|129|132|133|135|139|141|143|148";
+const lines = csvText.split("\n");
+const headers = lines[0].split(",");
+const data = [];
+for (let i = 1; i < lines.length; i++) {
+  if (!lines[i].trim()) continue;
+  const vals = lines[i].split(",");
+  const row = {};
+  headers.forEach((h, j) => row[h] = vals[j] || "");
+  data.push(row);
+}
+
+const xCol = "x";
+const yCol = "y";
+const zCol = "z";
+const colorCol = "group";
+const sizeCol = "";
+
+// --- Scene setup ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x08090d);
+scene.fog = new THREE.FogExp2(0x08090d, 0.008);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+// --- Controls ---
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
+controls.minDistance = 5;
+controls.maxDistance = 500;
+
+// --- Parse values ---
+const xVals = data.map(d => parseFloat(d[xCol]) || 0);
+const yVals = data.map(d => parseFloat(d[yCol]) || 0);
+const zVals = data.map(d => parseFloat(d[zCol]) || 0);
+
+function normalize(arr) {
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const range = max - min || 1;
+  return { norm: arr.map(v => ((v - min) / range - 0.5) * 50), min, max, range };
+}
+const { norm: nx } = normalize(xVals);
+const { norm: ny } = normalize(yVals);
+const { norm: nz } = normalize(zVals);
+
+// --- Color: gradient by first numeric column (blue -> teal -> orange) or category ---
+function findFirstNumCol() {
+  for (let c = 0; c < headers.length; c++) {
+    const nums = data.filter(d => { const v = parseFloat(d[headers[c]]); return !isNaN(v) && isFinite(v); });
+    if (nums.length > data.length * 0.5) return headers[c];
+  }
+  return "";
+}
+const gradientCol = colorCol || findFirstNumCol();
+const isGradient = gradientCol && data.some(d => { const v = parseFloat(d[gradientCol]); return !isNaN(v) && isFinite(v); });
+
+let gradientVals = [];
+let gradientMin = 0, gradientMax = 1;
+if (isGradient) {
+  gradientVals = data.map(d => parseFloat(d[gradientCol]) || 0);
+  gradientMin = Math.min(...gradientVals);
+  gradientMax = Math.max(...gradientVals);
+}
+
+function gradientColor(t) {
+  // Cool blue (0.0) -> teal (0.3) -> warm orange (0.7) -> hot red-orange (1.0)
+  const c = new THREE.Color();
+  if (t < 0.33) {
+    c.setHSL(0.58 - t * 0.3, 0.85, 0.45 + t * 0.15);
+  } else if (t < 0.66) {
+    const u = (t - 0.33) / 0.33;
+    c.setHSL(0.48 - u * 0.35, 0.9, 0.5 + u * 0.1);
+  } else {
+    const u = (t - 0.66) / 0.34;
+    c.setHSL(0.08 - u * 0.03, 0.95, 0.55 + u * 0.05);
+  }
+  return c;
+}
+
+// Category palette fallback
+const catPalette = [0x4fc3f7, 0xef5350, 0xffca28, 0x66bb6a, 0xff7043, 0x4dd0e1, 0xab47bc, 0xec407a, 0x8d6e63, 0x78909c];
+const categories = gradientCol ? [...new Set(data.map(d => d[gradientCol] || "default"))] : ["default"];
+const catColors = {};
+categories.forEach((c, i) => catColors[c] = catPalette[i % catPalette.length]);
+
+// --- Size based on data values ---
+let sizeVals = [];
+let sizeMin = 0, sizeMax = 1;
+const basePtSize = 0.35;
+const maxPtSize = 1.2;
+if (sizeCol) {
+  sizeVals = data.map(d => parseFloat(d[sizeCol]) || 0);
+  sizeMin = Math.min(...sizeVals);
+  sizeMax = Math.max(...sizeVals);
+}
+
+function getPointSize(i) {
+  if (sizeCol && sizeVals.length > i) {
+    const t = sizeMax > sizeMin ? (sizeVals[i] - sizeMin) / (sizeMax - sizeMin) : 0.5;
+    return basePtSize + t * (maxPtSize - basePtSize);
+  }
+  return basePtSize;
+}
+
+// --- Create instanced mesh ---
+const geo = new THREE.SphereGeometry(1, 12, 8);
+const mat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 });
+const mesh = new THREE.InstancedMesh(geo, mat, data.length);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+const positions = [];
+const dummy = new THREE.Object3D();
+const color = new THREE.Color();
+
+for (let i = 0; i < data.length; i++) {
+  const sz = getPointSize(i);
+  dummy.position.set(nx[i], ny[i], nz[i]);
+  dummy.scale.set(sz, sz, sz);
+  dummy.updateMatrix();
+  mesh.setMatrixAt(i, dummy.matrix);
+  positions.push(new THREE.Vector3(nx[i], ny[i], nz[i]));
+
+  if (isGradient) {
+    const range = gradientMax - gradientMin || 1;
+    const t = (gradientVals[i] - gradientMin) / range;
+    const gc = gradientColor(t);
+    mesh.setColorAt(i, gc);
+  } else {
+    const cat = data[i][gradientCol] || "default";
+    color.setHex(catColors[cat]);
+    mesh.setColorAt(i, color);
+  }
+}
+scene.add(mesh);
+
+// --- Grid helper (subtle) ---
+const gridHelper = new THREE.GridHelper(80, 40, 0x1a1d2e, 0x12141f);
+gridHelper.position.y = -26;
+scene.add(gridHelper);
+
+// --- Lights ---
+const ambientLight = new THREE.AmbientLight(0x8090b0, 0.6);
+scene.add(ambientLight);
+
+const dirLight1 = new THREE.DirectionalLight(0xffeedd, 1.4);
+dirLight1.position.set(50, 80, 50);
+scene.add(dirLight1);
+
+const dirLight2 = new THREE.DirectionalLight(0x4488ff, 0.4);
+dirLight2.position.set(-30, -20, -50);
+scene.add(dirLight2);
+
+const pointLight = new THREE.PointLight(0x4fd1c5, 0.6, 200);
+pointLight.position.set(0, 40, 0);
+scene.add(pointLight);
+
+// --- Camera: smooth intro ---
+const targetCamPos = new THREE.Vector3(60, 45, 60);
+camera.position.set(120, 90, 120);
+camera.lookAt(0, 0, 0);
+
+// --- Raycasting for hover tooltip (safe DOM construction, no innerHTML) ---
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltipEl = document.getElementById('tooltip');
+let hoveredIdx = -1;
+
+function buildTooltipContent(idx) {
+  while (tooltipEl.firstChild) tooltipEl.removeChild(tooltipEl.firstChild);
+  const d = data[idx];
+  const hdr = document.createElement('div');
+  hdr.className = 'tt-header';
+  hdr.textContent = 'Point ' + (idx + 1);
+  tooltipEl.appendChild(hdr);
+  let count = 0;
+  for (const h of headers) {
+    if (count >= 8) {
+      const more = document.createElement('div');
+      more.className = 'tt-more';
+      more.textContent = '+' + (headers.length - 8) + ' more';
+      tooltipEl.appendChild(more);
+      break;
+    }
+    const row = document.createElement('div');
+    row.className = 'tt-row';
+    const key = document.createElement('span');
+    key.className = 'tt-key';
+    key.textContent = h;
+    const val = document.createElement('span');
+    val.className = 'tt-val';
+    val.textContent = d[h] || '--';
+    row.appendChild(key);
+    row.appendChild(val);
+    tooltipEl.appendChild(row);
+    count++;
+  }
+}
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hit = raycaster.intersectObject(mesh);
+
+  if (hit.length > 0 && hit[0].instanceId !== undefined) {
+    const idx = hit[0].instanceId;
+    if (idx !== hoveredIdx) {
+      hoveredIdx = idx;
+      buildTooltipContent(idx);
+    }
+    tooltipEl.style.display = 'block';
+    const tx = e.clientX + 16;
+    const ty = e.clientY - 10;
+    tooltipEl.style.left = Math.min(tx, window.innerWidth - 300) + 'px';
+    tooltipEl.style.top = Math.min(ty, window.innerHeight - 200) + 'px';
+  } else {
+    hoveredIdx = -1;
+    tooltipEl.style.display = 'none';
+  }
+});
+
+renderer.domElement.addEventListener('mouseleave', () => {
+  hoveredIdx = -1;
+  tooltipEl.style.display = 'none';
+});
+
+// --- Keyboard shortcuts ---
+const rotationLabel = document.getElementById('rotation-status');
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    controls.autoRotate = !controls.autoRotate;
+    rotationLabel.textContent = controls.autoRotate ? 'ON' : 'OFF';
+  }
+  if (e.code === 'KeyR') {
+    // Smooth reset
+    resetTarget.copy(targetCamPos);
+    resetProgress = 0;
+    isResetting = true;
+  }
+});
+
+let resetTarget = new THREE.Vector3();
+let resetProgress = 0;
+let isResetting = false;
+
+// --- FPS counter ---
+let frameCount = 0;
+let lastFpsTime = performance.now();
+const fpsEl = document.getElementById('fps-value');
+
+// --- Resize ---
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- Intro animation ---
+let introProgress = 0;
+const startCamPos = camera.position.clone();
+
+// --- Loading done ---
+requestAnimationFrame(() => {
+  const loader = document.getElementById('loader');
+  loader.classList.add('fade-out');
+  setTimeout(() => loader.remove(), 800);
+});
+
+// --- Animate ---
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Smooth camera intro
+  if (introProgress < 1) {
+    introProgress = Math.min(1, introProgress + 0.008);
+    const t = 1 - Math.pow(1 - introProgress, 3); // ease-out cubic
+    camera.position.lerpVectors(startCamPos, targetCamPos, t);
+  }
+
+  // Smooth reset
+  if (isResetting) {
+    resetProgress = Math.min(1, resetProgress + 0.02);
+    const t = 1 - Math.pow(1 - resetProgress, 3);
+    camera.position.lerpVectors(camera.position, resetTarget, t);
+    controls.target.lerp(new THREE.Vector3(0, 0, 0), t);
+    if (resetProgress >= 1) isResetting = false;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+
+  // FPS
+  frameCount++;
+  const now = performance.now();
+  if (now - lastFpsTime >= 500) {
+    const fps = Math.round(frameCount / ((now - lastFpsTime) / 1000));
+    fpsEl.textContent = fps;
+    frameCount = 0;
+    lastFpsTime = now;
+  }
+}
+animate();
+</script>
+</body>
+</html>

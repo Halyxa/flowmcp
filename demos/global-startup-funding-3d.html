@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Startup Funding — 420 Companies Across 30 Countries</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #08090d; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e0e0e0; }
+  canvas { display: block; }
+
+  #ui-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 10;
+  }
+  #ui-overlay > * { pointer-events: auto; }
+
+  #header {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 20px 24px;
+    background: linear-gradient(180deg, rgba(8,9,13,0.92) 0%, rgba(8,9,13,0) 100%);
+  }
+  #header h1 {
+    font-size: 20px; font-weight: 600; color: #fff;
+    letter-spacing: -0.3px; margin-bottom: 4px;
+  }
+  #header .subtitle {
+    font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 400;
+  }
+
+  #stats-panel {
+    position: absolute; top: 20px; right: 24px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 14px 18px; min-width: 160px;
+  }
+  #stats-panel .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; padding: 3px 0;
+  }
+  #stats-panel .stat-label { color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+  #stats-panel .stat-value { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #fps-value { color: #4fd1c5; }
+
+  #tooltip {
+    position: absolute; display: none;
+    background: rgba(15,17,25,0.94); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 12px 16px; max-width: 280px;
+    font-size: 12px; line-height: 1.5;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    pointer-events: none; z-index: 100;
+  }
+  .tt-header {
+    font-weight: 600; color: #fff; margin-bottom: 6px;
+    padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .tt-row { display: flex; justify-content: space-between; gap: 16px; padding: 1px 0; }
+  .tt-key { color: rgba(255,255,255,0.45); }
+  .tt-val { color: #e0e0e0; font-weight: 500; text-align: right; }
+  .tt-more { color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 4px; }
+
+  #controls-panel {
+    position: absolute; bottom: 20px; left: 24px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 14px 18px; font-size: 11px; line-height: 1.8;
+  }
+  #controls-panel .ctrl-title {
+    font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 4px; font-size: 10px;
+  }
+  .ctrl-key {
+    display: inline-block; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+    padding: 0 6px; font-size: 10px; font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-right: 6px; color: rgba(255,255,255,0.7);
+  }
+
+  #footer {
+    position: absolute; bottom: 20px; right: 24px;
+    font-size: 10px; color: rgba(255,255,255,0.25);
+    text-align: right;
+  }
+
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #08090d; display: flex; align-items: center; justify-content: center;
+    z-index: 1000; transition: opacity 0.8s ease;
+  }
+  .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .loading-spinner {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #4fd1c5;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="loading-overlay" id="loader"><div class="loading-spinner"></div></div>
+<div id="ui-overlay">
+  <div id="header">
+    <h1>Global Startup Funding — 420 Companies Across 30 Countries</h1>
+    <div class="subtitle">420 data points &middot; 10 dimensions</div>
+  </div>
+  <div id="stats-panel">
+    <div class="stat-row"><span class="stat-label">FPS</span><span class="stat-value" id="fps-value">--</span></div>
+    <div class="stat-row"><span class="stat-label">Points</span><span class="stat-value">420</span></div>
+    <div class="stat-row"><span class="stat-label">Columns</span><span class="stat-value">10</span></div>
+    <div class="stat-row"><span class="stat-label">Rotation</span><span class="stat-value" id="rotation-status">ON</span></div>
+  </div>
+  <div id="tooltip"></div>
+  <div id="controls-panel">
+    <div class="ctrl-title">Controls</div>
+    <div><span class="ctrl-key">Drag</span> Rotate view</div>
+    <div><span class="ctrl-key">Scroll</span> Zoom in/out</div>
+    <div><span class="ctrl-key">R</span> Reset camera</div>
+    <div><span class="ctrl-key">Space</span> Toggle auto-rotate</div>
+  </div>
+  <div id="footer">Powered by Three.js &middot; Flow Immersive</div>
+</div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// --- Data parsing ---
+const csvText = "city,country,company_name,sector,funding_round,amount_usd,employees,year,latitude,longitude\nShenzhen,China,ZenoFinance,Climate,Pre-Seed,800000,5,2023,22.5436,114.0724\nTel Aviv,Israel,PulseSecurity,Space,Series C,57800000,465,2020,32.2052,34.7288\nCape Town,South Africa,VertexAnalytics,SaaS,Series C,68200000,216,2020,-33.8963,18.3972\nSan Francisco,United States,VectorCloud,AI,Series C,185500000,405,2022,37.6974,-122.4509\nDubai,UAE,LumenHealth,AI,Series D,201300000,1508,2021,25.2526,55.2212\nSydney,Australia,CipherGenomics,SaaS,Series A,26900000,113,2022,-33.8760,151.3534\nSeattle,United States,VoxSystems,Climate,Seed,1500000,20,2022,47.6142,-122.3071\nSeoul,South Korea,StratosAnalytics,Space,Pre-Seed,1000000,4,2025,37.5050,127.0575\nBangalore,India,StratosData,SaaS,Pre-Seed,1800000,15,2024,12.8493,77.7044\nBerlin,Germany,CortexAnalytics,Climate,Series B,75600000,106,2025,52.5082,13.4086\nCape Town,South Africa,HelixEnergy,Fintech,Series A,12400000,77,2024,-33.7930,18.3141\nSingapore,Singapore,FluxSystems,SaaS,Series A,15500000,63,2023,1.2646,103.8662\nLondon,United Kingdom,NexusData,Biotech,Series A,12100000,58,2023,51.5096,-0.2614\nHo Chi Minh City,Vietnam,CipherSecurity,Biotech,Series D,237000000,2420,2020,10.9724,106.5319\nToronto,Canada,ForgeBio,AI,Series A,25500000,99,2025,43.5238,-79.4372\nSydney,Australia,AxionTech,SaaS,Series B,17500000,102,2022,-33.8064,151.2377\nTokyo,Japan,PrismSystems,Climate,Series B,39500000,343,2024,35.6406,139.7204\nBeijing,China,SynthCloud,SaaS,Seed,4700000,17,2025,39.8497,116.5242\nNew York,United States,CipherTech,Fintech,Series C,175500000,763,2021,40.7087,-74.0998\nSeoul,South Korea,SynthFinance,SaaS,Pre-Seed,1200000,6,2020,37.6175,126.8507\nBeijing,China,PulseHealth,Robotics,Series D,98600000,2956,2021,39.9659,116.4483\nLagos,Nigeria,AstroNetworks,SaaS,Series D,123900000,2408,2021,6.6649,3.4351\nStockholm,Sweden,SynthSecurity,Fintech,Pre-Seed,600000,4,2024,59.3930,18.0376\nTokyo,Japan,CipherHealth,Biotech,Seed,5800000,40,2020,35.6730,139.5536\nLondon,United Kingdom,QuantumHealth,Fintech,Pre-Seed,700000,11,2020,51.5764,-0.0365\nParis,France,AstroCloud,Fintech,Series A,12700000,87,2021,48.7887,2.3260\nCape Town,South Africa,AetherGenomics,AI,Seed,1100000,9,2021,-33.8647,18.5136\nSao Paulo,Brazil,LumenAI,Climate,Series C,145800000,865,2024,-23.4634,-46.6767\nNew York,United States,MacroWorks,Space,Series A,25000000,65,2024,40.8002,-73.9117\nSingapore,Singapore,ForgeTech,Fintech,Series A,18900000,111,2021,1.2520,103.7012\nSeoul,South Korea,LumenNetworks,AI,Pre-Seed,1100000,6,2023,37.5761,126.9797\nBoston,United States,TeraLabs,Biotech,Series A,16500000,80,2025,42.4053,-71.1510\nDubai,UAE,CortexLogic,Biotech,Seed,6100000,34,2022,25.1759,55.3464\nSingapore,Singapore,SiloNetworks,Climate,Series D,376200000,1461,2021,1.4976,103.9081\nBerlin,Germany,QuantumLogic,Climate,Series C,86200000,306,2021,52.5286,13.5010\nBeijing,China,VertexRobotics,Robotics,Seed,7400000,33,2020,39.9605,116.5121\nDubai,UAE,DeepFinance,AI,Seed,4900000,18,2025,25.0642,55.3146\nBoston,United States,AstroHealth,Biotech,Series D,278000000,4009,2022,42.4722,-70.9630\nSeattle,United States,PulseAnalytics,AI,Series D,252600000,749,2023,47.6712,-122.2945\nCape Town,South Africa,StratosSpace,Robotics,Series B,56600000,98,2023,-33.9202,18.4378\nSydney,Australia,AxionSpace,AI,Series C,82900000,543,2024,-33.9538,151.1266\nCape Town,South Africa,TeraAI,AI,Series A,20400000,52,2020,-33.9511,18.3950\nNew York,United States,GridGenomics,SaaS,Series B,51000000,243,2024,40.5816,-74.0238\nShanghai,China,AstroDynamics,Climate,Series D,226500000,2022,2025,31.1087,121.4218\nSeoul,South Korea,CortexDynamics,SaaS,Series A,8000000,38,2021,37.6550,126.8384\nNairobi,Kenya,CortexFinance,Fintech,Seed,6100000,22,2023,-1.1916,36.8424\nShanghai,China,VectorFinance,SaaS,Series A,8400000,99,2023,31.3752,121.3487\nLondon,United Kingdom,SiloVentures,Space,Series B,25800000,135,2020,51.4398,-0.2559\nShanghai,China,AstroSecurity,Fintech,Pre-Seed,1600000,11,2025,31.3315,121.5193\nParis,France,SiloRobotics,Biotech,Series C,189600000,657,2020,48.9487,2.2983\nHelsinki,Finland,ZenoRobotics,Space,Series D,337700000,3793,2022,60.2114,24.9832\nTokyo,Japan,NovaData,Climate,Series B,44300000,333,2024,35.6441,139.6629\nShenzhen,China,OrbitEnergy,Robotics,Series A,16000000,92,2024,22.5847,114.0660\nStockholm,Sweden,FluxLogic,Biotech,Series B,49000000,340,2021,59.3234,18.1747\nTallinn,Estonia,AxionLabs,Space,Series B,68200000,234,2023,59.5232,24.8850\nSeoul,South Korea,PulseTech,Robotics,Pre-Seed,1900000,13,2024,37.6490,126.8919\nSan Francisco,United States,FluxSpace,AI,Series B,72500000,134,2020,37.7264,-122.2780\nCape Town,South Africa,CryoWorks,Biotech,Series D,161200000,2509,2021,-33.9127,18.3454\nSeattle,United States,AetherLabs,Fintech,Series B,58300000,172,2025,47.7438,-122.2983\nToronto,Canada,HaloRobotics,SaaS,Series D,161400000,1658,2020,43.6295,-79.4149\nSan Francisco,United States,SynthLogic,AI,Series B,47400000,113,2021,37.7614,-122.3471\nShenzhen,China,NeoAI,Climate,Pre-Seed,1200000,5,2025,22.4993,114.0156\nZurich,Switzerland,LumenWorks,Space,Series B,23000000,300,2024,47.2276,8.4261\nLagos,Nigeria,QuantumAI,Fintech,Series A,24400000,89,2021,6.5210,3.5219\nSeoul,South Korea,ForgeEnergy,SaaS,Series C,119700000,850,2021,37.4509,126.9861\nBangalore,India,StratosWorks,Biotech,Seed,4800000,29,2025,13.0050,77.5013\nLagos,Nigeria,ForgeAnalytics,Robotics,Series C,148100000,916,2020,6.4852,3.3550\nSydney,Australia,AxionRobotics,SaaS,Series D,432300000,1324,2023,-33.9632,151.2484\nLondon,United Kingdom,NovaWorks,Climate,Series C,130200000,1061,2025,51.6013,-0.0471\nMiami,United States,FluxRobotics,AI,Series A,10100000,59,2022,25.7412,-80.0546\nTokyo,Japan,HelixGenomics,Robotics,Series B,46500000,152,2023,35.8206,139.5019\nCape Town,South Africa,DeepGenomics,Fintech,Series C,75000000,1114,2024,-33.9830,18.5625\nShanghai,China,ForgeData,Fintech,Series A,16300000,99,2022,31.0912,121.4979\nDublin,Ireland,ZenoWorks,Fintech,Series D,443900000,760,2025,53.3144,-6.1174\nNew York,United States,NexusAnalytics,Robotics,Series B,56600000,304,2025,40.6135,-73.9063\nLagos,Nigeria,FluxAnalytics,Robotics,Series C,170400000,1134,2020,6.6316,3.2670\nSeoul,South Korea,PrismDynamics,Biotech,Series A,5800000,76,2022,37.6015,126.9634\nHo Chi Minh City,Vietnam,CortexVentures,AI,Series C,199100000,280,2024,10.9572,106.7627\nAustin,United States,SiloLabs,SaaS,Series D,257200000,3567,2020,30.3122,-97.8684\nSingapore,Singapore,AxionVentures,Robotics,Seed,6600000,32,2020,1.4138,103.8555\nTel Aviv,Israel,CortexSpace,SaaS,Series B,43900000,273,2024,32.0962,34.6498\nCape Town,South Africa,IonicAI,AI,Pre-Seed,700000,13,2025,-33.9772,18.3168\nBoston,United States,ZenoEnergy,Fintech,Pre-Seed,1400000,15,2025,42.2871,-71.0642\nShanghai,China,OrbitSpace,AI,Series B,70500000,300,2023,31.1874,121.3438\nSeoul,South Korea,NeoAnalytics,AI,Seed,2500000,15,2020,37.5764,127.1086\nTokyo,Japan,VoxDynamics,Space,Series A,18800000,79,2022,35.6783,139.7336\nTel Aviv,Israel,AetherData,Space,Series A,15800000,37,2024,32.0561,34.7710\nAustin,United States,GridHealth,Robotics,Series C,173700000,1044,2021,30.2729,-97.7899\nDubai,UAE,AxionGenomics,SaaS,Series B,63500000,139,2023,25.1918,55.1366\nSeoul,South Korea,HelixLabs,AI,Series C,101400000,634,2022,37.6224,127.0067\nLagos,Nigeria,LumenVentures,Robotics,Series C,151700000,1066,2024,6.4178,3.2734\nLondon,United Kingdom,GridSystems,Robotics,Series A,20800000,70,2024,51.5652,-0.0025\nSan Francisco,United States,IonicRobotics,Robotics,Series C,178700000,587,2021,37.8960,-122.4057\nAustin,United States,HelixWorks,Robotics,Series B,15800000,290,2025,30.1220,-97.8022\nCape Town,South Africa,VertexLogic,Biotech,Series C,187000000,652,2021,-33.7844,18.2857\nSydney,Australia,GridAI,Robotics,Series B,50900000,98,2022,-33.8579,151.2709\nSeoul,South Korea,LumenSystems,AI,Pre-Seed,900000,11,2020,37.4651,126.9827\nTokyo,Japan,CryoGenomics,AI,Series D,450800000,4883,2021,35.8197,139.5389\nTallinn,Estonia,TeraEnergy,Climate,Series A,20600000,66,2025,59.4915,24.6478\nBeijing,China,SiloLogic,AI,Series A,7000000,86,2021,39.8791,116.4425\nShenzhen,China,IonicAnalytics,Robotics,Series D,320400000,3162,2025,22.5823,114.0053\nShenzhen,China,HelixTech,AI,Series B,73300000,184,2020,22.6325,113.9107\nNairobi,Kenya,SynthTech,Climate,Seed,7100000,14,2021,-1.1993,36.7416\nTokyo,Japan,VertexGenomics,AI,Series A,23100000,64,2020,35.6943,139.5982\nTokyo,Japan,DeepVentures,SaaS,Series B,48200000,198,2022,35.5489,139.6626\nLondon,United Kingdom,GridVentures,Space,Series D,201500000,1319,2020,51.5129,-0.0744\nLondon,United Kingdom,DeepCloud,Robotics,Seed,3700000,33,2020,51.6501,-0.1780\nTokyo,Japan,PulseData,Space,Seed,5200000,8,2025,35.6289,139.7498\nLondon,United Kingdom,NexusSecurity,Climate,Series B,38900000,239,2022,51.4666,-0.2022\nSan Francisco,United States,NovaAI,Space,Seed,5400000,22,2024,37.8937,-122.3390\nSingapore,Singapore,HelixDynamics,Climate,Series A,12600000,50,2021,1.2189,103.8592\nBerlin,Germany,IonicSecurity,Fintech,Series C,48900000,1015,2024,52.4832,13.3519\nSeoul,South Korea,VectorVentures,Space,Seed,1900000,28,2020,37.6292,127.0938\nLos Angeles,United States,NexusLabs,Robotics,Series C,191000000,1087,2023,33.9620,-118.3773\nTallinn,Estonia,ZenoBio,Space,Series D,169500000,4485,2024,59.5321,24.7247\nNew York,United States,CryoCloud,Biotech,Series B,40300000,251,2020,40.5800,-74.1290\nSeattle,United States,AstroWorks,Space,Series D,272000000,3327,2023,47.5909,-122.2121\nBoston,United States,NovaSecurity,SaaS,Pre-Seed,500000,7,2025,42.2663,-70.9797\nBangalore,India,AetherEnergy,Fintech,Series C,84400000,675,2025,13.0286,77.6602\nSan Francisco,United States,IonicBio,Climate,Series A,22400000,116,2021,37.7700,-122.4637\nNew York,United States,NovaLabs,Climate,Pre-Seed,1000000,7,2025,40.8195,-73.8664\nLos Angeles,United States,ZenoHealth,Fintech,Pre-Seed,1100000,12,2021,33.9789,-118.2961\nLondon,United Kingdom,ForgeLogic,Climate,Pre-Seed,1900000,12,2025,51.3624,-0.2256\nSingapore,Singapore,ZenoSecurity,AI,Series A,23900000,44,2021,1.4767,103.7758\nLondon,United Kingdom,CipherAI,Robotics,Pre-Seed,1000000,7,2023,51.3830,-0.2008\nBoston,United States,SynthSpace,AI,Seed,6900000,18,2023,42.3823,-71.0906\nSingapore,Singapore,FluxNetworks,Biotech,Series D,229300000,1200,2023,1.3674,103.9054\nSeoul,South Korea,ForgeRobotics,Space,Series D,339500000,862,2025,37.4609,127.0238\nBerlin,Germany,SiloHealth,Robotics,Series D,375700000,654,2021,52.6020,13.2741\nSydney,Australia,NovaRobotics,AI,Seed,5700000,14,2021,-33.9806,151.1282\nDublin,Ireland,AxionNetworks,Fintech,Series C,60900000,722,2022,53.3896,-6.2436\nNew York,United States,StratosGenomics,Climate,Series A,8500000,79,2023,40.7235,-73.8661\nShenzhen,China,MacroLabs,SaaS,Series A,24400000,49,2023,22.6800,114.0515\nSeoul,South Korea,FluxData,Fintech,Pre-Seed,1000000,8,2025,37.4337,126.9070\nSeattle,United States,SynthRobotics,Space,Seed,3100000,36,2024,47.5720,-122.4788\nLos Angeles,United States,LumenData,Robotics,Series B,68400000,123,2024,34.1593,-118.1698\nBerlin,Germany,SynthBio,Space,Series A,15900000,32,2021,52.5550,13.4022\nNew York,United States,SiloSecurity,Fintech,Pre-Seed,1400000,11,2024,40.5951,-73.9814\nSeoul,South Korea,MacroHealth,AI,Seed,3000000,23,2024,37.6086,126.9127\nBangalore,India,AetherHealth,Space,Pre-Seed,1600000,6,2022,13.0394,77.7395\nSao Paulo,Brazil,IonicWorks,Fintech,Series B,64700000,205,2025,-23.5677,-46.7305\nAmsterdam,Netherlands,NovaAnalytics,Climate,Series D,470400000,1985,2021,52.2742,4.7630\nTokyo,Japan,NexusAI,Biotech,Seed,7300000,39,2021,35.8126,139.7607\nBoston,United States,DeepDynamics,Fintech,Series B,46900000,350,2022,42.2602,-71.1311\nNew York,United States,LumenRobotics,Biotech,Series A,10700000,47,2021,40.7095,-74.0429\nNew York,United States,NeoLabs,Climate,Series B,60300000,207,2025,40.7194,-74.1381\nBeijing,China,SynthNetworks,Fintech,Series C,103800000,1172,2021,39.8683,116.4800\nBoston,United States,AetherLogic,Fintech,Pre-Seed,600000,7,2025,42.4094,-71.0225\nBoston,United States,ForgeAI,Robotics,Series D,157700000,915,2024,42.4995,-71.1827\nTallinn,Estonia,MacroNetworks,Biotech,Series D,250400000,4473,2024,59.2950,24.6596\nNew York,United States,CryoSystems,Space,Seed,7400000,31,2025,40.8020,-73.9601\nMiami,United States,HaloFinance,Fintech,Series A,6800000,115,2020,25.7118,-80.1731\nBangalore,India,ForgeWorks,Robotics,Seed,3800000,23,2021,13.0647,77.4994\nTokyo,Japan,SiloDynamics,SaaS,Series A,27100000,88,2024,35.6659,139.6929\nStockholm,Sweden,MacroFinance,Biotech,Seed,5400000,35,2025,59.2110,18.1735\nZurich,Switzerland,SynthData,Climate,Seed,2800000,17,2020,47.4386,8.4000\nNew York,United States,NeoDynamics,Fintech,Series A,20100000,34,2023,40.6864,-74.0059\nDubai,UAE,ZenoData,SaaS,Seed,6000000,25,2025,25.2227,55.2794\nSydney,Australia,AetherVentures,AI,Seed,5400000,35,2025,-33.8900,151.3041\nBeijing,China,MacroSpace,Space,Series C,157200000,411,2022,39.9681,116.5150\nSan Francisco,United States,ZenoTech,Fintech,Series D,108400000,1356,2024,37.6629,-122.2857\nJakarta,Indonesia,GridLogic,Fintech,Series C,126900000,1119,2023,-6.3241,106.7048\nAmsterdam,Netherlands,AxionWorks,SaaS,Series A,26500000,98,2024,52.2544,4.9776\nShenzhen,China,FluxCloud,Fintech,Series D,165300000,2413,2020,22.6303,114.1724\nNew York,United States,NovaNetworks,Space,Series A,12900000,32,2021,40.7367,-74.0383\nJakarta,Indonesia,FluxWorks,Fintech,Seed,5300000,19,2023,-6.3157,106.9542\nNew York,United States,CipherDynamics,Climate,Pre-Seed,500000,3,2023,40.7613,-73.9852\nDublin,Ireland,CryoSecurity,Space,Series B,30400000,124,2025,53.3422,-6.3028\nSan Francisco,United States,NeoHealth,Climate,Pre-Seed,1300000,13,2021,37.6588,-122.4238\nSeoul,South Korea,NexusLogic,Biotech,Series B,46000000,281,2025,37.6139,127.0511\nStockholm,Sweden,LumenEnergy,Fintech,Seed,4500000,18,2024,59.2892,18.2155\nLos Angeles,United States,QuantumTech,Biotech,Pre-Seed,2000000,5,2021,34.0659,-118.2878\nSan Francisco,United States,VectorDynamics,SaaS,Series D,490900000,2729,2023,37.8597,-122.2785\nLagos,Nigeria,NeoTech,Climate,Series C,186500000,876,2025,6.3757,3.4837\nSingapore,Singapore,AetherBio,Climate,Series D,101400000,3176,2021,1.3310,103.8744\nSan Francisco,United States,IonicSystems,Biotech,Series C,169000000,820,2025,37.7316,-122.4963\nSydney,Australia,VoxSecurity,SaaS,Series C,97400000,349,2024,-33.9360,151.1807\nSingapore,Singapore,CortexWorks,SaaS,Seed,3300000,15,2025,1.3651,103.8360\nSingapore,Singapore,VertexDynamics,AI,Pre-Seed,1500000,13,2020,1.4781,103.7527\nNew York,United States,AetherFinance,AI,Series D,332600000,592,2023,40.6650,-74.0325\nParis,France,VectorSpace,Climate,Series A,5300000,104,2023,48.9721,2.2363\nBerlin,Germany,NovaCloud,Robotics,Series D,141700000,1467,2020,52.6218,13.3380\nSan Francisco,United States,ZenoAnalytics,Fintech,Series D,191100000,4682,2021,37.8446,-122.3306\nZurich,Switzerland,PrismEnergy,AI,Seed,1900000,32,2024,47.4912,8.4424\nBangalore,India,PrismNetworks,Biotech,Pre-Seed,1800000,13,2025,12.8922,77.6773\nNew York,United States,NovaHealth,Robotics,Series C,98900000,388,2021,40.8263,-74.0653\nSeattle,United States,GridAnalytics,Fintech,Seed,7900000,32,2024,47.6766,-122.4360\nSingapore,Singapore,ZenoAI,SaaS,Series A,29900000,46,2023,1.3111,103.8436\nSingapore,Singapore,StratosHealth,SaaS,Seed,6300000,18,2021,1.4083,103.7566\nShenzhen,China,TeraSpace,Biotech,Series C,123800000,327,2025,22.6098,114.1451\nToronto,Canada,HelixLogic,SaaS,Pre-Seed,1900000,6,2022,43.6006,-79.2677\nNew York,United States,OrbitRobotics,SaaS,Pre-Seed,600000,8,2024,40.5707,-74.0423\nTel Aviv,Israel,CryoData,Robotics,Series C,125600000,841,2024,32.1943,34.7718\nTel Aviv,Israel,CipherBio,AI,Series C,44700000,628,2020,32.0005,34.7677\nLondon,United Kingdom,CortexLabs,Fintech,Series B,48700000,86,2020,51.5986,-0.0586\nBeijing,China,HaloAnalytics,Fintech,Pre-Seed,1900000,6,2024,39.8202,116.4008\nSingapore,Singapore,VoxGenomics,Space,Pre-Seed,800000,10,2025,1.4748,103.9341\nBeijing,China,AetherAI,Fintech,Series C,79800000,213,2024,39.9083,116.5313\nZurich,Switzerland,FluxTech,Climate,Series B,52600000,228,2023,47.5078,8.4238\nMumbai,India,IonicEnergy,Fintech,Series C,53200000,1112,2024,19.0685,72.7342\nNew York,United States,CortexData,Fintech,Series A,19500000,88,2021,40.8373,-73.8568\nMiami,United States,AstroRobotics,Fintech,Pre-Seed,900000,13,2025,25.6428,-80.2628\nStockholm,Sweden,NovaVentures,SaaS,Pre-Seed,1000000,15,2021,59.3195,18.0686\nShanghai,China,VoxData,Climate,Series D,301500000,801,2022,31.2774,121.4269\nNew York,United States,IonicData,Fintech,Series A,14400000,41,2025,40.8428,-74.1218\nDublin,Ireland,AstroData,SaaS,Series A,25200000,87,2025,53.3357,-6.2497\nBerlin,Germany,PrismHealth,AI,Series A,10400000,40,2025,52.6014,13.4665\nShanghai,China,NexusSpace,AI,Series B,57600000,119,2022,31.2089,121.6117\nDubai,UAE,CipherVentures,SaaS,Series A,10700000,39,2023,25.2949,55.2973\nDubai,UAE,CipherWorks,AI,Pre-Seed,1800000,5,2024,25.3439,55.1294\nMiami,United States,VoxWorks,Climate,Series A,9700000,73,2020,25.9054,-80.1732\nBangalore,India,IonicCloud,Space,Series C,104600000,433,2024,13.0840,77.6604\nBoston,United States,MacroVentures,AI,Seed,3700000,11,2023,42.4891,-71.1865\nSao Paulo,Brazil,FluxAI,Climate,Series C,97300000,698,2022,-23.6333,-46.5223\nNew York,United States,GridCloud,AI,Series C,69700000,681,2025,40.6357,-74.1021\nToronto,Canada,QuantumRobotics,Fintech,Seed,4400000,25,2020,43.7558,-79.4793\nShanghai,China,NexusNetworks,Fintech,Seed,5900000,37,2020,31.3801,121.3341\nLondon,United Kingdom,AstroAnalytics,Fintech,Series C,124700000,775,2022,51.5547,-0.2484\nDubai,UAE,NeoFinance,Climate,Seed,2100000,40,2025,25.2987,55.3201\nLagos,Nigeria,GridBio,Fintech,Pre-Seed,1400000,7,2020,6.4576,3.2731\nSan Francisco,United States,NeoData,Climate,Seed,3700000,23,2023,37.8723,-122.5203\nTel Aviv,Israel,CipherCloud,Fintech,Pre-Seed,600000,4,2022,32.1365,34.9211\nNairobi,Kenya,VertexBio,AI,Series D,202900000,974,2021,-1.2925,36.9640\nSao Paulo,Brazil,AetherTech,Fintech,Series A,18100000,42,2023,-23.4018,-46.7624\nSan Francisco,United States,AstroFinance,Robotics,Series D,175300000,571,2024,37.7982,-122.2852\nLondon,United Kingdom,OrbitFinance,Space,Series C,136200000,1152,2021,51.3753,-0.0991\nLondon,United Kingdom,CipherSpace,Biotech,Series A,16500000,46,2025,51.4328,-0.0634\nTokyo,Japan,VectorNetworks,Biotech,Series D,243300000,2428,2021,35.7666,139.5652\nSao Paulo,Brazil,NexusSystems,SaaS,Pre-Seed,1300000,10,2022,-23.6720,-46.5551\nSingapore,Singapore,VoxNetworks,SaaS,Series A,11300000,40,2025,1.4688,103.9681\nBeijing,China,VectorSystems,Fintech,Seed,7800000,35,2025,39.9467,116.3450\nBoston,United States,HelixFinance,Robotics,Series A,10300000,45,2023,42.2502,-70.9713\nSeoul,South Korea,CryoFinance,Climate,Pre-Seed,1000000,11,2022,37.4439,126.9873\nSan Francisco,United States,QuantumVentures,Biotech,Series A,10500000,91,2020,37.9128,-122.3334\nSan Francisco,United States,CortexNetworks,AI,Pre-Seed,1100000,9,2020,37.8917,-122.3167\nNew York,United States,AxionLogic,AI,Series C,43600000,843,2022,40.8176,-74.0797\nStockholm,Sweden,VertexNetworks,Fintech,Series C,149300000,243,2022,59.4447,18.0809\nSan Francisco,United States,ForgeSystems,Fintech,Seed,1100000,36,2023,37.8061,-122.3953\nSydney,Australia,QuantumSecurity,Biotech,Series D,237100000,2711,2023,-33.9866,151.1612\nSeattle,United States,NexusRobotics,Fintech,Pre-Seed,2000000,11,2020,47.5958,-122.4401\nSingapore,Singapore,VertexHealth,Space,Seed,6400000,30,2020,1.2330,103.7506\nSan Francisco,United States,VectorBio,Biotech,Series C,52200000,444,2025,37.6270,-122.4251\nTel Aviv,Israel,TeraFinance,Robotics,Seed,1200000,16,2025,32.1160,34.6793\nSan Francisco,United States,SynthHealth,SaaS,Series A,15600000,81,2025,37.9013,-122.3816\nSeoul,South Korea,PrismTech,Biotech,Seed,3200000,15,2023,37.5921,126.8605\nSingapore,Singapore,FluxVentures,Space,Series A,21500000,105,2021,1.4836,103.8298\nNew York,United States,DeepRobotics,Space,Series B,16700000,148,2024,40.8538,-74.0122\nMiami,United States,ZenoLogic,SaaS,Series B,23800000,153,2024,25.8662,-80.2556\nTel Aviv,Israel,PulseCloud,Biotech,Series C,45300000,989,2022,32.1198,34.8552\nSao Paulo,Brazil,CortexTech,Fintech,Series B,45900000,243,2023,-23.6467,-46.5926\nNairobi,Kenya,HaloVentures,Space,Series C,197600000,364,2025,-1.4194,36.8225\nStockholm,Sweden,GridData,AI,Series C,136000000,629,2023,59.4474,17.9277\nStockholm,Sweden,CortexBio,Robotics,Seed,6700000,26,2021,59.2629,18.1439\nBangalore,India,PrismLabs,Climate,Pre-Seed,1200000,7,2025,13.0168,77.5360\nBangalore,India,VertexLabs,Robotics,Series C,172900000,995,2021,13.0488,77.6071\nTel Aviv,Israel,PulseBio,Climate,Series C,155200000,377,2025,31.9383,34.8949\nAustin,United States,VectorHealth,Climate,Series D,324500000,1716,2022,30.1576,-97.7801\nBangalore,India,ZenoDynamics,Robotics,Seed,4100000,13,2025,13.0015,77.6668\nDublin,Ireland,PrismFinance,Climate,Pre-Seed,2000000,10,2023,53.2253,-6.3157\nLondon,United Kingdom,CortexCloud,Climate,Series B,24900000,176,2025,51.3996,-0.1833\nTel Aviv,Israel,SiloWorks,Biotech,Series C,179100000,259,2020,31.9446,34.8985\nShanghai,China,LumenFinance,Fintech,Series C,59200000,776,2023,31.3242,121.3251\nJakarta,Indonesia,HaloTech,Biotech,Pre-Seed,2000000,4,2022,-6.1588,106.8714\nSingapore,Singapore,CortexRobotics,SaaS,Seed,2700000,27,2025,1.3300,103.7126\nBerlin,Germany,NeoSystems,Space,Seed,1300000,32,2024,52.6375,13.4279\nBangalore,India,FluxGenomics,AI,Pre-Seed,700000,13,2025,12.8585,77.6570\nTel Aviv,Israel,PulseGenomics,Biotech,Series C,65000000,1026,2021,31.9993,34.9317\nMumbai,India,CryoLogic,Biotech,Series C,155700000,416,2025,19.0624,72.9026\nTel Aviv,Israel,SynthWorks,Climate,Series D,244400000,4215,2021,31.9934,34.7888\nTel Aviv,Israel,AxionDynamics,Biotech,Pre-Seed,1500000,6,2021,32.1461,34.8552\nLagos,Nigeria,NexusTech,AI,Series A,23500000,35,2022,6.4941,3.2643\nSeoul,South Korea,SiloTech,Biotech,Pre-Seed,1000000,11,2024,37.5692,127.0369\nChicago,United States,PulseDynamics,Climate,Seed,3100000,20,2021,41.9074,-87.6928\nBeijing,China,GridDynamics,Robotics,Pre-Seed,1900000,14,2021,40.0259,116.3909\nSeoul,South Korea,VoxLogic,Climate,Series C,122900000,418,2023,37.5782,127.0023\nNew York,United States,SiloSpace,Space,Series D,434500000,2473,2024,40.6005,-74.0315\nChicago,United States,QuantumNetworks,Fintech,Pre-Seed,1800000,5,2022,41.8778,-87.5396\nChicago,United States,CipherRobotics,AI,Seed,3100000,28,2025,41.7499,-87.7570\nHelsinki,Finland,DeepNetworks,Space,Series D,393200000,2282,2024,60.0327,25.0569\nTel Aviv,Israel,GridTech,AI,Pre-Seed,700000,11,2021,32.1778,34.8690\nCape Town,South Africa,SynthLabs,AI,Seed,5300000,9,2023,-33.8982,18.2937\nSeoul,South Korea,AxionBio,Space,Pre-Seed,1000000,14,2024,37.5280,126.9023\nShanghai,China,PrismRobotics,Climate,Series A,22500000,68,2022,31.3637,121.4919\nNew York,United States,CryoDynamics,Fintech,Series C,89600000,570,2020,40.6914,-74.1483\nShanghai,China,StratosBio,Fintech,Series B,69500000,337,2024,31.1919,121.5124\nShanghai,China,HaloGenomics,Robotics,Series B,50800000,178,2020,31.1214,121.5362\nSan Francisco,United States,NovaFinance,AI,Series A,29600000,103,2021,37.8472,-122.3629\nSeoul,South Korea,TeraTech,Space,Series A,26300000,54,2021,37.5056,127.0046\nSan Francisco,United States,NexusEnergy,Fintech,Series C,121300000,249,2024,37.7042,-122.4025\nMumbai,India,OrbitSystems,Climate,Series C,41400000,770,2024,19.0880,72.8598\nJakarta,Indonesia,NeoSecurity,Robotics,Series C,144300000,1015,2020,-6.2885,106.9381\nSan Francisco,United States,OrbitGenomics,AI,Series A,22000000,104,2020,37.6645,-122.3847\nAustin,United States,QuantumWorks,Space,Pre-Seed,1000000,8,2021,30.2088,-97.7603\nTokyo,Japan,PulseSpace,Fintech,Series B,77000000,107,2021,35.7038,139.6349\nHo Chi Minh City,Vietnam,PulseWorks,Fintech,Series A,23600000,80,2020,10.8385,106.6460\nHo Chi Minh City,Vietnam,DeepSpace,Biotech,Pre-Seed,800000,4,2022,10.7644,106.5896\nLondon,United Kingdom,NeoGenomics,SaaS,Seed,5900000,40,2024,51.5558,-0.2189\nSan Francisco,United States,TeraRobotics,Climate,Series C,46800000,730,2022,37.6418,-122.4043\nZurich,Switzerland,MacroSecurity,Robotics,Series B,60400000,266,2023,47.4858,8.4009\nTokyo,Japan,AstroLabs,Robotics,Series D,100400000,2330,2023,35.7362,139.7193\nMiami,United States,PrismData,Fintech,Pre-Seed,1800000,8,2020,25.7087,-80.1969\nMiami,United States,IonicTech,Space,Series D,488000000,1299,2021,25.9113,-80.2207\nTel Aviv,Israel,VectorLogic,Fintech,Series C,95700000,1195,2023,32.0113,34.7279\nCape Town,South Africa,QuantumEnergy,Climate,Pre-Seed,1900000,15,2021,-33.8511,18.2896\nShanghai,China,LumenGenomics,Climate,Series C,189300000,952,2021,31.3539,121.5063\nToronto,Canada,ForgeDynamics,SaaS,Series D,173200000,1400,2024,43.7404,-79.4520\nDubai,UAE,PrismVentures,Fintech,Series C,86800000,800,2022,25.0902,55.1419\nNew York,United States,OrbitHealth,Climate,Series C,52500000,674,2020,40.7165,-74.0984\nBangalore,India,PulseSystems,Space,Series A,10400000,42,2024,13.0593,77.7392\nTokyo,Japan,TeraData,Climate,Seed,3700000,22,2021,35.7452,139.6582\nTokyo,Japan,AetherNetworks,Robotics,Pre-Seed,1200000,15,2024,35.6302,139.5948\nBeijing,China,DeepData,Fintech,Pre-Seed,1100000,7,2024,39.9934,116.2596\nMumbai,India,VoxEnergy,Biotech,Pre-Seed,1300000,10,2024,19.2043,72.9547\nNew York,United States,HaloLabs,SaaS,Series C,111100000,903,2023,40.6290,-74.1140\nBangalore,India,AxionAI,SaaS,Series A,24200000,114,2020,13.1088,77.4667\nShanghai,China,GridLabs,Climate,Series C,98300000,839,2020,31.2033,121.5686\nShenzhen,China,NeoEnergy,Fintech,Series B,18100000,229,2022,22.4503,113.9091\nSan Francisco,United States,VertexEnergy,Fintech,Pre-Seed,1100000,10,2024,37.8182,-122.3754\nBoston,United States,PrismBio,Space,Series B,34500000,130,2020,42.2320,-71.1847\nBeijing,China,OrbitNetworks,Robotics,Seed,5700000,9,2024,39.8145,116.3579\nSan Francisco,United States,HelixSpace,Robotics,Series B,50300000,310,2021,37.8831,-122.4452\nDublin,Ireland,ZenoNetworks,Robotics,Series C,110600000,917,2024,53.3570,-6.3634\nSan Francisco,United States,DeepAI,Fintech,Pre-Seed,600000,3,2020,37.6803,-122.4056\nMiami,United States,AxionAnalytics,Robotics,Series C,113100000,572,2022,25.8750,-80.0743\nSan Francisco,United States,HelixRobotics,Biotech,Series C,161200000,318,2024,37.7630,-122.3537\nLondon,United Kingdom,OrbitCloud,Space,Pre-Seed,1700000,7,2023,51.5200,-0.2225\nParis,France,OrbitSecurity,Fintech,Seed,7000000,13,2022,48.9540,2.4474\nSeattle,United States,VectorAI,SaaS,Pre-Seed,1800000,9,2024,47.6391,-122.4282\nToronto,Canada,IonicLogic,Space,Pre-Seed,500000,14,2020,43.6825,-79.3924\nMumbai,India,TeraLogic,Fintech,Series A,23100000,91,2022,19.1404,72.9239\nStockholm,Sweden,CipherFinance,Robotics,Series A,21800000,120,2025,59.3200,18.1221\nParis,France,GridRobotics,Space,Series B,71900000,198,2021,48.9243,2.4995\nLondon,United Kingdom,QuantumDynamics,SaaS,Series C,76700000,1101,2020,51.5873,-0.0085\nSan Francisco,United States,FluxFinance,Climate,Series A,14900000,53,2024,37.6983,-122.5085\nSeoul,South Korea,ForgeSecurity,Biotech,Series C,114600000,708,2023,37.4291,126.9071\nBoston,United States,SynthAnalytics,AI,Series A,17100000,96,2020,42.4823,-71.1405\nLondon,United Kingdom,ZenoSpace,Biotech,Series D,140800000,3384,2025,51.5251,-0.0132\nMumbai,India,FluxHealth,AI,Series A,8300000,56,2025,19.0863,72.9091\nNew York,United States,VectorSecurity,Space,Series A,18300000,85,2020,40.7439,-73.8833\nSeoul,South Korea,DeepEnergy,Biotech,Series B,62000000,348,2023,37.5888,127.0205\nTokyo,Japan,ZenoSystems,Robotics,Series C,47800000,752,2025,35.8240,139.5523\nNew York,United States,StratosRobotics,Fintech,Seed,5800000,33,2024,40.8081,-74.1275\nShanghai,China,HaloDynamics,SaaS,Series C,52900000,1031,2021,31.2967,121.3418\nAustin,United States,NexusHealth,Robotics,Seed,4800000,9,2023,30.2338,-97.6145\nShanghai,China,OrbitLabs,AI,Series A,20200000,84,2022,31.1281,121.4462\nBoston,United States,CryoVentures,Climate,Series C,134200000,657,2023,42.5008,-70.9789\nNairobi,Kenya,ZenoGenomics,SaaS,Series B,42200000,210,2020,-1.1813,36.7411\nAustin,United States,TeraCloud,Biotech,Seed,7900000,36,2022,30.1846,-97.8549\nShanghai,China,HaloCloud,Climate,Series D,284000000,1085,2022,31.1538,121.5890\nSingapore,Singapore,VertexWorks,Biotech,Series B,65900000,296,2020,1.4022,103.8132\nHo Chi Minh City,Vietnam,SiloBio,Biotech,Pre-Seed,1400000,3,2025,10.8769,106.7117\nShanghai,China,FluxEnergy,Fintech,Series B,33100000,126,2021,31.3280,121.6072\nShanghai,China,GridSpace,AI,Series D,447000000,1120,2020,31.0955,121.4154\nAustin,United States,SiloFinance,Robotics,Series B,32300000,245,2022,30.2619,-97.6664\nNew York,United States,SynthDynamics,SaaS,Pre-Seed,500000,13,2024,40.6753,-74.0136\nHo Chi Minh City,Vietnam,LumenTech,Climate,Series B,36100000,151,2024,10.8105,106.4952\nSan Francisco,United States,IonicLabs,Space,Series A,7000000,48,2025,37.8638,-122.2939\nNew York,United States,IonicDynamics,Robotics,Series B,72100000,166,2025,40.7545,-73.9475\nTallinn,Estonia,PulseEnergy,AI,Series C,165200000,817,2024,59.5326,24.8243\nHo Chi Minh City,Vietnam,ForgeNetworks,AI,Series B,75700000,147,2025,10.8774,106.6746\nNew York,United States,NovaGenomics,AI,Series D,149300000,2442,2025,40.8571,-74.1116\nBoston,United States,AxionHealth,Biotech,Series D,443500000,3933,2024,42.3793,-71.0903\nBerlin,Germany,NovaLogic,Fintech,Series B,61400000,136,2023,52.4699,13.5383\nBeijing,China,SynthVentures,Space,Series D,464600000,2248,2025,40.0316,116.5473\nBangalore,India,HaloHealth,Climate,Series C,98300000,887,2021,12.8689,77.5619\nSingapore,Singapore,VoxTech,Fintech,Series C,168500000,791,2025,1.4485,103.6732\nLos Angeles,United States,AetherCloud,Robotics,Series C,178600000,1149,2023,34.1817,-118.3590\nTokyo,Japan,CryoSpace,AI,Pre-Seed,700000,6,2024,35.8246,139.6085\nSan Francisco,United States,PrismSpace,Space,Series B,49500000,258,2021,37.6649,-122.5098\nSydney,Australia,CipherLogic,Fintech,Series A,17500000,90,2020,-33.8531,151.1592\nNew York,United States,MacroAnalytics,Fintech,Series D,157500000,2862,2024,40.7128,-73.8893\nCape Town,South Africa,HaloLogic,Fintech,Seed,2500000,23,2022,-33.8939,18.4318\nShenzhen,China,AstroSpace,SaaS,Series C,170200000,1176,2021,22.6302,113.9509\nChicago,United States,ForgeGenomics,Biotech,Series C,191100000,577,2022,41.8983,-87.5985\nNew York,United States,NexusWorks,Robotics,Pre-Seed,2000000,12,2024,40.5867,-74.1058\nZurich,Switzerland,CryoNetworks,Robotics,Series C,115600000,859,2025,47.3478,8.4722\nJakarta,Indonesia,OrbitBio,Fintech,Pre-Seed,1100000,14,2021,-6.3103,106.7147\nTel Aviv,Israel,LumenAnalytics,Fintech,Series B,43300000,153,2021,32.0674,34.7357\nBoston,United States,NexusGenomics,Fintech,Series D,184400000,3580,2021,42.3202,-71.1106\nLondon,United Kingdom,AetherSpace,AI,Pre-Seed,700000,12,2023,51.5189,-0.1892\nBoston,United States,DeepWorks,Robotics,Series A,18700000,77,2022,42.2391,-70.9754\nStockholm,Sweden,QuantumData,AI,Series D,464300000,3614,2025,59.4247,18.0432\nNew York,United States,SynthEnergy,AI,Series A,13900000,75,2024,40.7692,-74.1395\nLondon,United Kingdom,PulseRobotics,Biotech,Series A,8400000,65,2024,51.4155,-0.2724\nDublin,Ireland,HelixBio,SaaS,Series A,11600000,34,2023,53.4212,-6.3150\nLondon,United Kingdom,AxionSystems,Biotech,Pre-Seed,1700000,9,2020,51.4244,-0.2433\nMiami,United States,CryoTech,Space,Pre-Seed,500000,6,2025,25.7320,-80.1707\nLondon,United Kingdom,HaloSystems,Biotech,Pre-Seed,1400000,5,2022,51.4600,-0.1967\nTel Aviv,Israel,LumenBio,Space,Series C,184400000,545,2022,32.0776,34.8944\nJakarta,Indonesia,NeoCloud,Space,Series C,153600000,778,2023,-6.2921,106.7910\nDublin,Ireland,SiloCloud,Climate,Series D,430800000,911,2020,53.4079,-6.1270\nShanghai,China,StratosLogic,Biotech,Pre-Seed,1300000,8,2022,31.1213,121.3676\nZurich,Switzerland,VectorWorks,Climate,Series C,55800000,920,2024,47.2640,8.3918\nBeijing,China,StratosNetworks,Space,Seed,6900000,27,2022,39.9635,116.2691\nSingapore,Singapore,PrismWorks,Climate,Series D,498000000,4280,2022,1.2745,103.7988\nSan Francisco,United States,NeoNetworks,Climate,Series A,27100000,71,2022,37.6655,-122.4917\nMiami,United States,IonicFinance,AI,Series B,30300000,253,2022,25.9006,-80.2700\nShanghai,China,CortexSystems,SaaS,Seed,2900000,40,2021,31.1224,121.4737\nLondon,United Kingdom,HelixAI,AI,Pre-Seed,800000,6,2021,51.4112,-0.0200\nShanghai,China,HaloData,Climate,Seed,3100000,8,2021,31.1967,121.3782\nBeijing,China,VoxVentures,Biotech,Series C,136200000,1010,2022,39.9161,116.4490\nZurich,Switzerland,QuantumAnalytics,Fintech,Series B,28300000,310,2022,47.3276,8.5656\nShanghai,China,StratosCloud,SaaS,Series C,196100000,1132,2021,31.2274,121.5805\nShenzhen,China,CortexEnergy,Biotech,Seed,5500000,24,2025,22.6593,114.1108\nSeoul,South Korea,MacroSystems,Space,Series D,214600000,4575,2020,37.4359,126.9912\nSan Francisco,United States,VoxAnalytics,SaaS,Series B,22900000,227,2025,37.6969,-122.4829\nSan Francisco,United States,CortexSecurity,Robotics,Series D,187000000,1017,2024,37.7525,-122.5216\nNew York,United States,SynthGenomics,Biotech,Series D,431900000,2838,2020,40.7538,-74.0157\nShanghai,China,AxionFinance,SaaS,Series C,92900000,238,2020,31.3596,121.5002\nZurich,Switzerland,NeoWorks,AI,Series B,66600000,228,2025,47.3930,8.4471\nZurich,Switzerland,OrbitDynamics,Fintech,Seed,6400000,21,2021,47.3986,8.6112\nStockholm,Sweden,ForgeFinance,AI,Series C,179400000,232,2020,59.4354,17.9755\nSao Paulo,Brazil,GridEnergy,Fintech,Series B,53100000,103,2022,-23.6301,-46.5669\nSydney,Australia,VertexAI,AI,Series D,448900000,3521,2025,-33.8369,151.1805\nTel Aviv,Israel,NeoSpace,Biotech,Series C,165300000,659,2023,32.0477,34.8402\nBoston,United States,NexusCloud,SaaS,Series A,8000000,119,2020,42.4094,-71.1773\nNew York,United States,ForgeSpace,Biotech,Series A,25300000,30,2020,40.5824,-74.0176\nLagos,Nigeria,LumenDynamics,Climate,Seed,6900000,34,2021,6.6285,3.5147\nNew York,United States,NovaSystems,SaaS,Series D,235500000,1080,2022,40.5722,-73.8791\nLagos,Nigeria,NovaSpace,Space,Pre-Seed,1300000,5,2024,6.4787,3.5172";
+const lines = csvText.split("\n");
+const headers = lines[0].split(",");
+const data = [];
+for (let i = 1; i < lines.length; i++) {
+  if (!lines[i].trim()) continue;
+  const vals = lines[i].split(",");
+  const row = {};
+  headers.forEach((h, j) => row[h] = vals[j] || "");
+  data.push(row);
+}
+
+const xCol = "amount_usd";
+const yCol = "employees";
+const zCol = "year";
+const colorCol = "";
+const sizeCol = "";
+
+// --- Scene setup ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x08090d);
+scene.fog = new THREE.FogExp2(0x08090d, 0.008);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+// --- Controls ---
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
+controls.minDistance = 5;
+controls.maxDistance = 500;
+
+// --- Parse values ---
+const xVals = data.map(d => parseFloat(d[xCol]) || 0);
+const yVals = data.map(d => parseFloat(d[yCol]) || 0);
+const zVals = data.map(d => parseFloat(d[zCol]) || 0);
+
+function normalize(arr) {
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const range = max - min || 1;
+  return { norm: arr.map(v => ((v - min) / range - 0.5) * 50), min, max, range };
+}
+const { norm: nx } = normalize(xVals);
+const { norm: ny } = normalize(yVals);
+const { norm: nz } = normalize(zVals);
+
+// --- Color: gradient by first numeric column (blue -> teal -> orange) or category ---
+function findFirstNumCol() {
+  for (let c = 0; c < headers.length; c++) {
+    const nums = data.filter(d => { const v = parseFloat(d[headers[c]]); return !isNaN(v) && isFinite(v); });
+    if (nums.length > data.length * 0.5) return headers[c];
+  }
+  return "";
+}
+const gradientCol = colorCol || findFirstNumCol();
+const isGradient = gradientCol && data.some(d => { const v = parseFloat(d[gradientCol]); return !isNaN(v) && isFinite(v); });
+
+let gradientVals = [];
+let gradientMin = 0, gradientMax = 1;
+if (isGradient) {
+  gradientVals = data.map(d => parseFloat(d[gradientCol]) || 0);
+  gradientMin = Math.min(...gradientVals);
+  gradientMax = Math.max(...gradientVals);
+}
+
+function gradientColor(t) {
+  // Cool blue (0.0) -> teal (0.3) -> warm orange (0.7) -> hot red-orange (1.0)
+  const c = new THREE.Color();
+  if (t < 0.33) {
+    c.setHSL(0.58 - t * 0.3, 0.85, 0.45 + t * 0.15);
+  } else if (t < 0.66) {
+    const u = (t - 0.33) / 0.33;
+    c.setHSL(0.48 - u * 0.35, 0.9, 0.5 + u * 0.1);
+  } else {
+    const u = (t - 0.66) / 0.34;
+    c.setHSL(0.08 - u * 0.03, 0.95, 0.55 + u * 0.05);
+  }
+  return c;
+}
+
+// Category palette fallback
+const catPalette = [0x4fc3f7, 0xef5350, 0xffca28, 0x66bb6a, 0xff7043, 0x4dd0e1, 0xab47bc, 0xec407a, 0x8d6e63, 0x78909c];
+const categories = gradientCol ? [...new Set(data.map(d => d[gradientCol] || "default"))] : ["default"];
+const catColors = {};
+categories.forEach((c, i) => catColors[c] = catPalette[i % catPalette.length]);
+
+// --- Size based on data values ---
+let sizeVals = [];
+let sizeMin = 0, sizeMax = 1;
+const basePtSize = 0.35;
+const maxPtSize = 1.2;
+if (sizeCol) {
+  sizeVals = data.map(d => parseFloat(d[sizeCol]) || 0);
+  sizeMin = Math.min(...sizeVals);
+  sizeMax = Math.max(...sizeVals);
+}
+
+function getPointSize(i) {
+  if (sizeCol && sizeVals.length > i) {
+    const t = sizeMax > sizeMin ? (sizeVals[i] - sizeMin) / (sizeMax - sizeMin) : 0.5;
+    return basePtSize + t * (maxPtSize - basePtSize);
+  }
+  return basePtSize;
+}
+
+// --- Create instanced mesh ---
+const geo = new THREE.SphereGeometry(1, 12, 8);
+const mat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 });
+const mesh = new THREE.InstancedMesh(geo, mat, data.length);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+const positions = [];
+const dummy = new THREE.Object3D();
+const color = new THREE.Color();
+
+for (let i = 0; i < data.length; i++) {
+  const sz = getPointSize(i);
+  dummy.position.set(nx[i], ny[i], nz[i]);
+  dummy.scale.set(sz, sz, sz);
+  dummy.updateMatrix();
+  mesh.setMatrixAt(i, dummy.matrix);
+  positions.push(new THREE.Vector3(nx[i], ny[i], nz[i]));
+
+  if (isGradient) {
+    const range = gradientMax - gradientMin || 1;
+    const t = (gradientVals[i] - gradientMin) / range;
+    const gc = gradientColor(t);
+    mesh.setColorAt(i, gc);
+  } else {
+    const cat = data[i][gradientCol] || "default";
+    color.setHex(catColors[cat]);
+    mesh.setColorAt(i, color);
+  }
+}
+scene.add(mesh);
+
+// --- Grid helper (subtle) ---
+const gridHelper = new THREE.GridHelper(80, 40, 0x1a1d2e, 0x12141f);
+gridHelper.position.y = -26;
+scene.add(gridHelper);
+
+// --- Lights ---
+const ambientLight = new THREE.AmbientLight(0x8090b0, 0.6);
+scene.add(ambientLight);
+
+const dirLight1 = new THREE.DirectionalLight(0xffeedd, 1.4);
+dirLight1.position.set(50, 80, 50);
+scene.add(dirLight1);
+
+const dirLight2 = new THREE.DirectionalLight(0x4488ff, 0.4);
+dirLight2.position.set(-30, -20, -50);
+scene.add(dirLight2);
+
+const pointLight = new THREE.PointLight(0x4fd1c5, 0.6, 200);
+pointLight.position.set(0, 40, 0);
+scene.add(pointLight);
+
+// --- Camera: smooth intro ---
+const targetCamPos = new THREE.Vector3(60, 45, 60);
+camera.position.set(120, 90, 120);
+camera.lookAt(0, 0, 0);
+
+// --- Raycasting for hover tooltip (safe DOM construction, no innerHTML) ---
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltipEl = document.getElementById('tooltip');
+let hoveredIdx = -1;
+
+function buildTooltipContent(idx) {
+  while (tooltipEl.firstChild) tooltipEl.removeChild(tooltipEl.firstChild);
+  const d = data[idx];
+  const hdr = document.createElement('div');
+  hdr.className = 'tt-header';
+  hdr.textContent = 'Point ' + (idx + 1);
+  tooltipEl.appendChild(hdr);
+  let count = 0;
+  for (const h of headers) {
+    if (count >= 8) {
+      const more = document.createElement('div');
+      more.className = 'tt-more';
+      more.textContent = '+' + (headers.length - 8) + ' more';
+      tooltipEl.appendChild(more);
+      break;
+    }
+    const row = document.createElement('div');
+    row.className = 'tt-row';
+    const key = document.createElement('span');
+    key.className = 'tt-key';
+    key.textContent = h;
+    const val = document.createElement('span');
+    val.className = 'tt-val';
+    val.textContent = d[h] || '--';
+    row.appendChild(key);
+    row.appendChild(val);
+    tooltipEl.appendChild(row);
+    count++;
+  }
+}
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hit = raycaster.intersectObject(mesh);
+
+  if (hit.length > 0 && hit[0].instanceId !== undefined) {
+    const idx = hit[0].instanceId;
+    if (idx !== hoveredIdx) {
+      hoveredIdx = idx;
+      buildTooltipContent(idx);
+    }
+    tooltipEl.style.display = 'block';
+    const tx = e.clientX + 16;
+    const ty = e.clientY - 10;
+    tooltipEl.style.left = Math.min(tx, window.innerWidth - 300) + 'px';
+    tooltipEl.style.top = Math.min(ty, window.innerHeight - 200) + 'px';
+  } else {
+    hoveredIdx = -1;
+    tooltipEl.style.display = 'none';
+  }
+});
+
+renderer.domElement.addEventListener('mouseleave', () => {
+  hoveredIdx = -1;
+  tooltipEl.style.display = 'none';
+});
+
+// --- Keyboard shortcuts ---
+const rotationLabel = document.getElementById('rotation-status');
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    controls.autoRotate = !controls.autoRotate;
+    rotationLabel.textContent = controls.autoRotate ? 'ON' : 'OFF';
+  }
+  if (e.code === 'KeyR') {
+    // Smooth reset
+    resetTarget.copy(targetCamPos);
+    resetProgress = 0;
+    isResetting = true;
+  }
+});
+
+let resetTarget = new THREE.Vector3();
+let resetProgress = 0;
+let isResetting = false;
+
+// --- FPS counter ---
+let frameCount = 0;
+let lastFpsTime = performance.now();
+const fpsEl = document.getElementById('fps-value');
+
+// --- Resize ---
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- Intro animation ---
+let introProgress = 0;
+const startCamPos = camera.position.clone();
+
+// --- Loading done ---
+requestAnimationFrame(() => {
+  const loader = document.getElementById('loader');
+  loader.classList.add('fade-out');
+  setTimeout(() => loader.remove(), 800);
+});
+
+// --- Animate ---
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Smooth camera intro
+  if (introProgress < 1) {
+    introProgress = Math.min(1, introProgress + 0.008);
+    const t = 1 - Math.pow(1 - introProgress, 3); // ease-out cubic
+    camera.position.lerpVectors(startCamPos, targetCamPos, t);
+  }
+
+  // Smooth reset
+  if (isResetting) {
+    resetProgress = Math.min(1, resetProgress + 0.02);
+    const t = 1 - Math.pow(1 - resetProgress, 3);
+    camera.position.lerpVectors(camera.position, resetTarget, t);
+    controls.target.lerp(new THREE.Vector3(0, 0, 0), t);
+    if (resetProgress >= 1) isResetting = false;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+
+  // FPS
+  frameCount++;
+  const now = performance.now();
+  if (now - lastFpsTime >= 500) {
+    const fps = Math.round(frameCount / ((now - lastFpsTime) / 1000));
+    fpsEl.textContent = fps;
+    frameCount = 0;
+    lastFpsTime = now;
+  }
+}
+animate();
+</script>
+</body>
+</html>

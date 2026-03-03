@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowMCP — AI-Powered 3D Data Visualization</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #06070b;
+    --bg-card: rgba(255,255,255,0.03);
+    --bg-card-hover: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.08);
+    --text-primary: #f0f0f0;
+    --text-secondary: rgba(255,255,255,0.55);
+    --text-muted: rgba(255,255,255,0.3);
+    --accent: #4fd1c5;
+    --accent-glow: rgba(79,209,197,0.15);
+    --gradient-1: linear-gradient(135deg, #4fd1c5 0%, #63b3ed 100%);
+    --gradient-2: linear-gradient(135deg, #f6ad55 0%, #ed64a6 100%);
+    --gradient-3: linear-gradient(135deg, #68d391 0%, #4fd1c5 100%);
+  }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(79,209,197,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(99,179,237,0.03) 0%, transparent 40%);
+    animation: drift 30s linear infinite;
+  }
+  @keyframes drift {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 800px; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,209,197,0.08);
+    border: 1px solid rgba(79,209,197,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 700;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 64px;
+  }
+  .stat-item { text-align: center; }
+  .stat-number {
+    font-size: 42px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+
+  /* Sections */
+  section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 24px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .section-heading {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .section-desc {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+  }
+
+  /* Demo cards */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  .demo-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .demo-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .demo-preview {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demo-preview-1 { background: linear-gradient(135deg, #0a1628 0%, #1a0a28 100%); }
+  .demo-preview-2 { background: linear-gradient(135deg, #0a2818 0%, #0a1628 100%); }
+  .demo-preview-3 { background: linear-gradient(135deg, #281a0a 0%, #280a0a 100%); }
+
+  .demo-preview svg {
+    width: 200px;
+    height: 200px;
+    opacity: 0.4;
+  }
+
+  .demo-info { padding: 24px; }
+
+  .demo-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .badge-network { background: rgba(99,179,237,0.15); color: #63b3ed; }
+  .badge-geo { background: rgba(104,211,145,0.15); color: #68d391; }
+  .badge-timeseries { background: rgba(246,173,85,0.15); color: #f6ad55; }
+
+  .demo-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .demo-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .demo-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .demo-stat { display: flex; align-items: center; gap: 4px; }
+  .demo-stat strong { color: var(--text-secondary); font-weight: 600; }
+
+  /* Pipeline section */
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2px;
+    margin-top: 48px;
+    background: var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .pipeline-step {
+    background: var(--bg-primary);
+    padding: 24px;
+    text-align: center;
+  }
+
+  .pipeline-step .step-num {
+    font-size: 32px;
+    font-weight: 700;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .pipeline-step .step-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .pipeline-step .step-tool {
+    font-size: 10px;
+    color: var(--accent);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    opacity: 0.7;
+  }
+
+  /* Differentiators */
+  .diff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .diff-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+
+  .diff-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .diff-icon-1 { background: rgba(79,209,197,0.12); }
+  .diff-icon-2 { background: rgba(246,173,85,0.12); }
+  .diff-icon-3 { background: rgba(237,100,166,0.12); }
+  .diff-icon-4 { background: rgba(99,179,237,0.12); }
+
+  .diff-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .diff-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 60px 24px;
+    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .footer-logo {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .footer-text {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Zero competitors in 3D data visualization MCP</div>
+    <h1>FlowMCP</h1>
+    <p>The world's first AI-to-3D data visualization bridge. 25 tools that let any AI assistant transform raw data into interactive 3D spatial visualizations — no code, no configuration, instant insight.</p>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-number">25</div>
+        <div class="stat-label">MCP Tools</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">468</div>
+        <div class="stat-label">Tests Passing</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">26K+</div>
+        <div class="stat-label">Public Flows</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Competitors</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Demos -->
+<section>
+  <div class="section-title">Live Demos</div>
+  <div class="section-heading">Three Datasets, Three Dimensions</div>
+  <div class="section-desc">
+    Each demo below was generated entirely by FlowMCP tools — no manual coding.
+    Click to open interactive 3D viewers built with Three.js. Orbit, zoom, hover for data.
+  </div>
+
+  <div class="demo-grid">
+    <a href="neural-network-3d.html" class="demo-card" target="_blank">
+      <div class="demo-preview demo-preview-1">
+        <svg viewBox="0 0 200 200">
+          <circle cx="60" cy="50" r="4" fill="#63b3ed" opacity="0.8"/>
+          <circle cx="140" cy="50" r="4" fill="#63b3ed" opacity="0.8"/>
+          <circle cx="100" cy="100" r="6" fill="#4fd1c5" opacity="0.9"/>
+          <circle cx="60" cy="150" r="4" fill="#ed64a6" opacity="0.8"/>
+          <circle cx="140" cy="150" r="4" fill="#ed64a6" opacity="0.8"/>
+          <line x1="60" y1="50" x2="100" y2="100" stroke="#4fd1c5" stroke-width="0.5" opacity="0.3"/>
+          <line x1="140" y1="50" x2="100" y2="100" stroke="#4fd1c5" stroke-width="0.5" opacity="0.3"/>
+          <line x1="100" y1="100" x2="60" y2="150" stroke="#ed64a6" stroke-width="0.5" opacity="0.3"/>
+          <line x1="100" y1="100" x2="140" y2="150" stroke="#ed64a6" stroke-width="0.5" opacity="0.3"/>
+          <line x1="60" y1="50" x2="140" y2="50" stroke="#63b3ed" stroke-width="0.3" opacity="0.2"/>
+          <line x1="60" y1="150" x2="140" y2="150" stroke="#ed64a6" stroke-width="0.3" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="demo-info">
+        <div class="demo-badge badge-network">Network Graph</div>
+        <div class="demo-title">Neural Network Architecture</div>
+        <div class="demo-desc">
+          160 nodes across 4 layers (input, hidden, attention, output) with 2,610
+          weighted connections. Force-directed 3D layout pre-computed in 137ms.
+        </div>
+        <div class="demo-stats">
+          <div class="demo-stat"><strong>160</strong> nodes</div>
+          <div class="demo-stat"><strong>2,610</strong> edges</div>
+          <div class="demo-stat"><strong>137ms</strong> layout</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="global-startup-funding-3d.html" class="demo-card" target="_blank">
+      <div class="demo-preview demo-preview-2">
+        <svg viewBox="0 0 200 200">
+          <circle cx="80" cy="80" r="8" fill="#68d391" opacity="0.6"/>
+          <circle cx="120" cy="90" r="12" fill="#4fd1c5" opacity="0.7"/>
+          <circle cx="60" cy="120" r="5" fill="#f6ad55" opacity="0.5"/>
+          <circle cx="150" cy="70" r="6" fill="#68d391" opacity="0.5"/>
+          <circle cx="100" cy="140" r="10" fill="#ed64a6" opacity="0.6"/>
+          <circle cx="40" cy="90" r="3" fill="#63b3ed" opacity="0.4"/>
+          <circle cx="160" cy="130" r="7" fill="#f6ad55" opacity="0.5"/>
+          <circle cx="90" cy="60" r="4" fill="#4fd1c5" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="demo-info">
+        <div class="demo-badge badge-geo">Geographic</div>
+        <div class="demo-title">Global Startup Funding</div>
+        <div class="demo-desc">
+          420 companies across 30 countries. Pre-Seed to Series C. Funding amounts,
+          employee counts, and sector data with real lat/long coordinates.
+        </div>
+        <div class="demo-stats">
+          <div class="demo-stat"><strong>420</strong> companies</div>
+          <div class="demo-stat"><strong>30</strong> countries</div>
+          <div class="demo-stat"><strong>6</strong> sectors</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="climate-indicators-3d.html" class="demo-card" target="_blank">
+      <div class="demo-preview demo-preview-3">
+        <svg viewBox="0 0 200 200">
+          <polyline points="20,160 50,140 80,130 110,110 140,90 170,60"
+                    stroke="#f6ad55" stroke-width="2" fill="none" opacity="0.6"/>
+          <polyline points="20,140 50,135 80,120 110,115 140,100 170,80"
+                    stroke="#ed64a6" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <polyline points="20,120 50,125 80,115 110,130 140,110 170,95"
+                    stroke="#63b3ed" stroke-width="1" fill="none" opacity="0.4"/>
+          <circle cx="170" cy="60" r="3" fill="#f6ad55" opacity="0.8"/>
+          <circle cx="170" cy="80" r="3" fill="#ed64a6" opacity="0.7"/>
+          <circle cx="170" cy="95" r="3" fill="#63b3ed" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="demo-info">
+        <div class="demo-badge badge-timeseries">Time Series</div>
+        <div class="demo-title">Climate Change Indicators</div>
+        <div class="demo-desc">
+          1,040 observations across 26 years (2000-2025). Temperature anomalies,
+          CO2 levels, sea level rise, and Arctic ice extent by region.
+        </div>
+        <div class="demo-stats">
+          <div class="demo-stat"><strong>1,040</strong> rows</div>
+          <div class="demo-stat"><strong>26</strong> years</div>
+          <div class="demo-stat"><strong>8</strong> regions</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- Pipeline -->
+<section>
+  <div class="section-title">The Pipeline</div>
+  <div class="section-heading">Text to 3D in Eight Steps</div>
+  <div class="section-desc">
+    FlowMCP chains tools into end-to-end pipelines. An AI assistant reads a research paper,
+    extracts entities, builds a network, pre-computes 3D positions, and exports an interactive
+    viewer. Zero human intervention.
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-num">1</div>
+      <div class="step-title">Extract</div>
+      <div class="step-tool">flow_extract_from_text</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">2</div>
+      <div class="step-title">Analyze</div>
+      <div class="step-tool">analyze_data_for_flow</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">3</div>
+      <div class="step-title">Transform</div>
+      <div class="step-tool">transform_to_network_graph</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">4</div>
+      <div class="step-title">Recommend</div>
+      <div class="step-tool">suggest_flow_visualization</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">5</div>
+      <div class="step-title">Layout</div>
+      <div class="step-tool">flow_precompute_force_layout</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">6</div>
+      <div class="step-title">Metrics</div>
+      <div class="step-tool">flow_compute_graph_metrics</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">7</div>
+      <div class="step-title">Upload</div>
+      <div class="step-tool">flow_upload_data</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">8</div>
+      <div class="step-title">Export</div>
+      <div class="step-tool">flow_export_formats</div>
+    </div>
+  </div>
+</section>
+
+<!-- Differentiators -->
+<section>
+  <div class="section-title">Why FlowMCP</div>
+  <div class="section-heading">The Unfair Advantage</div>
+
+  <div class="diff-grid">
+    <div class="diff-card">
+      <div class="diff-icon diff-icon-1">&#x1f9ec;</div>
+      <div class="diff-title">Self-Evolving Descriptions</div>
+      <div class="diff-desc">
+        Genetic algorithms optimize tool descriptions using 10M+ evaluations across
+        7 frameworks. The system literally evolves how AI assistants discover and invoke
+        FlowMCP tools. F1 routing accuracy: 90.7%.
+      </div>
+    </div>
+
+    <div class="diff-card">
+      <div class="diff-icon diff-icon-2">&#x26a1;</div>
+      <div class="diff-title">Pre-Computed Physics</div>
+      <div class="diff-desc">
+        Force-directed graph layouts computed offline to full convergence.
+        10,000-node networks that take 30+ seconds to settle in-browser
+        render instantly with pre-resolved x, y, z positions.
+      </div>
+    </div>
+
+    <div class="diff-card">
+      <div class="diff-icon diff-icon-3">&#x1f310;</div>
+      <div class="diff-title">Zero Competitors</div>
+      <div class="diff-desc">
+        Searched every MCP registry, npm, GitHub, and research database.
+        Zero other MCP servers offer 3D data visualization. FlowMCP is
+        first-mover in an uncrowded market.
+      </div>
+    </div>
+
+    <div class="diff-card">
+      <div class="diff-icon diff-icon-4">&#x1f916;</div>
+      <div class="diff-title">AI-Native Distribution</div>
+      <div class="diff-desc">
+        Every Claude, GPT, and Gemini conversation is a potential distribution
+        channel. When a user says "visualize this data in 3D," the AI assistant
+        invokes FlowMCP. No app store. No SEO. Pure intent matching.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-logo">FlowMCP</div>
+  <div class="footer-text">
+    25 tools. 468 tests. Zero competitors.<br>
+    <a href="https://github.com/Halyxa/flowmcp">GitHub</a> &middot;
+    <a href="https://flowimmersive.com">Flow Immersive</a> &middot;
+    <a href="https://a.flow.gl">Live Platform</a>
+  </div>
+</div>
+
+</body>
+</html>

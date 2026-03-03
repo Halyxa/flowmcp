@@ -1,0 +1,8405 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.0724,
+          22.5436
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "ZenoFinance",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 800000,
+        "employees": 5,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7288,
+          32.2052
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "PulseSecurity",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 57800000,
+        "employees": 465,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.3972,
+          -33.8963
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "VertexAnalytics",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 68200000,
+        "employees": 216,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4509,
+          37.6974
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "VectorCloud",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 185500000,
+        "employees": 405,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.2212,
+          25.2526
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "LumenHealth",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 201300000,
+        "employees": 1508,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.3534,
+          -33.876
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "CipherGenomics",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 26900000,
+        "employees": 113,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3071,
+          47.6142
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "VoxSystems",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 1500000,
+        "employees": 20,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0575,
+          37.505
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "StratosAnalytics",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 4,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.7044,
+          12.8493
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "StratosData",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1800000,
+        "employees": 15,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.4086,
+          52.5082
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "CortexAnalytics",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 75600000,
+        "employees": 106,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.3141,
+          -33.793
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "HelixEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 12400000,
+        "employees": 77,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8662,
+          1.2646
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "FluxSystems",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 15500000,
+        "employees": 63,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2614,
+          51.5096
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "NexusData",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 12100000,
+        "employees": 58,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.5319,
+          10.9724
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "CipherSecurity",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 237000000,
+        "employees": 2420,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.4372,
+          43.5238
+        ]
+      },
+      "properties": {
+        "city": "Toronto",
+        "country": "Canada",
+        "company_name": "ForgeBio",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 25500000,
+        "employees": 99,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.2377,
+          -33.8064
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "AxionTech",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 17500000,
+        "employees": 102,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.7204,
+          35.6406
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "PrismSystems",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 39500000,
+        "employees": 343,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.5242,
+          39.8497
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "SynthCloud",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 4700000,
+        "employees": 17,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0998,
+          40.7087
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "CipherTech",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 175500000,
+        "employees": 763,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8507,
+          37.6175
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "SynthFinance",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1200000,
+        "employees": 6,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.4483,
+          39.9659
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "PulseHealth",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 98600000,
+        "employees": 2956,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.4351,
+          6.6649
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "AstroNetworks",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 123900000,
+        "employees": 2408,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.0376,
+          59.393
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "SynthSecurity",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 600000,
+        "employees": 4,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5536,
+          35.673
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "CipherHealth",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 5800000,
+        "employees": 40,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0365,
+          51.5764
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "QuantumHealth",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 700000,
+        "employees": 11,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.326,
+          48.7887
+        ]
+      },
+      "properties": {
+        "city": "Paris",
+        "country": "France",
+        "company_name": "AstroCloud",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 12700000,
+        "employees": 87,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.5136,
+          -33.8647
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "AetherGenomics",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 1100000,
+        "employees": 9,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.6767,
+          -23.4634
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "LumenAI",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 145800000,
+        "employees": 865,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9117,
+          40.8002
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "MacroWorks",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 25000000,
+        "employees": 65,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7012,
+          1.252
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "ForgeTech",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 18900000,
+        "employees": 111,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9797,
+          37.5761
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "LumenNetworks",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1100000,
+        "employees": 6,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.151,
+          42.4053
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "TeraLabs",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 16500000,
+        "employees": 80,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.3464,
+          25.1759
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "CortexLogic",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 6100000,
+        "employees": 34,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.9081,
+          1.4976
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "SiloNetworks",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 376200000,
+        "employees": 1461,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.501,
+          52.5286
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "QuantumLogic",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 86200000,
+        "employees": 306,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.5121,
+          39.9605
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "VertexRobotics",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 7400000,
+        "employees": 33,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.3146,
+          25.0642
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "DeepFinance",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 4900000,
+        "employees": 18,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.963,
+          42.4722
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "AstroHealth",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 278000000,
+        "employees": 4009,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2945,
+          47.6712
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "PulseAnalytics",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 252600000,
+        "employees": 749,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.4378,
+          -33.9202
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "StratosSpace",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 56600000,
+        "employees": 98,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.1266,
+          -33.9538
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "AxionSpace",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 82900000,
+        "employees": 543,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.395,
+          -33.9511
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "TeraAI",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 20400000,
+        "employees": 52,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0238,
+          40.5816
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "GridGenomics",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 51000000,
+        "employees": 243,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4218,
+          31.1087
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "AstroDynamics",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 226500000,
+        "employees": 2022,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8384,
+          37.655
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "CortexDynamics",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 8000000,
+        "employees": 38,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.8424,
+          -1.1916
+        ]
+      },
+      "properties": {
+        "city": "Nairobi",
+        "country": "Kenya",
+        "company_name": "CortexFinance",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 6100000,
+        "employees": 22,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3487,
+          31.3752
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "VectorFinance",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 8400000,
+        "employees": 99,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2559,
+          51.4398
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "SiloVentures",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 25800000,
+        "employees": 135,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5193,
+          31.3315
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "AstroSecurity",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1600000,
+        "employees": 11,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.2983,
+          48.9487
+        ]
+      },
+      "properties": {
+        "city": "Paris",
+        "country": "France",
+        "company_name": "SiloRobotics",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 189600000,
+        "employees": 657,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.9832,
+          60.2114
+        ]
+      },
+      "properties": {
+        "city": "Helsinki",
+        "country": "Finland",
+        "company_name": "ZenoRobotics",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 337700000,
+        "employees": 3793,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6629,
+          35.6441
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "NovaData",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 44300000,
+        "employees": 333,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.066,
+          22.5847
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "OrbitEnergy",
+        "sector": "Robotics",
+        "funding_round": "Series A",
+        "amount_usd": 16000000,
+        "employees": 92,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.1747,
+          59.3234
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "FluxLogic",
+        "sector": "Biotech",
+        "funding_round": "Series B",
+        "amount_usd": 49000000,
+        "employees": 340,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.885,
+          59.5232
+        ]
+      },
+      "properties": {
+        "city": "Tallinn",
+        "country": "Estonia",
+        "company_name": "AxionLabs",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 68200000,
+        "employees": 234,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8919,
+          37.649
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "PulseTech",
+        "sector": "Robotics",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1900000,
+        "employees": 13,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.278,
+          37.7264
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "FluxSpace",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 72500000,
+        "employees": 134,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.3454,
+          -33.9127
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "CryoWorks",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 161200000,
+        "employees": 2509,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2983,
+          47.7438
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "AetherLabs",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 58300000,
+        "employees": 172,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.4149,
+          43.6295
+        ]
+      },
+      "properties": {
+        "city": "Toronto",
+        "country": "Canada",
+        "company_name": "HaloRobotics",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 161400000,
+        "employees": 1658,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3471,
+          37.7614
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "SynthLogic",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 47400000,
+        "employees": 113,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.0156,
+          22.4993
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "NeoAI",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1200000,
+        "employees": 5,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4261,
+          47.2276
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "LumenWorks",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 23000000,
+        "employees": 300,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.5219,
+          6.521
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "QuantumAI",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 24400000,
+        "employees": 89,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9861,
+          37.4509
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "ForgeEnergy",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 119700000,
+        "employees": 850,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.5013,
+          13.005
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "StratosWorks",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 4800000,
+        "employees": 29,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.355,
+          6.4852
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "ForgeAnalytics",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 148100000,
+        "employees": 916,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.2484,
+          -33.9632
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "AxionRobotics",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 432300000,
+        "employees": 1324,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0471,
+          51.6013
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "NovaWorks",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 130200000,
+        "employees": 1061,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.0546,
+          25.7412
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "FluxRobotics",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 10100000,
+        "employees": 59,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5019,
+          35.8206
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "HelixGenomics",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 46500000,
+        "employees": 152,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.5625,
+          -33.983
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "DeepGenomics",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 75000000,
+        "employees": 1114,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4979,
+          31.0912
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "ForgeData",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 16300000,
+        "employees": 99,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.1174,
+          53.3144
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "ZenoWorks",
+        "sector": "Fintech",
+        "funding_round": "Series D",
+        "amount_usd": 443900000,
+        "employees": 760,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9063,
+          40.6135
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NexusAnalytics",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 56600000,
+        "employees": 304,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.267,
+          6.6316
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "FluxAnalytics",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 170400000,
+        "employees": 1134,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9634,
+          37.6015
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "PrismDynamics",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 5800000,
+        "employees": 76,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.7627,
+          10.9572
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "CortexVentures",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 199100000,
+        "employees": 280,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.8684,
+          30.3122
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "SiloLabs",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 257200000,
+        "employees": 3567,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8555,
+          1.4138
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "AxionVentures",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 6600000,
+        "employees": 32,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.6498,
+          32.0962
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "CortexSpace",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 43900000,
+        "employees": 273,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.3168,
+          -33.9772
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "IonicAI",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 700000,
+        "employees": 13,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.0642,
+          42.2871
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "ZenoEnergy",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1400000,
+        "employees": 15,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3438,
+          31.1874
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "OrbitSpace",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 70500000,
+        "employees": 300,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.1086,
+          37.5764
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "NeoAnalytics",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 2500000,
+        "employees": 15,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.7336,
+          35.6783
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "VoxDynamics",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 18800000,
+        "employees": 79,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.771,
+          32.0561
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "AetherData",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 15800000,
+        "employees": 37,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.7899,
+          30.2729
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "GridHealth",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 173700000,
+        "employees": 1044,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.1366,
+          25.1918
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "AxionGenomics",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 63500000,
+        "employees": 139,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0067,
+          37.6224
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "HelixLabs",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 101400000,
+        "employees": 634,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2734,
+          6.4178
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "LumenVentures",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 151700000,
+        "employees": 1066,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0025,
+          51.5652
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "GridSystems",
+        "sector": "Robotics",
+        "funding_round": "Series A",
+        "amount_usd": 20800000,
+        "employees": 70,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4057,
+          37.896
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "IonicRobotics",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 178700000,
+        "employees": 587,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.8022,
+          30.122
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "HelixWorks",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 15800000,
+        "employees": 290,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.2857,
+          -33.7844
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "VertexLogic",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 187000000,
+        "employees": 652,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.2709,
+          -33.8579
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "GridAI",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 50900000,
+        "employees": 98,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9827,
+          37.4651
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "LumenSystems",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 900000,
+        "employees": 11,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5389,
+          35.8197
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "CryoGenomics",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 450800000,
+        "employees": 4883,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.6478,
+          59.4915
+        ]
+      },
+      "properties": {
+        "city": "Tallinn",
+        "country": "Estonia",
+        "company_name": "TeraEnergy",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 20600000,
+        "employees": 66,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.4425,
+          39.8791
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "SiloLogic",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 7000000,
+        "employees": 86,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.0053,
+          22.5823
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "IonicAnalytics",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 320400000,
+        "employees": 3162,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.9107,
+          22.6325
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "HelixTech",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 73300000,
+        "employees": 184,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.7416,
+          -1.1993
+        ]
+      },
+      "properties": {
+        "city": "Nairobi",
+        "country": "Kenya",
+        "company_name": "SynthTech",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 7100000,
+        "employees": 14,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5982,
+          35.6943
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "VertexGenomics",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 23100000,
+        "employees": 64,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6626,
+          35.5489
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "DeepVentures",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 48200000,
+        "employees": 198,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0744,
+          51.5129
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "GridVentures",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 201500000,
+        "employees": 1319,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.178,
+          51.6501
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "DeepCloud",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 3700000,
+        "employees": 33,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.7498,
+          35.6289
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "PulseData",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 5200000,
+        "employees": 8,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2022,
+          51.4666
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "NexusSecurity",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 38900000,
+        "employees": 239,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.339,
+          37.8937
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "NovaAI",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 5400000,
+        "employees": 22,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8592,
+          1.2189
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "HelixDynamics",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 12600000,
+        "employees": 50,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.3519,
+          52.4832
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "IonicSecurity",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 48900000,
+        "employees": 1015,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0938,
+          37.6292
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "VectorVentures",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 1900000,
+        "employees": 28,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.3773,
+          33.962
+        ]
+      },
+      "properties": {
+        "city": "Los Angeles",
+        "country": "United States",
+        "company_name": "NexusLabs",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 191000000,
+        "employees": 1087,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.7247,
+          59.5321
+        ]
+      },
+      "properties": {
+        "city": "Tallinn",
+        "country": "Estonia",
+        "company_name": "ZenoBio",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 169500000,
+        "employees": 4485,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.129,
+          40.58
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "CryoCloud",
+        "sector": "Biotech",
+        "funding_round": "Series B",
+        "amount_usd": 40300000,
+        "employees": 251,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2121,
+          47.5909
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "AstroWorks",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 272000000,
+        "employees": 3327,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.9797,
+          42.2663
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "NovaSecurity",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 500000,
+        "employees": 7,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.6602,
+          13.0286
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "AetherEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 84400000,
+        "employees": 675,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4637,
+          37.77
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "IonicBio",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 22400000,
+        "employees": 116,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8664,
+          40.8195
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NovaLabs",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 7,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.2961,
+          33.9789
+        ]
+      },
+      "properties": {
+        "city": "Los Angeles",
+        "country": "United States",
+        "company_name": "ZenoHealth",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1100000,
+        "employees": 12,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2256,
+          51.3624
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "ForgeLogic",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1900000,
+        "employees": 12,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7758,
+          1.4767
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "ZenoSecurity",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 23900000,
+        "employees": 44,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2008,
+          51.383
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "CipherAI",
+        "sector": "Robotics",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 7,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.0906,
+          42.3823
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "SynthSpace",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 6900000,
+        "employees": 18,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.9054,
+          1.3674
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "FluxNetworks",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 229300000,
+        "employees": 1200,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0238,
+          37.4609
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "ForgeRobotics",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 339500000,
+        "employees": 862,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.2741,
+          52.602
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "SiloHealth",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 375700000,
+        "employees": 654,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.1282,
+          -33.9806
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "NovaRobotics",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 5700000,
+        "employees": 14,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2436,
+          53.3896
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "AxionNetworks",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 60900000,
+        "employees": 722,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8661,
+          40.7235
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "StratosGenomics",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 8500000,
+        "employees": 79,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.0515,
+          22.68
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "MacroLabs",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 24400000,
+        "employees": 49,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.907,
+          37.4337
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "FluxData",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 8,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4788,
+          47.572
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "SynthRobotics",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 3100000,
+        "employees": 36,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.1698,
+          34.1593
+        ]
+      },
+      "properties": {
+        "city": "Los Angeles",
+        "country": "United States",
+        "company_name": "LumenData",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 68400000,
+        "employees": 123,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.4022,
+          52.555
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "SynthBio",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 15900000,
+        "employees": 32,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9814,
+          40.5951
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "SiloSecurity",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1400000,
+        "employees": 11,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9127,
+          37.6086
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "MacroHealth",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 3000000,
+        "employees": 23,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.7395,
+          13.0394
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "AetherHealth",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1600000,
+        "employees": 6,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7305,
+          -23.5677
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "IonicWorks",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 64700000,
+        "employees": 205,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.763,
+          52.2742
+        ]
+      },
+      "properties": {
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "company_name": "NovaAnalytics",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 470400000,
+        "employees": 1985,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.7607,
+          35.8126
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "NexusAI",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 7300000,
+        "employees": 39,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1311,
+          42.2602
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "DeepDynamics",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 46900000,
+        "employees": 350,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0429,
+          40.7095
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "LumenRobotics",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 10700000,
+        "employees": 47,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1381,
+          40.7194
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NeoLabs",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 60300000,
+        "employees": 207,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.48,
+          39.8683
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "SynthNetworks",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 103800000,
+        "employees": 1172,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.0225,
+          42.4094
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "AetherLogic",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 600000,
+        "employees": 7,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1827,
+          42.4995
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "ForgeAI",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 157700000,
+        "employees": 915,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.6596,
+          59.295
+        ]
+      },
+      "properties": {
+        "city": "Tallinn",
+        "country": "Estonia",
+        "company_name": "MacroNetworks",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 250400000,
+        "employees": 4473,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9601,
+          40.802
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "CryoSystems",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 7400000,
+        "employees": 31,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1731,
+          25.7118
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "HaloFinance",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 6800000,
+        "employees": 115,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.4994,
+          13.0647
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "ForgeWorks",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 3800000,
+        "employees": 23,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6929,
+          35.6659
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "SiloDynamics",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 27100000,
+        "employees": 88,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.1735,
+          59.211
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "MacroFinance",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 5400000,
+        "employees": 35,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4,
+          47.4386
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "SynthData",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 2800000,
+        "employees": 17,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0059,
+          40.6864
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NeoDynamics",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 20100000,
+        "employees": 34,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.2794,
+          25.2227
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "ZenoData",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 6000000,
+        "employees": 25,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.3041,
+          -33.89
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "AetherVentures",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 5400000,
+        "employees": 35,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.515,
+          39.9681
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "MacroSpace",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 157200000,
+        "employees": 411,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2857,
+          37.6629
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "ZenoTech",
+        "sector": "Fintech",
+        "funding_round": "Series D",
+        "amount_usd": 108400000,
+        "employees": 1356,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.7048,
+          -6.3241
+        ]
+      },
+      "properties": {
+        "city": "Jakarta",
+        "country": "Indonesia",
+        "company_name": "GridLogic",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 126900000,
+        "employees": 1119,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.9776,
+          52.2544
+        ]
+      },
+      "properties": {
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "company_name": "AxionWorks",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 26500000,
+        "employees": 98,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.1724,
+          22.6303
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "FluxCloud",
+        "sector": "Fintech",
+        "funding_round": "Series D",
+        "amount_usd": 165300000,
+        "employees": 2413,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0383,
+          40.7367
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NovaNetworks",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 12900000,
+        "employees": 32,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.9542,
+          -6.3157
+        ]
+      },
+      "properties": {
+        "city": "Jakarta",
+        "country": "Indonesia",
+        "company_name": "FluxWorks",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 5300000,
+        "employees": 19,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9852,
+          40.7613
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "CipherDynamics",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 500000,
+        "employees": 3,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.3028,
+          53.3422
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "CryoSecurity",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 30400000,
+        "employees": 124,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4238,
+          37.6588
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "NeoHealth",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1300000,
+        "employees": 13,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0511,
+          37.6139
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "NexusLogic",
+        "sector": "Biotech",
+        "funding_round": "Series B",
+        "amount_usd": 46000000,
+        "employees": 281,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.2155,
+          59.2892
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "LumenEnergy",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 4500000,
+        "employees": 18,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.2878,
+          34.0659
+        ]
+      },
+      "properties": {
+        "city": "Los Angeles",
+        "country": "United States",
+        "company_name": "QuantumTech",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 2000000,
+        "employees": 5,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2785,
+          37.8597
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "VectorDynamics",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 490900000,
+        "employees": 2729,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.4837,
+          6.3757
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "NeoTech",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 186500000,
+        "employees": 876,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8744,
+          1.331
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "AetherBio",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 101400000,
+        "employees": 3176,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4963,
+          37.7316
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "IonicSystems",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 169000000,
+        "employees": 820,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.1807,
+          -33.936
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "VoxSecurity",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 97400000,
+        "employees": 349,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.836,
+          1.3651
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "CortexWorks",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 3300000,
+        "employees": 15,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7527,
+          1.4781
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "VertexDynamics",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1500000,
+        "employees": 13,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0325,
+          40.665
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "AetherFinance",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 332600000,
+        "employees": 592,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.2363,
+          48.9721
+        ]
+      },
+      "properties": {
+        "city": "Paris",
+        "country": "France",
+        "company_name": "VectorSpace",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 5300000,
+        "employees": 104,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.338,
+          52.6218
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "NovaCloud",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 141700000,
+        "employees": 1467,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3306,
+          37.8446
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "ZenoAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Series D",
+        "amount_usd": 191100000,
+        "employees": 4682,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4424,
+          47.4912
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "PrismEnergy",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 1900000,
+        "employees": 32,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.6773,
+          12.8922
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "PrismNetworks",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1800000,
+        "employees": 13,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0653,
+          40.8263
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NovaHealth",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 98900000,
+        "employees": 388,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.436,
+          47.6766
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "GridAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 7900000,
+        "employees": 32,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8436,
+          1.3111
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "ZenoAI",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 29900000,
+        "employees": 46,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7566,
+          1.4083
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "StratosHealth",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 6300000,
+        "employees": 18,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.1451,
+          22.6098
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "TeraSpace",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 123800000,
+        "employees": 327,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.2677,
+          43.6006
+        ]
+      },
+      "properties": {
+        "city": "Toronto",
+        "country": "Canada",
+        "company_name": "HelixLogic",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1900000,
+        "employees": 6,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0423,
+          40.5707
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "OrbitRobotics",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 600000,
+        "employees": 8,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7718,
+          32.1943
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "CryoData",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 125600000,
+        "employees": 841,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7677,
+          32.0005
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "CipherBio",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 44700000,
+        "employees": 628,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0586,
+          51.5986
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "CortexLabs",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 48700000,
+        "employees": 86,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.4008,
+          39.8202
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "HaloAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1900000,
+        "employees": 6,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.9341,
+          1.4748
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "VoxGenomics",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 800000,
+        "employees": 10,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.5313,
+          39.9083
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "AetherAI",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 79800000,
+        "employees": 213,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4238,
+          47.5078
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "FluxTech",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 52600000,
+        "employees": 228,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.7342,
+          19.0685
+        ]
+      },
+      "properties": {
+        "city": "Mumbai",
+        "country": "India",
+        "company_name": "IonicEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 53200000,
+        "employees": 1112,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8568,
+          40.8373
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "CortexData",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 19500000,
+        "employees": 88,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.2628,
+          25.6428
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "AstroRobotics",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 900000,
+        "employees": 13,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.0686,
+          59.3195
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "NovaVentures",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 15,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4269,
+          31.2774
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "VoxData",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 301500000,
+        "employees": 801,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1218,
+          40.8428
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "IonicData",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 14400000,
+        "employees": 41,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.2497,
+          53.3357
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "AstroData",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 25200000,
+        "employees": 87,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.4665,
+          52.6014
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "PrismHealth",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 10400000,
+        "employees": 40,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.6117,
+          31.2089
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "NexusSpace",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 57600000,
+        "employees": 119,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.2973,
+          25.2949
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "CipherVentures",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 10700000,
+        "employees": 39,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.1294,
+          25.3439
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "CipherWorks",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1800000,
+        "employees": 5,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1732,
+          25.9054
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "VoxWorks",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 9700000,
+        "employees": 73,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.6604,
+          13.084
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "IonicCloud",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 104600000,
+        "employees": 433,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1865,
+          42.4891
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "MacroVentures",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 3700000,
+        "employees": 11,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5223,
+          -23.6333
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "FluxAI",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 97300000,
+        "employees": 698,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1021,
+          40.6357
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "GridCloud",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 69700000,
+        "employees": 681,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.4793,
+          43.7558
+        ]
+      },
+      "properties": {
+        "city": "Toronto",
+        "country": "Canada",
+        "company_name": "QuantumRobotics",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 4400000,
+        "employees": 25,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3341,
+          31.3801
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "NexusNetworks",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 5900000,
+        "employees": 37,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2484,
+          51.5547
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "AstroAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 124700000,
+        "employees": 775,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.3201,
+          25.2987
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "NeoFinance",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 2100000,
+        "employees": 40,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2731,
+          6.4576
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "GridBio",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1400000,
+        "employees": 7,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.5203,
+          37.8723
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "NeoData",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 3700000,
+        "employees": 23,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.9211,
+          32.1365
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "CipherCloud",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 600000,
+        "employees": 4,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.964,
+          -1.2925
+        ]
+      },
+      "properties": {
+        "city": "Nairobi",
+        "country": "Kenya",
+        "company_name": "VertexBio",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 202900000,
+        "employees": 974,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7624,
+          -23.4018
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "AetherTech",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 18100000,
+        "employees": 42,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2852,
+          37.7982
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "AstroFinance",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 175300000,
+        "employees": 571,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0991,
+          51.3753
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "OrbitFinance",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 136200000,
+        "employees": 1152,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0634,
+          51.4328
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "CipherSpace",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 16500000,
+        "employees": 46,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5652,
+          35.7666
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "VectorNetworks",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 243300000,
+        "employees": 2428,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5551,
+          -23.672
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "NexusSystems",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1300000,
+        "employees": 10,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.9681,
+          1.4688
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "VoxNetworks",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 11300000,
+        "employees": 40,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.345,
+          39.9467
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "VectorSystems",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 7800000,
+        "employees": 35,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.9713,
+          42.2502
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "HelixFinance",
+        "sector": "Robotics",
+        "funding_round": "Series A",
+        "amount_usd": 10300000,
+        "employees": 45,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9873,
+          37.4439
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "CryoFinance",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 11,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3334,
+          37.9128
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "QuantumVentures",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 10500000,
+        "employees": 91,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3167,
+          37.8917
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "CortexNetworks",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1100000,
+        "employees": 9,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0797,
+          40.8176
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "AxionLogic",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 43600000,
+        "employees": 843,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.0809,
+          59.4447
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "VertexNetworks",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 149300000,
+        "employees": 243,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3953,
+          37.8061
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "ForgeSystems",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 1100000,
+        "employees": 36,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.1612,
+          -33.9866
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "QuantumSecurity",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 237100000,
+        "employees": 2711,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4401,
+          47.5958
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "NexusRobotics",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 2000000,
+        "employees": 11,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7506,
+          1.233
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "VertexHealth",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 6400000,
+        "employees": 30,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4251,
+          37.627
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "VectorBio",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 52200000,
+        "employees": 444,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.6793,
+          32.116
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "TeraFinance",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 1200000,
+        "employees": 16,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3816,
+          37.9013
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "SynthHealth",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 15600000,
+        "employees": 81,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.8605,
+          37.5921
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "PrismTech",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 3200000,
+        "employees": 15,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8298,
+          1.4836
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "FluxVentures",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 21500000,
+        "employees": 105,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0122,
+          40.8538
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "DeepRobotics",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 16700000,
+        "employees": 148,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.2556,
+          25.8662
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "ZenoLogic",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 23800000,
+        "employees": 153,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8552,
+          32.1198
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "PulseCloud",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 45300000,
+        "employees": 989,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5926,
+          -23.6467
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "CortexTech",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 45900000,
+        "employees": 243,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.8225,
+          -1.4194
+        ]
+      },
+      "properties": {
+        "city": "Nairobi",
+        "country": "Kenya",
+        "company_name": "HaloVentures",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 197600000,
+        "employees": 364,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          17.9277,
+          59.4474
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "GridData",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 136000000,
+        "employees": 629,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.1439,
+          59.2629
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "CortexBio",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 6700000,
+        "employees": 26,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.536,
+          13.0168
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "PrismLabs",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1200000,
+        "employees": 7,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.6071,
+          13.0488
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "VertexLabs",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 172900000,
+        "employees": 995,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8949,
+          31.9383
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "PulseBio",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 155200000,
+        "employees": 377,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.7801,
+          30.1576
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "VectorHealth",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 324500000,
+        "employees": 1716,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.6668,
+          13.0015
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "ZenoDynamics",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 4100000,
+        "employees": 13,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.3157,
+          53.2253
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "PrismFinance",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 2000000,
+        "employees": 10,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1833,
+          51.3996
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "CortexCloud",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 24900000,
+        "employees": 176,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8985,
+          31.9446
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "SiloWorks",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 179100000,
+        "employees": 259,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3251,
+          31.3242
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "LumenFinance",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 59200000,
+        "employees": 776,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.8714,
+          -6.1588
+        ]
+      },
+      "properties": {
+        "city": "Jakarta",
+        "country": "Indonesia",
+        "company_name": "HaloTech",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 2000000,
+        "employees": 4,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7126,
+          1.33
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "CortexRobotics",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 2700000,
+        "employees": 27,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.4279,
+          52.6375
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "NeoSystems",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 1300000,
+        "employees": 32,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.657,
+          12.8585
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "FluxGenomics",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 700000,
+        "employees": 13,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.9317,
+          31.9993
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "PulseGenomics",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 65000000,
+        "employees": 1026,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9026,
+          19.0624
+        ]
+      },
+      "properties": {
+        "city": "Mumbai",
+        "country": "India",
+        "company_name": "CryoLogic",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 155700000,
+        "employees": 416,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7888,
+          31.9934
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "SynthWorks",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 244400000,
+        "employees": 4215,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8552,
+          32.1461
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "AxionDynamics",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1500000,
+        "employees": 6,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.2643,
+          6.4941
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "NexusTech",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 23500000,
+        "employees": 35,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0369,
+          37.5692
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "SiloTech",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 11,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6928,
+          41.9074
+        ]
+      },
+      "properties": {
+        "city": "Chicago",
+        "country": "United States",
+        "company_name": "PulseDynamics",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 3100000,
+        "employees": 20,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.3909,
+          40.0259
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "GridDynamics",
+        "sector": "Robotics",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1900000,
+        "employees": 14,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0023,
+          37.5782
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "VoxLogic",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 122900000,
+        "employees": 418,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0315,
+          40.6005
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "SiloSpace",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 434500000,
+        "employees": 2473,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.5396,
+          41.8778
+        ]
+      },
+      "properties": {
+        "city": "Chicago",
+        "country": "United States",
+        "company_name": "QuantumNetworks",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1800000,
+        "employees": 5,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.757,
+          41.7499
+        ]
+      },
+      "properties": {
+        "city": "Chicago",
+        "country": "United States",
+        "company_name": "CipherRobotics",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 3100000,
+        "employees": 28,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.0569,
+          60.0327
+        ]
+      },
+      "properties": {
+        "city": "Helsinki",
+        "country": "Finland",
+        "company_name": "DeepNetworks",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 393200000,
+        "employees": 2282,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.869,
+          32.1778
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "GridTech",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 700000,
+        "employees": 11,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.2937,
+          -33.8982
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "SynthLabs",
+        "sector": "AI",
+        "funding_round": "Seed",
+        "amount_usd": 5300000,
+        "employees": 9,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9023,
+          37.528
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "AxionBio",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 14,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4919,
+          31.3637
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "PrismRobotics",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 22500000,
+        "employees": 68,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1483,
+          40.6914
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "CryoDynamics",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 89600000,
+        "employees": 570,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5124,
+          31.1919
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "StratosBio",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 69500000,
+        "employees": 337,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5362,
+          31.1214
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "HaloGenomics",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 50800000,
+        "employees": 178,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3629,
+          37.8472
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "NovaFinance",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 29600000,
+        "employees": 103,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0046,
+          37.5056
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "TeraTech",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 26300000,
+        "employees": 54,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4025,
+          37.7042
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "NexusEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 121300000,
+        "employees": 249,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8598,
+          19.088
+        ]
+      },
+      "properties": {
+        "city": "Mumbai",
+        "country": "India",
+        "company_name": "OrbitSystems",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 41400000,
+        "employees": 770,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.9381,
+          -6.2885
+        ]
+      },
+      "properties": {
+        "city": "Jakarta",
+        "country": "Indonesia",
+        "company_name": "NeoSecurity",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 144300000,
+        "employees": 1015,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3847,
+          37.6645
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "OrbitGenomics",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 22000000,
+        "employees": 104,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.7603,
+          30.2088
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "QuantumWorks",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1000000,
+        "employees": 8,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6349,
+          35.7038
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "PulseSpace",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 77000000,
+        "employees": 107,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.646,
+          10.8385
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "PulseWorks",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 23600000,
+        "employees": 80,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.5896,
+          10.7644
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "DeepSpace",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 800000,
+        "employees": 4,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2189,
+          51.5558
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "NeoGenomics",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 5900000,
+        "employees": 40,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4043,
+          37.6418
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "TeraRobotics",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 46800000,
+        "employees": 730,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4009,
+          47.4858
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "MacroSecurity",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 60400000,
+        "employees": 266,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.7193,
+          35.7362
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "AstroLabs",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 100400000,
+        "employees": 2330,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1969,
+          25.7087
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "PrismData",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1800000,
+        "employees": 8,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.2207,
+          25.9113
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "IonicTech",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 488000000,
+        "employees": 1299,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7279,
+          32.0113
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "VectorLogic",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 95700000,
+        "employees": 1195,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.2896,
+          -33.8511
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "QuantumEnergy",
+        "sector": "Climate",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1900000,
+        "employees": 15,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5063,
+          31.3539
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "LumenGenomics",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 189300000,
+        "employees": 952,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.452,
+          43.7404
+        ]
+      },
+      "properties": {
+        "city": "Toronto",
+        "country": "Canada",
+        "company_name": "ForgeDynamics",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 173200000,
+        "employees": 1400,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          55.1419,
+          25.0902
+        ]
+      },
+      "properties": {
+        "city": "Dubai",
+        "country": "UAE",
+        "company_name": "PrismVentures",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 86800000,
+        "employees": 800,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0984,
+          40.7165
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "OrbitHealth",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 52500000,
+        "employees": 674,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.7392,
+          13.0593
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "PulseSystems",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 10400000,
+        "employees": 42,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6582,
+          35.7452
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "TeraData",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 3700000,
+        "employees": 22,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5948,
+          35.6302
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "AetherNetworks",
+        "sector": "Robotics",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1200000,
+        "employees": 15,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.2596,
+          39.9934
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "DeepData",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1100000,
+        "employees": 7,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9547,
+          19.2043
+        ]
+      },
+      "properties": {
+        "city": "Mumbai",
+        "country": "India",
+        "company_name": "VoxEnergy",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1300000,
+        "employees": 10,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.114,
+          40.629
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "HaloLabs",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 111100000,
+        "employees": 903,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.4667,
+          13.1088
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "AxionAI",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 24200000,
+        "employees": 114,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5686,
+          31.2033
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "GridLabs",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 98300000,
+        "employees": 839,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.9091,
+          22.4503
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "NeoEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 18100000,
+        "employees": 229,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3754,
+          37.8182
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "VertexEnergy",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1100000,
+        "employees": 10,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1847,
+          42.232
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "PrismBio",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 34500000,
+        "employees": 130,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.3579,
+          39.8145
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "OrbitNetworks",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 5700000,
+        "employees": 9,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4452,
+          37.8831
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "HelixSpace",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 50300000,
+        "employees": 310,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.3634,
+          53.357
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "ZenoNetworks",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 110600000,
+        "employees": 917,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4056,
+          37.6803
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "DeepAI",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 600000,
+        "employees": 3,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.0743,
+          25.875
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "AxionAnalytics",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 113100000,
+        "employees": 572,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.3537,
+          37.763
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "HelixRobotics",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 161200000,
+        "employees": 318,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2225,
+          51.52
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "OrbitCloud",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1700000,
+        "employees": 7,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.4474,
+          48.954
+        ]
+      },
+      "properties": {
+        "city": "Paris",
+        "country": "France",
+        "company_name": "OrbitSecurity",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 7000000,
+        "employees": 13,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4282,
+          47.6391
+        ]
+      },
+      "properties": {
+        "city": "Seattle",
+        "country": "United States",
+        "company_name": "VectorAI",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1800000,
+        "employees": 9,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.3924,
+          43.6825
+        ]
+      },
+      "properties": {
+        "city": "Toronto",
+        "country": "Canada",
+        "company_name": "IonicLogic",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 500000,
+        "employees": 14,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9239,
+          19.1404
+        ]
+      },
+      "properties": {
+        "city": "Mumbai",
+        "country": "India",
+        "company_name": "TeraLogic",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 23100000,
+        "employees": 91,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.1221,
+          59.32
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "CipherFinance",
+        "sector": "Robotics",
+        "funding_round": "Series A",
+        "amount_usd": 21800000,
+        "employees": 120,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.4995,
+          48.9243
+        ]
+      },
+      "properties": {
+        "city": "Paris",
+        "country": "France",
+        "company_name": "GridRobotics",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 71900000,
+        "employees": 198,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0085,
+          51.5873
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "QuantumDynamics",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 76700000,
+        "employees": 1101,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.5085,
+          37.6983
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "FluxFinance",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 14900000,
+        "employees": 53,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9071,
+          37.4291
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "ForgeSecurity",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 114600000,
+        "employees": 708,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1405,
+          42.4823
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "SynthAnalytics",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 17100000,
+        "employees": 96,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0132,
+          51.5251
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "ZenoSpace",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 140800000,
+        "employees": 3384,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.9091,
+          19.0863
+        ]
+      },
+      "properties": {
+        "city": "Mumbai",
+        "country": "India",
+        "company_name": "FluxHealth",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 8300000,
+        "employees": 56,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8833,
+          40.7439
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "VectorSecurity",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 18300000,
+        "employees": 85,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.0205,
+          37.5888
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "DeepEnergy",
+        "sector": "Biotech",
+        "funding_round": "Series B",
+        "amount_usd": 62000000,
+        "employees": 348,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5523,
+          35.824
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "ZenoSystems",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 47800000,
+        "employees": 752,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1275,
+          40.8081
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "StratosRobotics",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 5800000,
+        "employees": 33,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3418,
+          31.2967
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "HaloDynamics",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 52900000,
+        "employees": 1031,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.6145,
+          30.2338
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "NexusHealth",
+        "sector": "Robotics",
+        "funding_round": "Seed",
+        "amount_usd": 4800000,
+        "employees": 9,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4462,
+          31.1281
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "OrbitLabs",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 20200000,
+        "employees": 84,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.9789,
+          42.5008
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "CryoVentures",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 134200000,
+        "employees": 657,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.7411,
+          -1.1813
+        ]
+      },
+      "properties": {
+        "city": "Nairobi",
+        "country": "Kenya",
+        "company_name": "ZenoGenomics",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 42200000,
+        "employees": 210,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.8549,
+          30.1846
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "TeraCloud",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 7900000,
+        "employees": 36,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.589,
+          31.1538
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "HaloCloud",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 284000000,
+        "employees": 1085,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8132,
+          1.4022
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "VertexWorks",
+        "sector": "Biotech",
+        "funding_round": "Series B",
+        "amount_usd": 65900000,
+        "employees": 296,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.7117,
+          10.8769
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "SiloBio",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1400000,
+        "employees": 3,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.6072,
+          31.328
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "FluxEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 33100000,
+        "employees": 126,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4154,
+          31.0955
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "GridSpace",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 447000000,
+        "employees": 1120,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.6664,
+          30.2619
+        ]
+      },
+      "properties": {
+        "city": "Austin",
+        "country": "United States",
+        "company_name": "SiloFinance",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 32300000,
+        "employees": 245,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0136,
+          40.6753
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "SynthDynamics",
+        "sector": "SaaS",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 500000,
+        "employees": 13,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.4952,
+          10.8105
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "LumenTech",
+        "sector": "Climate",
+        "funding_round": "Series B",
+        "amount_usd": 36100000,
+        "employees": 151,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.2939,
+          37.8638
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "IonicLabs",
+        "sector": "Space",
+        "funding_round": "Series A",
+        "amount_usd": 7000000,
+        "employees": 48,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9475,
+          40.7545
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "IonicDynamics",
+        "sector": "Robotics",
+        "funding_round": "Series B",
+        "amount_usd": 72100000,
+        "employees": 166,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.8243,
+          59.5326
+        ]
+      },
+      "properties": {
+        "city": "Tallinn",
+        "country": "Estonia",
+        "company_name": "PulseEnergy",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 165200000,
+        "employees": 817,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.6746,
+          10.8774
+        ]
+      },
+      "properties": {
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam",
+        "company_name": "ForgeNetworks",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 75700000,
+        "employees": 147,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1116,
+          40.8571
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NovaGenomics",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 149300000,
+        "employees": 2442,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.0903,
+          42.3793
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "AxionHealth",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 443500000,
+        "employees": 3933,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.5383,
+          52.4699
+        ]
+      },
+      "properties": {
+        "city": "Berlin",
+        "country": "Germany",
+        "company_name": "NovaLogic",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 61400000,
+        "employees": 136,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.5473,
+          40.0316
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "SynthVentures",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 464600000,
+        "employees": 2248,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.5619,
+          12.8689
+        ]
+      },
+      "properties": {
+        "city": "Bangalore",
+        "country": "India",
+        "company_name": "HaloHealth",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 98300000,
+        "employees": 887,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.6732,
+          1.4485
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "VoxTech",
+        "sector": "Fintech",
+        "funding_round": "Series C",
+        "amount_usd": 168500000,
+        "employees": 791,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.359,
+          34.1817
+        ]
+      },
+      "properties": {
+        "city": "Los Angeles",
+        "country": "United States",
+        "company_name": "AetherCloud",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 178600000,
+        "employees": 1149,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6085,
+          35.8246
+        ]
+      },
+      "properties": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "company_name": "CryoSpace",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 700000,
+        "employees": 6,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.5098,
+          37.6649
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "PrismSpace",
+        "sector": "Space",
+        "funding_round": "Series B",
+        "amount_usd": 49500000,
+        "employees": 258,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.1592,
+          -33.8531
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "CipherLogic",
+        "sector": "Fintech",
+        "funding_round": "Series A",
+        "amount_usd": 17500000,
+        "employees": 90,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8893,
+          40.7128
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "MacroAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Series D",
+        "amount_usd": 157500000,
+        "employees": 2862,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.4318,
+          -33.8939
+        ]
+      },
+      "properties": {
+        "city": "Cape Town",
+        "country": "South Africa",
+        "company_name": "HaloLogic",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 2500000,
+        "employees": 23,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.9509,
+          22.6302
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "AstroSpace",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 170200000,
+        "employees": 1176,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.5985,
+          41.8983
+        ]
+      },
+      "properties": {
+        "city": "Chicago",
+        "country": "United States",
+        "company_name": "ForgeGenomics",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 191100000,
+        "employees": 577,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1058,
+          40.5867
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NexusWorks",
+        "sector": "Robotics",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 2000000,
+        "employees": 12,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4722,
+          47.3478
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "CryoNetworks",
+        "sector": "Robotics",
+        "funding_round": "Series C",
+        "amount_usd": 115600000,
+        "employees": 859,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.7147,
+          -6.3103
+        ]
+      },
+      "properties": {
+        "city": "Jakarta",
+        "country": "Indonesia",
+        "company_name": "OrbitBio",
+        "sector": "Fintech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1100000,
+        "employees": 14,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7357,
+          32.0674
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "LumenAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 43300000,
+        "employees": 153,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1106,
+          42.3202
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "NexusGenomics",
+        "sector": "Fintech",
+        "funding_round": "Series D",
+        "amount_usd": 184400000,
+        "employees": 3580,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1892,
+          51.5189
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "AetherSpace",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 700000,
+        "employees": 12,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.9754,
+          42.2391
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "DeepWorks",
+        "sector": "Robotics",
+        "funding_round": "Series A",
+        "amount_usd": 18700000,
+        "employees": 77,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.0432,
+          59.4247
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "QuantumData",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 464300000,
+        "employees": 3614,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.1395,
+          40.7692
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "SynthEnergy",
+        "sector": "AI",
+        "funding_round": "Series A",
+        "amount_usd": 13900000,
+        "employees": 75,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2724,
+          51.4155
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "PulseRobotics",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 8400000,
+        "employees": 65,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.315,
+          53.4212
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "HelixBio",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 11600000,
+        "employees": 34,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2433,
+          51.4244
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "AxionSystems",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1700000,
+        "employees": 9,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.1707,
+          25.732
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "CryoTech",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 500000,
+        "employees": 6,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.1967,
+          51.46
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "HaloSystems",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1400000,
+        "employees": 5,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8944,
+          32.0776
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "LumenBio",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 184400000,
+        "employees": 545,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.791,
+          -6.2921
+        ]
+      },
+      "properties": {
+        "city": "Jakarta",
+        "country": "Indonesia",
+        "company_name": "NeoCloud",
+        "sector": "Space",
+        "funding_round": "Series C",
+        "amount_usd": 153600000,
+        "employees": 778,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -6.127,
+          53.4079
+        ]
+      },
+      "properties": {
+        "city": "Dublin",
+        "country": "Ireland",
+        "company_name": "SiloCloud",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 430800000,
+        "employees": 911,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3676,
+          31.1213
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "StratosLogic",
+        "sector": "Biotech",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1300000,
+        "employees": 8,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3918,
+          47.264
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "VectorWorks",
+        "sector": "Climate",
+        "funding_round": "Series C",
+        "amount_usd": 55800000,
+        "employees": 920,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.2691,
+          39.9635
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "StratosNetworks",
+        "sector": "Space",
+        "funding_round": "Seed",
+        "amount_usd": 6900000,
+        "employees": 27,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.7988,
+          1.2745
+        ]
+      },
+      "properties": {
+        "city": "Singapore",
+        "country": "Singapore",
+        "company_name": "PrismWorks",
+        "sector": "Climate",
+        "funding_round": "Series D",
+        "amount_usd": 498000000,
+        "employees": 4280,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4917,
+          37.6655
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "NeoNetworks",
+        "sector": "Climate",
+        "funding_round": "Series A",
+        "amount_usd": 27100000,
+        "employees": 71,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.27,
+          25.9006
+        ]
+      },
+      "properties": {
+        "city": "Miami",
+        "country": "United States",
+        "company_name": "IonicFinance",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 30300000,
+        "employees": 253,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.4737,
+          31.1224
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "CortexSystems",
+        "sector": "SaaS",
+        "funding_round": "Seed",
+        "amount_usd": 2900000,
+        "employees": 40,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.02,
+          51.4112
+        ]
+      },
+      "properties": {
+        "city": "London",
+        "country": "United Kingdom",
+        "company_name": "HelixAI",
+        "sector": "AI",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 800000,
+        "employees": 6,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.3782,
+          31.1967
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "HaloData",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 3100000,
+        "employees": 8,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.449,
+          39.9161
+        ]
+      },
+      "properties": {
+        "city": "Beijing",
+        "country": "China",
+        "company_name": "VoxVentures",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 136200000,
+        "employees": 1010,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5656,
+          47.3276
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "QuantumAnalytics",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 28300000,
+        "employees": 310,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5805,
+          31.2274
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "StratosCloud",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 196100000,
+        "employees": 1132,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          114.1108,
+          22.6593
+        ]
+      },
+      "properties": {
+        "city": "Shenzhen",
+        "country": "China",
+        "company_name": "CortexEnergy",
+        "sector": "Biotech",
+        "funding_round": "Seed",
+        "amount_usd": 5500000,
+        "employees": 24,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.9912,
+          37.4359
+        ]
+      },
+      "properties": {
+        "city": "Seoul",
+        "country": "South Korea",
+        "company_name": "MacroSystems",
+        "sector": "Space",
+        "funding_round": "Series D",
+        "amount_usd": 214600000,
+        "employees": 4575,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.4829,
+          37.6969
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "VoxAnalytics",
+        "sector": "SaaS",
+        "funding_round": "Series B",
+        "amount_usd": 22900000,
+        "employees": 227,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.5216,
+          37.7525
+        ]
+      },
+      "properties": {
+        "city": "San Francisco",
+        "country": "United States",
+        "company_name": "CortexSecurity",
+        "sector": "Robotics",
+        "funding_round": "Series D",
+        "amount_usd": 187000000,
+        "employees": 1017,
+        "year": 2024
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0157,
+          40.7538
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "SynthGenomics",
+        "sector": "Biotech",
+        "funding_round": "Series D",
+        "amount_usd": 431900000,
+        "employees": 2838,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.5002,
+          31.3596
+        ]
+      },
+      "properties": {
+        "city": "Shanghai",
+        "country": "China",
+        "company_name": "AxionFinance",
+        "sector": "SaaS",
+        "funding_round": "Series C",
+        "amount_usd": 92900000,
+        "employees": 238,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4471,
+          47.393
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "NeoWorks",
+        "sector": "AI",
+        "funding_round": "Series B",
+        "amount_usd": 66600000,
+        "employees": 228,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6112,
+          47.3986
+        ]
+      },
+      "properties": {
+        "city": "Zurich",
+        "country": "Switzerland",
+        "company_name": "OrbitDynamics",
+        "sector": "Fintech",
+        "funding_round": "Seed",
+        "amount_usd": 6400000,
+        "employees": 21,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          17.9755,
+          59.4354
+        ]
+      },
+      "properties": {
+        "city": "Stockholm",
+        "country": "Sweden",
+        "company_name": "ForgeFinance",
+        "sector": "AI",
+        "funding_round": "Series C",
+        "amount_usd": 179400000,
+        "employees": 232,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5669,
+          -23.6301
+        ]
+      },
+      "properties": {
+        "city": "Sao Paulo",
+        "country": "Brazil",
+        "company_name": "GridEnergy",
+        "sector": "Fintech",
+        "funding_round": "Series B",
+        "amount_usd": 53100000,
+        "employees": 103,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.1805,
+          -33.8369
+        ]
+      },
+      "properties": {
+        "city": "Sydney",
+        "country": "Australia",
+        "company_name": "VertexAI",
+        "sector": "AI",
+        "funding_round": "Series D",
+        "amount_usd": 448900000,
+        "employees": 3521,
+        "year": 2025
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8402,
+          32.0477
+        ]
+      },
+      "properties": {
+        "city": "Tel Aviv",
+        "country": "Israel",
+        "company_name": "NeoSpace",
+        "sector": "Biotech",
+        "funding_round": "Series C",
+        "amount_usd": 165300000,
+        "employees": 659,
+        "year": 2023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.1773,
+          42.4094
+        ]
+      },
+      "properties": {
+        "city": "Boston",
+        "country": "United States",
+        "company_name": "NexusCloud",
+        "sector": "SaaS",
+        "funding_round": "Series A",
+        "amount_usd": 8000000,
+        "employees": 119,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.0176,
+          40.5824
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "ForgeSpace",
+        "sector": "Biotech",
+        "funding_round": "Series A",
+        "amount_usd": 25300000,
+        "employees": 30,
+        "year": 2020
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.5147,
+          6.6285
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "LumenDynamics",
+        "sector": "Climate",
+        "funding_round": "Seed",
+        "amount_usd": 6900000,
+        "employees": 34,
+        "year": 2021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8791,
+          40.5722
+        ]
+      },
+      "properties": {
+        "city": "New York",
+        "country": "United States",
+        "company_name": "NovaSystems",
+        "sector": "SaaS",
+        "funding_round": "Series D",
+        "amount_usd": 235500000,
+        "employees": 1080,
+        "year": 2022
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.5172,
+          6.4787
+        ]
+      },
+      "properties": {
+        "city": "Lagos",
+        "country": "Nigeria",
+        "company_name": "NovaSpace",
+        "sector": "Space",
+        "funding_round": "Pre-Seed",
+        "amount_usd": 1300000,
+        "employees": 5,
+        "year": 2024
+      }
+    }
+  ]
+}
