@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
 import {
   flowSemanticSearch,
   scoreMatch,
@@ -1440,5 +1440,142 @@ describe("flowCompareDatasets — edge cases", () => {
     // Last value wins for Map
     const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
     expect(result.changed_rows + result.unchanged_rows).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_pivot_table (Tool 31)
+// ============================================================================
+
+describe("flowPivotTable — edge cases", () => {
+  it("single row produces one group", () => {
+    const csv = "cat,val\nA,100";
+    const result = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "sum" } });
+    expect(result.row_count).toBe(1);
+  });
+
+  it("all rows same group produces single output row", () => {
+    const csv = "cat,val\nX,10\nX,20\nX,30";
+    const result = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "sum" } });
+    expect(result.row_count).toBe(1);
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const sumIdx = headers.indexOf("val_sum");
+    expect(Number(lines[1].split(",")[sumIdx])).toBe(60);
+  });
+
+  it("min/max aggregations work correctly", () => {
+    const csv = "cat,val\nA,5\nA,15\nA,10";
+    const minResult = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "min" } });
+    const maxResult = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "max" } });
+    const minLines = minResult.csv.split("\n");
+    const maxLines = maxResult.csv.split("\n");
+    const minHeaders = minLines[0].split(",");
+    const maxHeaders = maxLines[0].split(",");
+    expect(Number(minLines[1].split(",")[minHeaders.indexOf("val_min")])).toBe(5);
+    expect(Number(maxLines[1].split(",")[maxHeaders.indexOf("val_max")])).toBe(15);
+  });
+
+  it("handles empty values in aggregation column", () => {
+    const csv = "cat,val\nA,10\nA,\nA,30";
+    const result = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "sum" } });
+    // NaN values should be filtered, sum = 10+30 = 40
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const sumIdx = headers.indexOf("val_sum");
+    expect(Number(lines[1].split(",")[sumIdx])).toBe(40);
+  });
+
+  it("two-level group-by produces correct number of groups", () => {
+    const csv = "region,product,sales\nN,A,10\nN,B,20\nS,A,30\nS,B,40\nN,A,5";
+    const result = flowPivotTable({ csv_content: csv, group_by: ["region", "product"], aggregations: { sales: "sum" } });
+    expect(result.row_count).toBe(4); // N-A, N-B, S-A, S-B
+  });
+
+  it("summary includes group-by columns", () => {
+    const csv = "cat,val\nA,10\nB,20";
+    const result = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "count" } });
+    expect(result.summary).toContain("cat");
+  });
+
+  it("avg handles single value per group", () => {
+    const csv = "cat,val\nA,42";
+    const result = flowPivotTable({ csv_content: csv, group_by: ["cat"], aggregations: { val: "avg" } });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const avgIdx = headers.indexOf("val_avg");
+    expect(Number(lines[1].split(",")[avgIdx])).toBe(42);
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_regression_analysis (Tool 32)
+// ============================================================================
+
+describe("flowRegressionAnalysis — edge cases", () => {
+  it("two points produce perfect fit", () => {
+    const csv = "x,y\n0,0\n10,20";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.r_squared).toBeCloseTo(1, 5);
+    expect(result.slope).toBeCloseTo(2, 5);
+    expect(result.intercept).toBeCloseTo(0, 5);
+  });
+
+  it("constant y gives slope = 0", () => {
+    const csv = "x,y\n1,5\n2,5\n3,5\n4,5";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.slope).toBe(0);
+    expect(result.intercept).toBe(5);
+  });
+
+  it("throws with only one data point", () => {
+    const csv = "x,y\n1,2";
+    expect(() =>
+      flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" })
+    ).toThrow();
+  });
+
+  it("handles large values without overflow", () => {
+    const csv = "x,y\n1000000,2000000\n2000000,4000000\n3000000,6000000";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.r_squared).toBeCloseTo(1, 3);
+    expect(result.slope).toBeCloseTo(2, 3);
+  });
+
+  it("preserves extra columns in output CSV", () => {
+    const csv = "x,y,label,category\n1,2,A,cat1\n2,4,B,cat2\n3,6,C,cat3";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.csv).toContain("label");
+    expect(result.csv).toContain("category");
+    expect(result.csv).toContain("_predicted");
+    expect(result.csv).toContain("_residual");
+  });
+
+  it("equation string has correct format", () => {
+    const csv = "x,y\n1,3\n2,5\n3,7";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.equation).toMatch(/y = .+x .+ .+/);
+  });
+
+  it("negative intercept shown correctly in equation", () => {
+    // y = 2x - 1: points (1,1), (2,3), (3,5)
+    const csv = "x,y\n1,1\n2,3\n3,5";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.equation).toContain("-");
+    expect(result.intercept).toBeCloseTo(-1, 3);
+  });
+
+  it("p_value is small for strong relationship", () => {
+    const csv = "x,y\n1,2\n2,4\n3,6\n4,8\n5,10\n6,12\n7,14\n8,16";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.p_value).toBeLessThan(0.01);
+  });
+
+  it("summary describes strength correctly", () => {
+    // Perfect linear
+    const csv = "x,y\n1,2\n2,4\n3,6";
+    const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+    expect(result.summary).toContain("very strong");
+    expect(result.summary).toContain("positive");
   });
 });

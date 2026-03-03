@@ -12,7 +12,7 @@ import {
   flowMergeDatasets,
 } from "./tools-v2.js";
 import { flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
 
 // ============================================================================
 // Helpers: CSV generators for fast-check (v4 API)
@@ -1269,6 +1269,166 @@ describe("Property: Compare datasets", () => {
         }
       ),
       { numRuns: 500 }
+    );
+  });
+});
+
+// =============================================================================
+// Section 23: flow_pivot_table — property tests
+// =============================================================================
+
+describe("flow_pivot_table properties", () => {
+  it("row count equals number of distinct group keys", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 20 }),
+        fc.integer({ min: 1, max: 5 }),
+        (nRows, nGroups) => {
+          const groups = Array.from({ length: nGroups }, (_, i) => `g${i}`);
+          const csv = "group,value\n" + Array.from({ length: nRows }, (_, i) =>
+            `${groups[i % nGroups]},${i * 10}`
+          ).join("\n");
+          const result = flowPivotTable({
+            csv_content: csv,
+            group_by: ["group"],
+            aggregations: { value: "sum" },
+          });
+          expect(result.row_count).toBe(Math.min(nGroups, nRows));
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("sum aggregation equals total of column values per group", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 0, max: 100 }), { minLength: 2, maxLength: 20 }),
+        (values) => {
+          const csv = "cat,val\n" + values.map((v, i) => `${i % 2 === 0 ? "A" : "B"},${v}`).join("\n");
+          const result = flowPivotTable({
+            csv_content: csv,
+            group_by: ["cat"],
+            aggregations: { val: "sum" },
+          });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const sumIdx = headers.indexOf("val_sum");
+          let total = 0;
+          for (let i = 1; i < lines.length; i++) {
+            total += Number(lines[i].split(",")[sumIdx]);
+          }
+          expect(total).toBe(values.reduce((s, v) => s + v, 0));
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("_group_size values sum to total input rows", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 30 }),
+        (n) => {
+          const csv = "cat,val\n" + Array.from({ length: n }, (_, i) => `g${i % 3},${i}`).join("\n");
+          const result = flowPivotTable({
+            csv_content: csv,
+            group_by: ["cat"],
+            aggregations: { val: "count" },
+          });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const sizeIdx = headers.indexOf("_group_size");
+          let totalSize = 0;
+          for (let i = 1; i < lines.length; i++) {
+            totalSize += Number(lines[i].split(",")[sizeIdx]);
+          }
+          expect(totalSize).toBe(n);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+});
+
+// =============================================================================
+// Section 24: flow_regression_analysis — property tests
+// =============================================================================
+
+describe("flow_regression_analysis properties", () => {
+  it("R² is between 0 and 1 for any valid data", () => {
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.tuple(fc.integer({ min: -100, max: 100 }), fc.integer({ min: -100, max: 100 })),
+          { minLength: 3, maxLength: 20 }
+        ),
+        (pairs) => {
+          const csv = "x,y\n" + pairs.map(([x, y]) => `${x},${y}`).join("\n");
+          const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+          expect(result.r_squared).toBeGreaterThanOrEqual(0);
+          expect(result.r_squared).toBeLessThanOrEqual(1);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("residuals sum to approximately zero", () => {
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.tuple(fc.integer({ min: 1, max: 50 }), fc.integer({ min: 1, max: 200 })),
+          { minLength: 3, maxLength: 15 }
+        ),
+        (pairs) => {
+          const csv = "x,y\n" + pairs.map(([x, y]) => `${x},${y}`).join("\n");
+          const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const resIdx = headers.indexOf("_residual");
+          let sum = 0;
+          for (let i = 1; i < lines.length; i++) {
+            const val = Number(lines[i].split(",")[resIdx]);
+            if (!isNaN(val)) sum += val;
+          }
+          expect(Math.abs(sum)).toBeLessThan(1); // rounding tolerance
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("perfect linear data gives R² = 1", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: -10, max: 10 }),
+        fc.integer({ min: -10, max: 10 }).filter(s => s !== 0),
+        fc.integer({ min: 3, max: 10 }),
+        (intercept, slope, n) => {
+          const csv = "x,y\n" + Array.from({ length: n }, (_, i) =>
+            `${i},${slope * i + intercept}`
+          ).join("\n");
+          const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+          expect(result.r_squared).toBeCloseTo(1, 3);
+          expect(result.slope).toBeCloseTo(slope, 2);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("n_points matches input row count", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 3, max: 20 }),
+        (n) => {
+          const csv = "x,y\n" + Array.from({ length: n }, (_, i) => `${i},${i * 2}`).join("\n");
+          const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
+          expect(result.n_points).toBe(n);
+        }
+      ),
+      { numRuns: 200 }
     );
   });
 });
