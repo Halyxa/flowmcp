@@ -141,8 +141,9 @@ Plus **3 prompts** (recommendation, data prep, getting started) and **5 resource
 
 Interactive 3D viewers generated entirely by FlowMCP tools:
 
-- **[Neural Network Architecture](demos/neural-network-3d.html)** — 160 nodes, 2,610 connections, force layout computed in 137ms
+- **[Neural Network Architecture](demos/neural-network-3d.html)** — 160 nodes, 2,610 connections, force layout pre-computed
 - **[Global Startup Funding](demos/global-startup-funding-3d.html)** — 420 companies across 30 countries
+- **[Global Supply Chain](demos/supply-chain-3d.html)** — 100 nodes, 200 edges, 6 tiers from raw materials to retail
 - **[Climate Change Indicators](demos/climate-indicators-3d.html)** — 1,040 observations over 26 years
 - **[Investor Showcase](demos/investor-showcase.html)** — Landing page with all demos
 
@@ -220,14 +221,16 @@ Pre-built datasets in `samples/` for testing and demos:
 
 | Dataset | Rows | Type |
 |---------|------|------|
-| `ai-ecosystem.csv` | 22 nodes | Network graph |
-| `city-weather.csv` | 80 rows | Geographic + numeric |
-| `movies-basic.csv` | 50 rows | Multi-dimensional |
-| `sales-quarterly.csv` | 20 rows | Time series |
-| `global-startup-funding.csv` | 420 rows | Geographic + funding |
-| `neural-network-architecture.csv` | 160 nodes | Network graph |
-| `climate-change-indicators.csv` | 1,040 rows | Time series |
+| `demo-ai-ecosystem-network.csv` | 22 nodes | Network graph |
+| `tech-collaboration-network.csv` | 20 nodes | Network graph |
 | `supply-chain-network.csv` | 100 nodes | Network graph |
+| `neural-network-architecture.csv` | 160 nodes | Network graph |
+| `global-startup-funding.csv` | 420 rows | Geographic + funding |
+| `global-renewable-energy-map.csv` | 30 rows | Geographic + numeric |
+| `climate-change-indicators.csv` | 1,040 rows | Time series |
+| `saas-growth-timeseries.csv` | 36 rows | Time series |
+| `startup-metrics-scatter.csv` | 30 rows | Multi-dimensional |
+| `programming-languages-comparison.csv` | 20 rows | Multi-dimensional |
 
 ## License
 

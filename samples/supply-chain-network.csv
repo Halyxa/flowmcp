@@ -1,0 +1,101 @@
+id,connections,category,country,revenue_millions,employees,risk_score
+Mineral Ridge Mining,Precision Metals|Global Refining,Raw Materials,US,2840,1200,0.15
+Lithium Vale Corp,Battery Tech Inc|Precision Metals,Raw Materials,Brazil,1950,850,0.22
+Cobalt Ventures SA,Battery Tech Inc,Raw Materials,Congo,1200,620,0.68
+Tin & Rare Earth Ltd,Precision Metals|Apex Electronics,Raw Materials,Vietnam,890,480,0.31
+Silicon Purity Inc,Apex Electronics|Precision Metals,Raw Materials,US,3100,1400,0.12
+Global Refining,Precision Metals|SemiCorp Taiwan,Raw Materials,Germany,4200,1800,0.18
+Polymer Chemicals GmbH,Apex Electronics|Precision Metals,Raw Materials,Germany,2650,950,0.14
+Copper Mine Holdings,Precision Metals|Global Refining,Raw Materials,Chile,1580,720,0.25
+Rare Earth Processing,SemiCorp Taiwan|Apex Electronics,Raw Materials,China,2100,1100,0.35
+Cotton & Agricultural,FlexTech Manufacturing|Textile Mills,Raw Materials,India,420,280,0.28
+Precision Metals,SemiCorp Taiwan|Apex Electronics|Component Forge|MicroChip Fabrication,Component Manufacturing,Japan,8900,3200,0.09
+Battery Tech Inc,PowerCell Fusion|Assembly Hub Alpha|Assembly Hub Gamma,Component Manufacturing,South Korea,12450,4500,0.11
+Apex Electronics,PowerCell Fusion|MicroChip Fabrication|Component Forge|Assembly Hub Beta,Component Manufacturing,Taiwan,15600,5100,0.08
+SemiCorp Taiwan,MicroChip Fabrication|Component Forge|Assembly Hub Alpha,Component Manufacturing,Taiwan,18200,6300,0.07
+PowerCell Fusion,Assembly Hub Alpha|Assembly Hub Beta|Assembly Hub Gamma,Component Manufacturing,South Korea,9850,3400,0.13
+MicroChip Fabrication,Assembly Hub Beta|Assembly Hub Gamma,Component Manufacturing,Taiwan,13400,4800,0.10
+Component Forge,Assembly Hub Alpha|Assembly Hub Beta,Component Manufacturing,South Korea,8600,2900,0.12
+FlexTech Manufacturing,Textile Mills|Assembly Hub Gamma,Component Manufacturing,Vietnam,3200,1500,0.26
+Textile Mills,Assembly Hub Gamma|Assembly Hub Alpha,Component Manufacturing,India,2100,950,0.32
+Screen & Display Co,Assembly Hub Beta|Assembly Hub Gamma,Component Manufacturing,Japan,6700,2200,0.14
+Motor & Drive Systems,Assembly Hub Alpha|Assembly Hub Beta,Component Manufacturing,Germany,5400,1900,0.16
+OptiCal Components,Assembly Hub Gamma|Assembly Hub Beta,Component Manufacturing,US,4100,1600,0.19
+Connector Tech Group,Assembly Hub Alpha|Assembly Hub Beta|Assembly Hub Gamma,Component Manufacturing,Mexico,2800,1200,0.27
+Fastener & Hardware,Assembly Hub Alpha|Assembly Hub Beta|Assembly Hub Gamma,Component Manufacturing,US,1900,850,0.21
+Assembly Hub Alpha,DistHub Pacific|DistHub Atlantic,Assembly,China,22500,8500,0.19
+Assembly Hub Beta,DistHub Atlantic|DistHub Pacific|DistHub EMEA,Assembly,Mexico,18900,7200,0.22
+Assembly Hub Gamma,DistHub EMEA|DistHub Pacific,Assembly,Vietnam,16400,6100,0.25
+Advanced Assembly Plant,DistHub Atlantic|DistHub EMEA,Assembly,Germany,14200,5300,0.17
+Global Integration Works,DistHub Pacific|DistHub Atlantic,Assembly,Japan,11800,4400,0.14
+Precision Assembly Systems,DistHub EMEA|DistHub Atlantic,Assembly,South Korea,10500,3900,0.20
+Integration Services Ltd,DistHub Pacific|DistHub EMEA,Assembly,China,9200,3500,0.24
+Tech Assembly Line,DistHub Atlantic|DistHub Pacific,Assembly,Mexico,8100,3100,0.26
+Quality Assembly Pro,DistHub EMEA|DistHub Atlantic,Assembly,Germany,7600,2900,0.18
+Final Assembly Ops,DistHub Pacific|DistHub Atlantic,Assembly,Vietnam,6800,2600,0.28
+Unified Assembly Plant,DistHub EMEA|DistHub Pacific,Assembly,Taiwan,6200,2400,0.16
+DistHub Atlantic,RetailNet North America|LogisticFlow Express,Distribution,US,28500,9200,0.13
+DistHub Pacific,RetailNet APAC|LogisticFlow Express|LogisticFlow Global,Distribution,Singapore,24800,8100,0.15
+DistHub EMEA,RetailNet Europe|LogisticFlow Global|CargoLink International,Distribution,Netherlands,22100,7500,0.14
+Central Distribution Hub,RetailNet North America|RetailNet Europe,Distribution,Mexico,18600,6200,0.17
+South America LogHub,RetailNet South America|LogisticFlow Express,Distribution,Brazil,12400,4100,0.21
+Asian Distribution Center,RetailNet APAC|LogisticFlow Global,Distribution,China,20300,6800,0.22
+European Logistics Hub,RetailNet Europe|CargoLink International,Distribution,Germany,15900,5300,0.16
+India Distribution Park,RetailNet APAC|LogisticFlow Express,Distribution,India,9100,3100,0.29
+African Trade Hub,RetailNet Europe|LogisticFlow Global,Distribution,South Africa,7200,2400,0.34
+Pacific Cargo Hub,RetailNet APAC|LogisticFlow Express,Distribution,Australia,8600,2900,0.18
+Americas Freight Center,RetailNet North America|RetailNet South America,Distribution,US,11500,3900,0.14
+LogisticFlow Express,TechRetail Global|OnlineMarket Place|SpecialtyRetail Co,Logistics,US,18900,6200,0.12
+LogisticFlow Global,TechRetail Global|EuroRetail Masters|SpecialtyRetail Co,Logistics,Singapore,22100,7100,0.13
+CargoLink International,EuroRetail Masters|TechRetail Global,Logistics,Germany,15600,5100,0.15
+Pacific Shipping Lines,OnlineMarket Place|TechRetail Global,Logistics,China,13400,4300,0.20
+Swift Distribution Co,RetailNet North America|TechRetail Global|OnlineMarket Place,Logistics,Canada,11200,3700,0.14
+Global Express Logistics,EuroRetail Masters|TechRetail Global,Logistics,Netherlands,14800,4900,0.11
+Premium Courier Network,SpecialtyRetail Co|TechRetail Global,Logistics,UK,8900,2900,0.16
+Regional Transport Hub,OnlineMarket Place|EuroRetail Masters,Logistics,Mexico,7600,2600,0.23
+Strategic Freight Solutions,TechRetail Global|SpecialtyRetail Co,Logistics,Brazil,9400,3100,0.19
+Rapid Delivery Systems,OnlineMarket Place|SpecialtyRetail Co,Logistics,India,6200,2100,0.31
+TechRetail Global,ConsumerTech Store,Retail,US,45000,18500,0.10
+EuroRetail Masters,ConsumerTech Store|LocalMart Network,Retail,Germany,38500,14200,0.11
+OnlineMarket Place,ConsumerTech Store,Retail,China,52000,22100,0.18
+SpecialtyRetail Co,ConsumerTech Store|LocalMart Network,Retail,Japan,28900,11200,0.12
+LocalMart Network,ConsumerTech Store,Retail,Mexico,18200,7400,0.14
+BrazilTech Retail,ConsumerTech Store,Retail,Brazil,14100,5600,0.17
+IndiaPoint Commerce,ConsumerTech Store,Retail,India,11500,4900,0.25
+VietnamMall Distribution,ConsumerTech Store,Retail,Vietnam,9800,4100,0.26
+SouthKorea Outlets,ConsumerTech Store,Retail,South Korea,12600,5100,0.13
+TaiwanTrade Center,ConsumerTech Store,Retail,Taiwan,10200,4200,0.12
+ConsumerTech Store,,,US,58000,24500,0.09
+Bauxite Extractors,Global Refining|Precision Metals,Raw Materials,Australia,1740,620,0.19
+Tungsten Resources,Precision Metals|Component Forge,Raw Materials,China,980,410,0.38
+Graphite Specialty Corp,Battery Tech Inc|PowerCell Fusion,Raw Materials,Mexico,1320,530,0.24
+Palladium Mining Group,SemiCorp Taiwan|MicroChip Fabrication,Raw Materials,South Africa,2080,870,0.42
+Zinc Alloy Producers,Component Forge|Motor & Drive Systems,Raw Materials,India,760,340,0.33
+Sensor Array Systems,Assembly Hub Alpha|Assembly Hub Beta|Advanced Assembly Plant,Component Manufacturing,Japan,5800,2100,0.13
+Cooling Solutions Inc,Assembly Hub Beta|Assembly Hub Gamma|Tech Assembly Line,Component Manufacturing,Taiwan,3400,1300,0.15
+Capacitor Works Ltd,Assembly Hub Alpha|MicroChip Fabrication|Assembly Hub Gamma,Component Manufacturing,South Korea,2900,1100,0.17
+PCB Fabrication Group,Assembly Hub Beta|Advanced Assembly Plant|Global Integration Works,Component Manufacturing,China,4200,1700,0.21
+Cable & Wiring Corp,Assembly Hub Alpha|Assembly Hub Gamma|Precision Assembly Systems,Component Manufacturing,Mexico,1800,780,0.25
+Acoustic Engineering,Assembly Hub Beta|Tech Assembly Line,Component Manufacturing,Germany,3100,1200,0.14
+Thermal Interface Co,Assembly Hub Alpha|Assembly Hub Beta|Quality Assembly Pro,Component Manufacturing,US,2400,960,0.18
+SmartModule Assembly,DistHub Pacific|DistHub Atlantic|DistHub EMEA,Assembly,South Korea,9800,3700,0.19
+Compact Assembly Works,DistHub EMEA|DistHub Atlantic,Assembly,Czech Republic,7100,2700,0.20
+MicroAssembly Solutions,DistHub Pacific|DistHub Atlantic,Assembly,Japan,8400,3200,0.15
+Modular Build Center,DistHub Pacific|DistHub EMEA,Assembly,China,7800,3000,0.23
+Nordic Distribution AB,RetailNet Europe|LogisticFlow Global,Distribution,Sweden,10800,3600,0.12
+Gulf Trade Logistics,RetailNet APAC|LogisticFlow Express,Distribution,UAE,8900,3000,0.20
+TransPacific Freight,OnlineMarket Place|TechRetail Global|SpecialtyRetail Co,Logistics,Japan,10600,3500,0.13
+Continental Express,EuroRetail Masters|LocalMart Network,Logistics,France,9200,3100,0.15
+Arctic Supply Chain Co,RetailNet Europe|TechRetail Global,Logistics,Norway,6800,2300,0.11
+AfricaRetail Hub,ConsumerTech Store,Retail,Kenya,5400,2200,0.30
+AustraliaShop Direct,ConsumerTech Store,Retail,Australia,8900,3600,0.14
+MiddleEast Commerce,ConsumerTech Store,Retail,UAE,7200,2900,0.22
+NordicStore Group,ConsumerTech Store,Retail,Sweden,6100,2500,0.11
+UK Retail Alliance,ConsumerTech Store,Retail,UK,15800,6400,0.13
+CanadaTech Outlets,ConsumerTech Store,Retail,Canada,11200,4500,0.12
+FranceRetail Network,ConsumerTech Store,Retail,France,13500,5400,0.14
+SingaporeShop Hub,ConsumerTech Store,Retail,Singapore,9600,3800,0.10
+PhilippinesMart,ConsumerTech Store,Retail,Philippines,4800,2000,0.28
+IndonesiaRetail Co,ConsumerTech Store,Retail,Indonesia,5200,2100,0.27
+ThailandTrade Center,ConsumerTech Store,Retail,Thailand,6400,2600,0.21
+ColombiaShop Network,ConsumerTech Store,Retail,Colombia,4200,1800,0.24
