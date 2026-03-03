@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2546,6 +2546,67 @@ Output: Original CSV with appended cumulative columns, row_count, and summary.`,
           required: ["csv_content", "value_column", "functions"],
         },
       },
+      // Tool 55: flow_percentile_rank
+      {
+        name: "flow_percentile_rank",
+        description: `Compute percentile rank for each row in a numeric column. Shows what percentage of values fall at or below each value — essential for relative positioning, grading curves, and identifying top/bottom performers in a dataset.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "percentile", "percentile rank", "relative position", or "ranking"
+- User wants to know "what percentile is this value in"
+- User needs to grade or rank data relative to peers
+- User asks "top 10%", "bottom quartile", or "how does X compare to the rest"
+
+Input: CSV data and value_column to rank.
+Output: Original CSV with appended percentile column (0-100), row_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric column to rank",
+            },
+            value_column: {
+              type: "string",
+              description: "Numeric column to compute percentile ranks for",
+            },
+          },
+          required: ["csv_content", "value_column"],
+        },
+      },
+      // Tool 56: flow_coalesce_columns
+      {
+        name: "flow_coalesce_columns",
+        description: `Combine multiple columns by taking the first non-empty value per row. Merges partially-filled columns into a single consolidated column — essential for cleaning messy data with redundant or split information across columns.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "merge columns", "coalesce", "combine", or "consolidate" partially-filled columns
+- User has multiple columns with overlapping data (e.g., email1, email2, email3)
+- User wants to fill gaps using fallback columns
+- User asks for "first non-null" or "first available value" across columns
+
+Input: CSV data, columns (ordered by priority), and output_column name.
+Output: Original CSV with appended coalesced column, row_count, filled_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with partially-filled columns to coalesce",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to coalesce, in priority order (first non-empty wins)",
+            },
+            output_column: {
+              type: "string",
+              description: "Name for the new coalesced output column",
+            },
+          },
+          required: ["csv_content", "columns", "output_column"],
+        },
+      },
     ],
   };
 });
@@ -3116,6 +3177,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_cumulative": {
       try {
         const result = flowCumulative(args as unknown as CumulativeInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_percentile_rank": {
+      try {
+        const result = flowPercentileRank(args as unknown as PercentileRankInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_coalesce_columns": {
+      try {
+        const result = flowCoalesceColumns(args as unknown as CoalesceColumnsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6117,7 +6196,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 54, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 56, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

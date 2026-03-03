@@ -3491,3 +3491,149 @@ export function flowCumulative(input: CumulativeInput): CumulativeResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 55: flow_percentile_rank — PERCENTILE RANKING PER ROW
+// ============================================================================
+
+export interface PercentileRankInput {
+  csv_content: string;
+  value_column: string;
+}
+
+export interface PercentileRankResult {
+  csv: string;
+  row_count: number;
+  value_column: string;
+  summary: string;
+}
+
+export function flowPercentileRank(input: PercentileRankInput): PercentileRankResult {
+  const { csv_content, value_column } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const valIdx = headers.indexOf(value_column);
+  if (valIdx === -1) throw new Error(`Value column "${value_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+  const n = rows.length;
+
+  // Extract numeric values
+  const values = rows.map(r => {
+    const v = Number(r[valIdx]);
+    return isNaN(v) ? null : v;
+  });
+
+  // Compute percentile ranks using average rank method for ties
+  // percentile_rank = (number of values below + 0.5 * number of ties) / total * 100
+  const percentiles: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const v = values[i];
+    if (v === null) {
+      percentiles.push("");
+      continue;
+    }
+    let below = 0;
+    let equal = 0;
+    for (let j = 0; j < n; j++) {
+      if (values[j] === null) continue;
+      if (values[j]! < v) below++;
+      else if (values[j]! === v) equal++;
+    }
+    // Percentile rank = (below + 0.5 * (equal - 1)) / (n_valid - 1) * 100
+    // But simpler: (below + 0.5 * equal) / n_valid * 100
+    const nValid = values.filter(x => x !== null).length;
+    const pct = nValid > 1 ? ((below + 0.5 * (equal - 1)) / (nValid - 1)) * 100 : 50;
+    percentiles.push(String(Math.round(pct * 100) / 100));
+  }
+
+  // Build output
+  const outHeaders = [...headers, `${value_column}_percentile`];
+  const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const outRows = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), csvEscapeField(percentiles[i])].join(",");
+  });
+
+  const summary = `Computed percentile ranks for "${value_column}" (${n} rows).`;
+
+  return {
+    csv: [outHeaderLine, ...outRows].join("\n"),
+    row_count: n,
+    value_column,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 56: flow_coalesce_columns — FIRST NON-EMPTY VALUE ACROSS COLUMNS
+// ============================================================================
+
+export interface CoalesceColumnsInput {
+  csv_content: string;
+  columns: string[];
+  output_column: string;
+}
+
+export interface CoalesceColumnsResult {
+  csv: string;
+  row_count: number;
+  output_column: string;
+  filled_count: number;
+  summary: string;
+}
+
+export function flowCoalesceColumns(input: CoalesceColumnsInput): CoalesceColumnsResult {
+  const { csv_content, columns, output_column } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+
+  // Validate columns
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Coalesce: first non-empty value from specified columns
+  const coalesced: string[] = [];
+  let filledCount = 0;
+
+  for (const row of rows) {
+    let value = "";
+    for (const idx of colIndices) {
+      const v = (row[idx] || "").trim();
+      if (v !== "") {
+        value = v;
+        break;
+      }
+    }
+    coalesced.push(value);
+    if (value !== "") filledCount++;
+  }
+
+  // Build output: original columns + coalesced column
+  const outHeaders = [...headers, output_column];
+  const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const outRows = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), csvEscapeField(coalesced[i])].join(",");
+  });
+
+  const summary = `Coalesced ${columns.length} columns into "${output_column}": ${filledCount}/${rows.length} rows have a value.`;
+
+  return {
+    csv: [outHeaderLine, ...outRows].join("\n"),
+    row_count: rows.length,
+    output_column,
+    filled_count: filledCount,
+    summary,
+  };
+}

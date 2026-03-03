@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -3151,6 +3151,162 @@ describe("flowCumulative", () => {
       csv_content: csv,
       value_column: "missing",
       functions: ["sum"],
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 55: flow_percentile_rank
+// ============================================================================
+
+describe("flowPercentileRank", () => {
+  it("computes percentile rank for a numeric column", () => {
+    const csv = "name,score\nAlice,90\nBob,70\nCarol,80\nDave,60";
+    const result = flowPercentileRank({
+      csv_content: csv,
+      value_column: "score",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("score_percentile");
+    expect(result.row_count).toBe(4);
+    // Dave (60) should have lowest percentile, Alice (90) highest
+  });
+
+  it("produces percentiles between 0 and 100", () => {
+    const csv = "v\n10\n20\n30\n40\n50";
+    const result = flowPercentileRank({
+      csv_content: csv,
+      value_column: "v",
+    });
+    const lines = result.csv.trim().split("\n");
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(",");
+      const pct = Number(parts[parts.length - 1]);
+      expect(pct).toBeGreaterThanOrEqual(0);
+      expect(pct).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("handles ties by averaging ranks", () => {
+    const csv = "v\n10\n10\n20";
+    const result = flowPercentileRank({
+      csv_content: csv,
+      value_column: "v",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Both 10s should have same percentile
+    const pct1 = lines[1].split(",").pop();
+    const pct2 = lines[2].split(",").pop();
+    expect(pct1).toBe(pct2);
+  });
+
+  it("preserves all original columns", () => {
+    const csv = "a,b,c\n1,10,x\n2,20,y";
+    const result = flowPercentileRank({
+      csv_content: csv,
+      value_column: "b",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a");
+    expect(header).toContain("b");
+    expect(header).toContain("c");
+  });
+
+  it("returns summary", () => {
+    const csv = "v\n1\n2\n3";
+    const result = flowPercentileRank({
+      csv_content: csv,
+      value_column: "v",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() => flowPercentileRank({
+      csv_content: csv,
+      value_column: "missing",
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 56: flow_coalesce_columns
+// ============================================================================
+
+describe("flowCoalesceColumns", () => {
+  it("takes first non-empty value from multiple columns", () => {
+    const csv = "email1,email2,email3\n,,c@test.com\na@test.com,,\n,b@test.com,";
+    const result = flowCoalesceColumns({
+      csv_content: csv,
+      columns: ["email1", "email2", "email3"],
+      output_column: "email",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("email");
+    // Row 1: email3 = c@test.com
+    expect(lines[1]).toContain("c@test.com");
+    // Row 2: email1 = a@test.com
+    expect(lines[2]).toContain("a@test.com");
+    // Row 3: email2 = b@test.com
+    expect(lines[3]).toContain("b@test.com");
+  });
+
+  it("preserves all original columns plus output column", () => {
+    const csv = "a,b,c\n1,,3\n,2,";
+    const result = flowCoalesceColumns({
+      csv_content: csv,
+      columns: ["a", "b", "c"],
+      output_column: "combined",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a");
+    expect(header).toContain("b");
+    expect(header).toContain("c");
+    expect(header).toContain("combined");
+  });
+
+  it("returns empty for all-empty rows", () => {
+    const csv = "a,b\n,,\n1,2";
+    const result = flowCoalesceColumns({
+      csv_content: csv,
+      columns: ["a", "b"],
+      output_column: "out",
+    });
+    expect(result.row_count).toBe(2);
+    expect(result.filled_count).toBe(1); // only second row has a value
+  });
+
+  it("reports filled_count and summary", () => {
+    const csv = "x,y\n1,\n,2\n3,4";
+    const result = flowCoalesceColumns({
+      csv_content: csv,
+      columns: ["x", "y"],
+      output_column: "merged",
+    });
+    expect(result.filled_count).toBe(3);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("uses first provided column when multiple have values", () => {
+    const csv = "a,b\nX,Y\nP,Q";
+    const result = flowCoalesceColumns({
+      csv_content: csv,
+      columns: ["a", "b"],
+      output_column: "first",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Both rows have both columns filled; should pick first (a)
+    expect(lines[1]).toContain("X");
+    expect(lines[2]).toContain("P");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() => flowCoalesceColumns({
+      csv_content: csv,
+      columns: ["missing"],
+      output_column: "out",
     })).toThrow();
   });
 });
