@@ -155,13 +155,13 @@ Plus **3 prompts** (recommendation, data prep, getting started) and **5 resource
 
 ## Demos
 
-Interactive 3D viewers generated entirely by FlowMCP tools:
+Interactive 3D viewers generated entirely by FlowMCP tools — **[Live Demo](https://halyxa.github.io/flowmcp/)**:
 
-- **[Neural Network Architecture](demos/neural-network-3d.html)** — 160 nodes, 2,610 connections, force layout pre-computed
-- **[Global Startup Funding](demos/global-startup-funding-3d.html)** — 420 companies across 30 countries
-- **[Global Supply Chain](demos/supply-chain-3d.html)** — 100 nodes, 200 edges, 6 tiers from raw materials to retail
-- **[Climate Change Indicators](demos/climate-indicators-3d.html)** — 1,040 observations over 26 years
-- **[Investor Showcase](demos/investor-showcase.html)** — Landing page with all demos
+- **[Neural Network Architecture](https://halyxa.github.io/flowmcp/neural-network-3d.html)** — 160 nodes, 2,610 connections, force layout pre-computed
+- **[Global Startup Funding](https://halyxa.github.io/flowmcp/global-startup-funding-3d.html)** — 420 companies across 30 countries
+- **[Global Supply Chain](https://halyxa.github.io/flowmcp/supply-chain-3d.html)** — 100 nodes, 200 edges, 6 tiers from raw materials to retail
+- **[Climate Change Indicators](https://halyxa.github.io/flowmcp/climate-indicators-3d.html)** — 1,040 observations over 26 years
+- **[Investor Showcase](https://halyxa.github.io/flowmcp/)** — Landing page with all demos
 
 ## Pipeline Example
 
