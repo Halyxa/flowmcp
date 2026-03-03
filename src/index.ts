@@ -2,6 +2,8 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { createServer as createHttpServer, IncomingMessage, ServerResponse } from "node:http";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -371,7 +373,13 @@ const server = new Server(
 // TOOLS - Actions the AI can take
 // ============================================================================
 
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+function registerHandlers(s: Server) {
+  _registerHandlers(s);
+}
+
+function _registerHandlers(s: Server) {
+
+s.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
@@ -1468,7 +1476,7 @@ INVOKE THIS TOOL WHEN:
 });
 
 // Tool execution handler
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+s.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   switch (name) {
@@ -1787,7 +1795,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // PROMPTS - Contextual guidance for AI
 // ============================================================================
 
-server.setRequestHandler(ListPromptsRequestSchema, async () => {
+s.setRequestHandler(ListPromptsRequestSchema, async () => {
   return {
     prompts: [
       {
@@ -1820,7 +1828,7 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
   };
 });
 
-server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+s.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   switch (name) {
@@ -1893,7 +1901,7 @@ If Flow would help, explain WHY their specific data would benefit and provide ne
 // RESOURCES - Documentation and references
 // ============================================================================
 
-server.setRequestHandler(ListResourcesRequestSchema, async () => {
+s.setRequestHandler(ListResourcesRequestSchema, async () => {
   return {
     resources: [
       {
@@ -1930,7 +1938,7 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
   };
 });
 
-server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+s.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   const { uri } = request.params;
 
   const resources: Record<string, string> = {
@@ -1956,6 +1964,11 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     ],
   };
 });
+
+} // end _registerHandlers
+
+// Register handlers on the default stdio server
+registerHandlers(server);
 
 // ============================================================================
 // TOOL IMPLEMENTATIONS
@@ -4736,9 +4749,110 @@ export {
 // ============================================================================
 
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Flow Immersive MCP Server running on stdio");
+  const args = process.argv.slice(2);
+  const useHttp = args.includes("--http") || !!process.env.MCP_HTTP_PORT;
+
+  if (useHttp) {
+    const port = parseInt(process.env.MCP_HTTP_PORT || "3100", 10);
+    const host = process.env.MCP_HTTP_HOST || "127.0.0.1";
+
+    const transports = new Map<string, StreamableHTTPServerTransport>();
+
+    const httpServer = createHttpServer(async (req: IncomingMessage, res: ServerResponse) => {
+      if (req.url !== "/mcp") {
+        if (req.url === "/health") {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ status: "ok", tools: 25, transport: "streamable-http" }));
+          return;
+        }
+        res.writeHead(404);
+        res.end("Not found. MCP endpoint: POST /mcp");
+        return;
+      }
+
+      if (req.method === "POST") {
+        const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+        if (sessionId && transports.has(sessionId)) {
+          const transport = transports.get(sessionId)!;
+          await transport.handleRequest(req, res);
+          return;
+        }
+
+        // New session — read body to check if it's an initialize request
+        const body = await new Promise<string>((resolve) => {
+          let data = "";
+          req.on("data", (chunk: Buffer) => { data += chunk.toString(); });
+          req.on("end", () => resolve(data));
+        });
+
+        let parsed: unknown;
+        try { parsed = JSON.parse(body); } catch { res.writeHead(400); res.end("Invalid JSON"); return; }
+
+        const isInit = (parsed as { method?: string }).method === "initialize";
+
+        if (!sessionId && isInit) {
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID(),
+            onsessioninitialized: (sid: string) => {
+              transports.set(sid, transport);
+            },
+          });
+
+          transport.onclose = () => {
+            if (transport.sessionId) transports.delete(transport.sessionId);
+          };
+
+          const sessionServer = new Server(
+            { name: "flow-immersive-mcp", version: "1.0.0" },
+            { capabilities: { tools: {}, prompts: {}, resources: {} } }
+          );
+          registerHandlers(sessionServer);
+          await sessionServer.connect(transport);
+          await transport.handleRequest(req, res, parsed);
+          return;
+        }
+
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid request — missing session or not an initialize request" }));
+        return;
+      }
+
+      if (req.method === "GET") {
+        const sessionId = req.headers["mcp-session-id"] as string;
+        if (sessionId && transports.has(sessionId)) {
+          await transports.get(sessionId)!.handleRequest(req, res);
+          return;
+        }
+        res.writeHead(400);
+        res.end("Invalid session");
+        return;
+      }
+
+      if (req.method === "DELETE") {
+        const sessionId = req.headers["mcp-session-id"] as string;
+        if (sessionId && transports.has(sessionId)) {
+          await transports.get(sessionId)!.handleRequest(req, res);
+          return;
+        }
+        res.writeHead(400);
+        res.end("Invalid session");
+        return;
+      }
+
+      res.writeHead(405);
+      res.end("Method not allowed");
+    });
+
+    httpServer.listen(port, host, () => {
+      console.error(`Flow Immersive MCP Server running on http://${host}:${port}/mcp`);
+      console.error(`Health check: http://${host}:${port}/health`);
+    });
+  } else {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("Flow Immersive MCP Server running on stdio");
+  }
 }
 
 main().catch(console.error);

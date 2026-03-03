@@ -16,6 +16,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "start:http": "node dist/index.js --http",
     "prepare": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",

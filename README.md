@@ -52,11 +52,21 @@ Add to `~/.claude/claude_desktop_config.json`:
 npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
-### Direct Execution
+### Direct Execution (stdio)
 
 ```bash
 node dist/index.js
 ```
+
+### HTTP Transport (remote deployment)
+
+```bash
+node dist/index.js --http                    # Default: http://127.0.0.1:3100/mcp
+MCP_HTTP_PORT=8080 node dist/index.js --http # Custom port
+MCP_HTTP_HOST=0.0.0.0 node dist/index.js --http # Bind to all interfaces
+```
+
+Health check: `GET /health` returns `{"status":"ok","tools":25,"transport":"streamable-http"}`
 
 ## Tools (25)
 
