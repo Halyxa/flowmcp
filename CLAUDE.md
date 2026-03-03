@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 36 tools. 668 tests. All green.
+Production TypeScript MCP server. 46 tools. 784 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,9 +29,9 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 668/668 tests green |
-| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 36 tools respond |
-| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 668 |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 784/784 tests green |
+| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 46 tools respond |
+| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 784 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
 | L6: Tool Descriptions | HIGH | Descriptions ARE AI training | Trigger language > implementation docs |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 668 (floor never drops).
+     f. Verify test count >= 784 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -115,7 +115,7 @@ ON_CI_FAILURE(stage, error):
         Smoke tests validate the contract AI clients see. Change smoke only if contract changed.
      c. IF fix touches shared code (csv-utils.ts, fetchWithTimeout):
         Run FULL smoke suite → all 15 checks pass.
-        BECAUSE shared code has blast radius across all 36 tools.
+        BECAUSE shared code has blast radius across all 46 tools.
 
   --- STAGE D: FULL PIPELINE (npm run ci) ---
   5. AFTER all individual stages green → run npm run ci end-to-end.
@@ -130,7 +130,7 @@ ON_CI_FAILURE(stage, error):
      Create skills/<pattern>.md → trigger, diagnosis, fix, files affected.
      BECAUSE crystallized patterns compound. Re-diagnosis wastes cycles.
   8. IF fix touched tool interface or shared code:
-     Run MCP Inspector → verify 36 tools respond to list_tools.
+     Run MCP Inspector → verify 46 tools respond to list_tools.
      BECAUSE demo readiness is a loss function. Never ship with broken tool listing.
 ```
 
@@ -194,7 +194,7 @@ ON_API_CHANGE(endpoint, old_behavior, new_behavior):
 ON_DEMO_PREP(audience):
   1. Run npm run ci → all green. Do not demo broken code.
   2. Verify 5 sample CSVs in samples/.
-  3. MCP Inspector: verify 36 tools respond to list_tools.
+  3. MCP Inspector: verify 46 tools respond to list_tools.
   4. Execute 3-tool walkthrough end-to-end:
      analyze_data_for_flow → suggest_flow_visualization → flow_upload_data.
   5. IF audience = Jason:
@@ -216,7 +216,7 @@ ON_RESPOND():
 
   1. Lead with result or action taken. Not reasoning.
   2. IF question → answer first sentence. Explain after.
-  3. IF test results → "668/668 passed" or "667/668 — 1 failure in X".
+  3. IF test results → "784/784 passed" or "783/784 — 1 failure in X".
   4. Three paragraphs max before tool call or action.
   5. Past tense: "Fixed the parser." Not "I will fix the parser."
      BECAUSE announcement without action is cognitive load, not progress.
@@ -268,7 +268,7 @@ VIOLATION: "we could try" or "maybe" → replace with definitive diagnosis + con
 ON_ACTION(predicted_outcome):
   — OBSERVE + ORIENT: Ground the prediction.
   1. PREDICT: State expected outcome before acting. Include confidence (0.0-1.0).
-     "668 tests pass (confidence: 0.95)." "Force layout converges <5s at 500 nodes (confidence: 0.7)."
+     "784 tests pass (confidence: 0.95)." "Force layout converges <5s at 500 nodes (confidence: 0.7)."
      Log to predictions.jsonl: {id, text, confidence, timestamp, category}.
 
   — ACT:
@@ -376,7 +376,7 @@ HOW EVENTS FEED OTHER SPINES:
 BECAUSE session transcripts evaporate. events.jsonl is the permanent record.
 An agent that cannot reconstruct its own history cannot learn from it.
 
-## Tools (25)
+## Tools (46)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -416,6 +416,16 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | 34 | `flow_deduplicate_rows` | Remove duplicate rows with optional case-insensitive matching |
 | 35 | `flow_bin_data` | Histogram binning (Sturges' rule) → bin_label, count, frequency |
 | 36 | `flow_transpose_data` | Swap rows and columns for reshaping data orientation |
+| 37 | `flow_sample_data` | Smart sampling: random, first-N, every-Nth, stratified by category |
+| 38 | `flow_column_stats` | Descriptive statistics: count, mean, median, std, min, max, quartiles |
+| 39 | `flow_computed_columns` | Add calculated columns using safe arithmetic formulas |
+| 40 | `flow_parse_dates` | Extract year/month/day/quarter/day_of_week/epoch_days from dates |
+| 41 | `flow_string_transform` | Text cleanup: uppercase, lowercase, trim, title case, find-replace |
+| 42 | `flow_validate_rules` | Data quality validation: not_null, min, max, unique, pattern, in_set |
+| 43 | `flow_fill_missing` | Impute missing values: constant, mean, median, mode, forward fill |
+| 44 | `flow_rename_columns` | Rename and reorder CSV columns |
+| 45 | `flow_filter_rows` | Filter rows by conditions: equals, greater_than, contains, etc. |
+| 46 | `flow_split_dataset` | Split dataset into subsets by column values |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -453,15 +463,15 @@ An agent that cannot reconstruct its own history cannot learn from it.
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 36 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 46 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |
-| `src/tools-v4.ts` | Live data, correlation, clustering, hierarchy, compare, pivot, regression, normalize, dedup, bin, transpose (tools 26-36) |
+| `src/tools-v4.ts` | Tools 26-46: live data, correlation, clustering, hierarchy, compare, pivot, regression, normalize, dedup, bin, transpose, sample, stats, computed, dates, string, validate, fill, rename, filter, split |
 | `src/csv-utils.ts` | Shared CSV parser + escape |
 | `src/index.test.ts` | 135 unit tests |
 | `src/integration.test.ts` | 27 MCP protocol tests |
-| `src/tools-v4.test.ts` | 109 unit tests for tools 26-36 |
+| `src/tools-v4.test.ts` | 196 unit tests for tools 26-46 |
 | `src/benchmark.test.ts` | 7 benchmark tests |
 | `src/perf-profile.test.ts` | 30 perf profile tests |
 | `scripts/smoke-test.mjs` | 15 standalone checks |
@@ -479,7 +489,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 ## Commands
 
 ```bash
-npm test             # 668 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + property + edge)
+npm test             # 784 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + property + edge)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 15 standalone checks
 npm run ci           # Full pipeline: build + test + smoke

@@ -1,8 +1,8 @@
 # FlowMCP
 
-The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **36 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
+The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **46 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**683 tests. Zero competitors in 3D data visualization MCP.**
+**799 tests. Zero competitors in 3D data visualization MCP.**
 
 ## What It Does
 
@@ -170,6 +170,16 @@ Health check: `GET /health` returns `{"status":"ok","tools":36,"transport":"stre
 | 34 | `flow_deduplicate_rows` | Remove duplicate rows with optional case-insensitive matching |
 | 35 | `flow_bin_data` | Histogram binning with auto bin count (Sturges' rule) — outputs `bin_label`, `count`, `frequency` |
 | 36 | `flow_transpose_data` | Swap rows and columns for reshaping data orientation |
+| 37 | `flow_sample_data` | Smart sampling: random, first-N, every-Nth, stratified by category |
+| 38 | `flow_column_stats` | Descriptive statistics: count, mean, median, std, min, max, Q1, Q3 |
+| 39 | `flow_computed_columns` | Add calculated columns using safe arithmetic formulas |
+| 40 | `flow_parse_dates` | Extract year, month, day, quarter, day_of_week, epoch_days from dates |
+| 41 | `flow_string_transform` | Text cleanup: uppercase, lowercase, trim, title case, find-replace |
+| 42 | `flow_validate_rules` | Data quality validation: not_null, min, max, unique, pattern, in_set |
+| 43 | `flow_fill_missing` | Impute missing values: constant, mean, median, mode, forward fill |
+| 44 | `flow_rename_columns` | Rename and reorder CSV columns |
+| 45 | `flow_filter_rows` | Filter rows by conditions: equals, greater_than, contains, etc. |
+| 46 | `flow_split_dataset` | Split dataset into subsets by column values |
 
 Plus **3 prompts** (recommendation, data prep, getting started) and **5 resources** (overview, CSV format, network graphs, Python client, viz types).
 
@@ -237,7 +247,7 @@ The tool descriptions ARE training data — every word shapes how AI assistants 
 
 ## Architecture
 
-- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`, `src/tools-v4.ts` (11 tools)
+- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`, `src/tools-v4.ts` (21 tools)
 - **Proper CSV parsing** — state-machine parser handles quoted fields with embedded commas
 - **Fetch timeouts** — all API calls use AbortController with 15s timeout
 - **Safety limits** — max CSV 10MB, max rows 500k, max nodes 50k, max edges 200k
