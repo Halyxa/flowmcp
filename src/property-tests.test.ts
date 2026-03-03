@@ -12,7 +12,7 @@ import {
   flowMergeDatasets,
 } from "./tools-v2.js";
 import { flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
 
 // ============================================================================
 // Helpers: CSV generators for fast-check (v4 API)
@@ -1541,6 +1541,114 @@ describe("flow_deduplicate_rows properties", () => {
         }
       ),
       { numRuns: 200 }
+    );
+  });
+});
+
+// =============================================================================
+// Section 27: flow_bin_data — property tests
+// =============================================================================
+
+describe("flow_bin_data properties", () => {
+  it("bin counts sum to total values", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -100, max: 100 }), { minLength: 2, maxLength: 30 }),
+        fc.integer({ min: 1, max: 10 }),
+        (values, bins) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowBinData({ csv_content: csv, column: "val", bins });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const countIdx = headers.indexOf("count");
+          let total = 0;
+          for (let i = 1; i < lines.length; i++) {
+            total += Number(lines[i].split(",")[countIdx]);
+          }
+          expect(total).toBe(values.length);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("frequencies sum to ~1.0", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 0, max: 50 }), { minLength: 2, maxLength: 20 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowBinData({ csv_content: csv, column: "val" });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const freqIdx = headers.indexOf("frequency");
+          let total = 0;
+          for (let i = 1; i < lines.length; i++) {
+            total += Number(lines[i].split(",")[freqIdx]);
+          }
+          expect(Math.abs(total - 1.0)).toBeLessThan(0.02);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("bin_count matches requested bins", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 10 }),
+        (bins) => {
+          const csv = "val\n" + Array.from({ length: 20 }, (_, i) => `${i}`).join("\n");
+          const result = flowBinData({ csv_content: csv, column: "val", bins });
+          expect(result.bin_count).toBe(bins);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
+
+// =============================================================================
+// Section 28: flow_transpose_data — property tests
+// =============================================================================
+
+describe("flow_transpose_data properties", () => {
+  it("transpose of N rows × M cols gives M-1 rows × N+1 cols", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 5 }),
+        fc.integer({ min: 1, max: 8 }),
+        (nRows, nCols) => {
+          const headers = ["label", ...Array.from({ length: nCols }, (_, i) => `c${i}`)];
+          const rows = Array.from({ length: nRows }, (_, r) =>
+            `r${r},` + Array.from({ length: nCols }, (_, c) => `${r * 10 + c}`).join(",")
+          );
+          const csv = headers.join(",") + "\n" + rows.join("\n");
+          const result = flowTransposeData({ csv_content: csv, header_column: "label" });
+          expect(result.row_count).toBe(nCols);
+          expect(result.column_count).toBe(nRows + 1); // +1 for "metric" column
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("double transpose preserves values", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 4 }),
+        (n) => {
+          const csv = "label," + Array.from({ length: n }, (_, i) => `c${i}`).join(",") + "\n" +
+            Array.from({ length: n }, (_, r) =>
+              `r${r},` + Array.from({ length: n }, (_, c) => `${r * 10 + c}`).join(",")
+            ).join("\n");
+          const first = flowTransposeData({ csv_content: csv, header_column: "label" });
+          const second = flowTransposeData({ csv_content: first.csv, header_column: "metric" });
+          // After double transpose, should get back N rows
+          expect(second.row_count).toBe(n);
+        }
+      ),
+      { numRuns: 100 }
     );
   });
 });

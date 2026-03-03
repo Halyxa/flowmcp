@@ -1,8 +1,8 @@
 # FlowMCP
 
-The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **32 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
+The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **36 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**615 tests. Zero competitors in 3D data visualization MCP.**
+**683 tests. Zero competitors in 3D data visualization MCP.**
 
 ## What It Does
 
@@ -66,9 +66,9 @@ MCP_HTTP_PORT=8080 node dist/index.js --http # Custom port
 MCP_HTTP_HOST=0.0.0.0 node dist/index.js --http # Bind to all interfaces
 ```
 
-Health check: `GET /health` returns `{"status":"ok","tools":32,"transport":"streamable-http"}`
+Health check: `GET /health` returns `{"status":"ok","tools":36,"transport":"streamable-http"}`
 
-## Tools (32)
+## Tools (36)
 
 ### Data Analysis & Preparation
 
@@ -162,6 +162,15 @@ Health check: `GET /health` returns `{"status":"ok","tools":32,"transport":"stre
 | 31 | `flow_pivot_table` | Group by categorical columns, aggregate with sum/avg/count/min/max — adds `_group_size` column |
 | 32 | `flow_regression_analysis` | Linear regression with R², p-value, equation — adds `_predicted` and `_residual` columns |
 
+### Data Cleaning & Reshaping
+
+| # | Tool | Description |
+|---|------|-------------|
+| 33 | `flow_normalize_data` | Min-max [0,1] or z-score normalization — adds `_normalized` suffix columns |
+| 34 | `flow_deduplicate_rows` | Remove duplicate rows with optional case-insensitive matching |
+| 35 | `flow_bin_data` | Histogram binning with auto bin count (Sturges' rule) — outputs `bin_label`, `count`, `frequency` |
+| 36 | `flow_transpose_data` | Swap rows and columns for reshaping data orientation |
+
 Plus **3 prompts** (recommendation, data prep, getting started) and **5 resources** (overview, CSV format, network graphs, Python client, viz types).
 
 ## Demos
@@ -194,7 +203,7 @@ Run the pipeline demo: `node demos/pipeline-demo.mjs`
 ## Testing
 
 ```bash
-npm test           # 600 tests (unit + integration + benchmark + perf + property + edge + v4)
+npm test           # 668 tests (unit + integration + benchmark + perf + property + edge + v4)
 npm run smoke-test # 15 standalone MCP checks
 npm run ci         # Full pipeline: build + test + smoke
 ```
@@ -208,11 +217,11 @@ npm run ci         # Full pipeline: build + test + smoke
 | Search tests | 23 |
 | Tools v2 tests | 36 |
 | Tools v3 tests | 33 |
-| Tools v4 tests | 74 |
-| Edge case tests | 151 |
-| Property tests | 55 |
+| Tools v4 tests | 109 |
+| Edge case tests | 168 |
+| Property tests | 65 |
 | Smoke tests | 15 |
-| **Total** | **615** |
+| **Total** | **683** |
 
 ## Tool Description Optimization
 
@@ -228,7 +237,7 @@ The tool descriptions ARE training data — every word shapes how AI assistants 
 
 ## Architecture
 
-- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`, `src/tools-v4.ts` (7 tools)
+- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`, `src/tools-v4.ts` (11 tools)
 - **Proper CSV parsing** — state-machine parser handles quoted fields with embedded commas
 - **Fetch timeouts** — all API calls use AbortController with 15s timeout
 - **Safety limits** — max CSV 10MB, max rows 500k, max nodes 50k, max edges 200k

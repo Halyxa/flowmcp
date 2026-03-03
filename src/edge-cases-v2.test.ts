@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
 import {
   flowSemanticSearch,
   scoreMatch,
@@ -1682,5 +1682,92 @@ describe("flowDeduplicateRows — edge cases", () => {
     const csv = "id,val\n1,a\n2,b";
     const result = flowDeduplicateRows({ csv_content: csv, columns: ["id"] });
     expect(result.summary).toContain("id");
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_bin_data (Tool 35)
+// ============================================================================
+
+describe("flowBinData — edge cases", () => {
+  it("all identical values go into one bin", () => {
+    const csv = "val\n5\n5\n5\n5";
+    const result = flowBinData({ csv_content: csv, column: "val", bins: 3 });
+    // All values are in the same bin
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const countIdx = headers.indexOf("count");
+    let total = 0;
+    for (let i = 1; i < lines.length; i++) {
+      total += Number(lines[i].split(",")[countIdx]);
+    }
+    expect(total).toBe(4);
+  });
+
+  it("two values create valid bins", () => {
+    const csv = "val\n0\n100";
+    const result = flowBinData({ csv_content: csv, column: "val", bins: 2 });
+    expect(result.bin_count).toBe(2);
+    expect(result.total_values).toBe(2);
+  });
+
+  it("negative values handled correctly", () => {
+    const csv = "val\n-50\n-10\n0\n10\n50";
+    const result = flowBinData({ csv_content: csv, column: "val", bins: 5 });
+    expect(result.min_value).toBe(-50);
+    expect(result.max_value).toBe(50);
+    expect(result.bin_count).toBe(5);
+  });
+
+  it("very large range doesn't crash", () => {
+    const csv = "val\n0\n1000000";
+    const result = flowBinData({ csv_content: csv, column: "val", bins: 10 });
+    expect(result.bin_count).toBe(10);
+  });
+
+  it("summary mentions column name", () => {
+    const csv = "score\n1\n2\n3";
+    const result = flowBinData({ csv_content: csv, column: "score", bins: 2 });
+    expect(result.summary).toContain("score");
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_transpose_data (Tool 36)
+// ============================================================================
+
+describe("flowTransposeData — edge cases", () => {
+  it("single column besides header produces one row", () => {
+    const csv = "name,val\nA,10\nB,20";
+    const result = flowTransposeData({ csv_content: csv, header_column: "name" });
+    expect(result.row_count).toBe(1); // just "val" row
+    expect(result.column_count).toBe(3); // metric, A, B
+  });
+
+  it("numeric values preserved as strings", () => {
+    const csv = "name,a,b\nX,100,200";
+    const result = flowTransposeData({ csv_content: csv, header_column: "name" });
+    expect(result.csv).toContain("100");
+    expect(result.csv).toContain("200");
+  });
+
+  it("summary mentions header column", () => {
+    const csv = "label,a,b\nX,1,2";
+    const result = flowTransposeData({ csv_content: csv, header_column: "label" });
+    expect(result.summary).toContain("label");
+  });
+
+  it("handles special characters in values", () => {
+    const csv = 'name,val\n"Hello, World",42';
+    const result = flowTransposeData({ csv_content: csv, header_column: "name" });
+    expect(result.row_count).toBe(1);
+  });
+
+  it("default header column uses first column", () => {
+    const csv = "id,a,b\n1,10,20\n2,30,40";
+    const result = flowTransposeData({ csv_content: csv });
+    // First column "id" used as header
+    expect(result.csv).toContain("1");
+    expect(result.csv).toContain("2");
   });
 });
