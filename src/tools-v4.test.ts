@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -4421,6 +4421,140 @@ describe("flow_discretize", () => {
       column: "x",
       method: "equal_width",
       bins: 2,
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 71: flow_abs_values
+// ============================================================================
+
+describe("flow_abs_values", () => {
+  it("converts negative values to absolute", () => {
+    const csv = "name,value\nA,-10\nB,20\nC,-30";
+    const result = flowAbsValues({
+      csv_content: csv,
+      columns: ["value"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("10");
+    expect(lines[2]).toContain("20");
+    expect(lines[3]).toContain("30");
+  });
+
+  it("handles multiple columns", () => {
+    const csv = "a,b\n-1,-2\n3,-4";
+    const result = flowAbsValues({
+      csv_content: csv,
+      columns: ["a", "b"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("1,2");
+    expect(lines[2]).toBe("3,4");
+  });
+
+  it("preserves non-numeric values", () => {
+    const csv = "name,value\nAlice,-10\nBob,abc";
+    const result = flowAbsValues({
+      csv_content: csv,
+      columns: ["value"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2]).toContain("abc");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() =>
+      flowAbsValues({
+        csv_content: csv,
+        columns: ["missing"],
+      })
+    ).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n-1\n2\n-3";
+    const result = flowAbsValues({
+      csv_content: csv,
+      columns: ["x"],
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.converted_count).toBe(2); // Only -1 and -3 changed
+  });
+});
+
+// ============================================================================
+// TOOL 72: flow_round_values
+// ============================================================================
+
+describe("flow_round_values", () => {
+  it("rounds to specified decimal places", () => {
+    const csv = "x\n3.14159\n2.71828\n1.41421";
+    const result = flowRoundValues({
+      csv_content: csv,
+      columns: ["x"],
+      decimals: 2,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("3.14");
+    expect(lines[2]).toBe("2.72");
+    expect(lines[3]).toBe("1.41");
+  });
+
+  it("rounds to zero decimal places (integers)", () => {
+    const csv = "x\n3.7\n2.3\n1.5";
+    const result = flowRoundValues({
+      csv_content: csv,
+      columns: ["x"],
+      decimals: 0,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("4");
+    expect(lines[2]).toBe("2");
+    expect(lines[3]).toBe("2");
+  });
+
+  it("handles multiple columns", () => {
+    const csv = "a,b\n1.111,2.222\n3.333,4.444";
+    const result = flowRoundValues({
+      csv_content: csv,
+      columns: ["a", "b"],
+      decimals: 1,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("1.1,2.2");
+    expect(lines[2]).toBe("3.3,4.4");
+  });
+
+  it("preserves non-numeric values", () => {
+    const csv = "name,value\nAlice,3.14159\nBob,abc";
+    const result = flowRoundValues({
+      csv_content: csv,
+      columns: ["value"],
+      decimals: 2,
+    });
+    expect(result.csv).toContain("abc");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() =>
+      flowRoundValues({
+        csv_content: csv,
+        columns: ["missing"],
+        decimals: 2,
+      })
+    ).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n1.23\n4.56";
+    const result = flowRoundValues({
+      csv_content: csv,
+      columns: ["x"],
+      decimals: 1,
     });
     expect(result.summary).toBeTruthy();
   });

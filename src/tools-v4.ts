@@ -4757,3 +4757,122 @@ export function flowDiscretize(input: DiscretizeInput): DiscretizeResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 71: flow_abs_values — ABSOLUTE VALUES FOR NUMERIC COLUMNS
+// ============================================================================
+
+export interface AbsValuesInput {
+  csv_content: string;
+  /** Columns to take absolute values of */
+  columns: string[];
+}
+
+export interface AbsValuesResult {
+  csv: string;
+  row_count: number;
+  converted_count: number;
+  summary: string;
+}
+
+export function flowAbsValues(input: AbsValuesInput): AbsValuesResult {
+  const { csv_content, columns } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+  let convertedCount = 0;
+
+  const outRows = rows.map(row => {
+    const newRow = [...row];
+    for (const idx of colIndices) {
+      const val = Number(row[idx] ?? "");
+      if (!isNaN(val) && val < 0) {
+        newRow[idx] = String(Math.abs(val));
+        convertedCount++;
+      }
+    }
+    return newRow;
+  });
+
+  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
+  const dataLines = outRows.map(row => row.map(v => csvEscapeField(v)).join(","));
+
+  const summary = `Absolute values on ${columns.length} column(s): ${convertedCount} negative values converted (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    converted_count: convertedCount,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 72: flow_round_values — ROUND NUMERIC COLUMNS
+// ============================================================================
+
+export interface RoundValuesInput {
+  csv_content: string;
+  /** Columns to round */
+  columns: string[];
+  /** Number of decimal places */
+  decimals: number;
+}
+
+export interface RoundValuesResult {
+  csv: string;
+  row_count: number;
+  summary: string;
+}
+
+export function flowRoundValues(input: RoundValuesInput): RoundValuesResult {
+  const { csv_content, columns, decimals } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  const factor = Math.pow(10, decimals);
+
+  const outRows = rows.map(row => {
+    const newRow = [...row];
+    for (const idx of colIndices) {
+      const val = Number(row[idx] ?? "");
+      if (!isNaN(val) && row[idx] !== undefined && row[idx].trim() !== "") {
+        const rounded = Math.round(val * factor) / factor;
+        newRow[idx] = decimals === 0 ? String(Math.round(val)) : String(rounded);
+      }
+    }
+    return newRow;
+  });
+
+  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
+  const dataLines = outRows.map(row => row.map(v => csvEscapeField(v)).join(","));
+
+  const summary = `Rounded ${columns.length} column(s) to ${decimals} decimal places (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    summary,
+  };
+}
