@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -3965,6 +3965,160 @@ describe("flow_date_diff", () => {
       start_column: "start",
       end_column: "end",
       unit: "days",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 65: flow_outlier_fence
+// ============================================================================
+
+describe("flow_outlier_fence", () => {
+  it("flags outliers using Tukey fences", () => {
+    // Values: 1,2,3,4,5,100 — 100 is an outlier
+    const csv = "id,value\n1,1\n2,2\n3,3\n4,4\n5,5\n6,100";
+    const result = flowOutlierFence({
+      csv_content: csv,
+      column: "value",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_is_outlier");
+    // The last row (100) should be flagged
+    expect(lines[6]).toContain("true");
+    expect(result.outlier_count).toBeGreaterThanOrEqual(1);
+  });
+
+  it("uses custom multiplier", () => {
+    const csv = "x\n1\n2\n3\n4\n5\n10";
+    const result = flowOutlierFence({
+      csv_content: csv,
+      column: "x",
+      multiplier: 3.0, // Very lenient — 10 might not be outlier
+    });
+    expect(result.outlier_count).toBeLessThanOrEqual(1);
+  });
+
+  it("reports fence boundaries", () => {
+    const csv = "x\n1\n2\n3\n4\n5";
+    const result = flowOutlierFence({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.lower_fence).toBeDefined();
+    expect(result.upper_fence).toBeDefined();
+    expect(result.lower_fence).toBeLessThan(result.upper_fence);
+  });
+
+  it("handles all-same values (no outliers)", () => {
+    const csv = "x\n5\n5\n5\n5";
+    const result = flowOutlierFence({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.outlier_count).toBe(0);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowOutlierFence({
+        csv_content: csv,
+        column: "missing",
+      })
+    ).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n1\n2\n3\n4\n5";
+    const result = flowOutlierFence({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 66: flow_moving_average
+// ============================================================================
+
+describe("flow_moving_average", () => {
+  it("computes simple moving average", () => {
+    const csv = "day,value\n1,10\n2,20\n3,30\n4,40\n5,50";
+    const result = flowMovingAverage({
+      csv_content: csv,
+      column: "value",
+      window: 3,
+      method: "simple",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_sma");
+    // First 2 rows should be empty (window not full)
+    expect(lines[1]).toMatch(/,$/);
+    expect(lines[2]).toMatch(/,$/);
+    // Row 3: avg(10,20,30) = 20
+    expect(lines[3]).toContain("20");
+  });
+
+  it("computes exponential moving average", () => {
+    const csv = "day,value\n1,10\n2,20\n3,30\n4,40\n5,50";
+    const result = flowMovingAverage({
+      csv_content: csv,
+      column: "value",
+      window: 3,
+      method: "exponential",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_ema");
+    // EMA starts from first value
+    expect(result.row_count).toBe(5);
+  });
+
+  it("handles window larger than data", () => {
+    const csv = "x\n1\n2";
+    const result = flowMovingAverage({
+      csv_content: csv,
+      column: "x",
+      window: 5,
+      method: "simple",
+    });
+    // All values should be empty for SMA since window > data
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toMatch(/,$/);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowMovingAverage({
+        csv_content: csv,
+        column: "missing",
+        window: 2,
+        method: "simple",
+      })
+    ).toThrow();
+  });
+
+  it("preserves other columns", () => {
+    const csv = "name,value\nA,10\nB,20\nC,30";
+    const result = flowMovingAverage({
+      csv_content: csv,
+      column: "value",
+      window: 2,
+      method: "simple",
+    });
+    expect(result.csv).toContain("name");
+    expect(result.csv).toContain("A");
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n1\n2\n3";
+    const result = flowMovingAverage({
+      csv_content: csv,
+      column: "x",
+      window: 2,
+      method: "simple",
     });
     expect(result.summary).toBeTruthy();
   });

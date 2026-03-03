@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2866,6 +2866,73 @@ Output: CSV with appended difference column, computed_count, failed_count, and s
           required: ["csv_content", "start_column", "end_column", "unit"],
         },
       },
+      {
+        name: "flow_outlier_fence",
+        description: `Detect outliers using Tukey's fences (IQR method). Adds _is_outlier boolean and _fence_distance columns. Reports Q1, Q3, IQR, and fence boundaries. Configurable multiplier (1.5 = standard, 3.0 = extreme outliers only).
+
+INVOKE THIS TOOL WHEN:
+- User asks to "find outliers", "detect outliers", "flag extreme values", or "Tukey fence"
+- User wants to identify data points outside normal range using IQR method
+- User asks for "box plot boundaries", "whisker limits", or "interquartile range outliers"
+- User needs to clean data by identifying statistically extreme values
+
+Input: CSV data, numeric column, optional multiplier (default: 1.5).
+Output: CSV with _is_outlier and _fence_distance columns, outlier_count, fence boundaries, Q1, Q3, IQR, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to analyze for outliers",
+            },
+            column: {
+              type: "string",
+              description: "Numeric column to check",
+            },
+            multiplier: {
+              type: "number",
+              description: "IQR multiplier for fences (default: 1.5, use 3.0 for extreme only)",
+            },
+          },
+          required: ["csv_content", "column"],
+        },
+      },
+      {
+        name: "flow_moving_average",
+        description: `Calculate simple (SMA) or exponential (EMA) moving average for time series smoothing. Adds a new column with the smoothed values. SMA uses trailing window; EMA uses exponential weighting for more recent-value emphasis.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "moving average", "smooth the data", "trend line", or "rolling average"
+- User wants to reduce noise in time series data
+- User asks for "SMA", "EMA", "exponential smoothing", or "trend smoothing"
+- User needs to identify underlying trends by removing short-term fluctuations
+
+Input: CSV data, numeric column, window size, method (simple/exponential).
+Output: CSV with appended moving average column (_sma or _ema suffix), row_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV time series data",
+            },
+            column: {
+              type: "string",
+              description: "Numeric column to smooth",
+            },
+            window: {
+              type: "number",
+              description: "Window size for the moving average",
+            },
+            method: {
+              type: "string",
+              enum: ["simple", "exponential"],
+              description: "SMA (simple) or EMA (exponential)",
+            },
+          },
+          required: ["csv_content", "column", "window", "method"],
+        },
+      },
     ],
   };
 });
@@ -3526,6 +3593,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_date_diff": {
       try {
         const result = flowDateDiff(args as unknown as DateDiffInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_outlier_fence": {
+      try {
+        const result = flowOutlierFence(args as unknown as OutlierFenceInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_moving_average": {
+      try {
+        const result = flowMovingAverage(args as unknown as MovingAverageInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6527,7 +6612,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 64, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 66, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

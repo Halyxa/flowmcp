@@ -4222,3 +4222,202 @@ export function flowDateDiff(input: DateDiffInput): DateDiffResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 65: flow_outlier_fence — TUKEY'S FENCES OUTLIER DETECTION
+// ============================================================================
+
+export interface OutlierFenceInput {
+  csv_content: string;
+  /** Numeric column to check for outliers */
+  column: string;
+  /** IQR multiplier (default: 1.5 for standard, 3.0 for extreme) */
+  multiplier?: number;
+}
+
+export interface OutlierFenceResult {
+  csv: string;
+  row_count: number;
+  outlier_count: number;
+  lower_fence: number;
+  upper_fence: number;
+  q1: number;
+  q3: number;
+  iqr: number;
+  summary: string;
+}
+
+export function flowOutlierFence(input: OutlierFenceInput): OutlierFenceResult {
+  const { csv_content, column, multiplier = 1.5 } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  // Extract numeric values with indices
+  const numericValues: number[] = [];
+  for (const row of rows) {
+    const val = Number(row[colIdx] ?? "");
+    if (!isNaN(val)) numericValues.push(val);
+  }
+
+  // Calculate Q1, Q3, IQR
+  const sorted = [...numericValues].sort((a, b) => a - b);
+  const n = sorted.length;
+
+  function percentile(arr: number[], p: number): number {
+    if (arr.length === 0) return 0;
+    const idx = (p / 100) * (arr.length - 1);
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    if (lo === hi) return arr[lo];
+    return arr[lo] + (arr[hi] - arr[lo]) * (idx - lo);
+  }
+
+  const q1 = percentile(sorted, 25);
+  const q3 = percentile(sorted, 75);
+  const iqr = q3 - q1;
+  const lowerFence = q1 - multiplier * iqr;
+  const upperFence = q3 + multiplier * iqr;
+
+  let outlierCount = 0;
+
+  const outHeaders = [...headers, "_is_outlier", "_fence_distance"];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+
+  const dataLines = rows.map(row => {
+    const val = Number(row[colIdx] ?? "");
+    let isOutlier = "false";
+    let distance = "0";
+
+    if (!isNaN(val)) {
+      if (val < lowerFence) {
+        isOutlier = "true";
+        distance = String(+(lowerFence - val).toFixed(4));
+        outlierCount++;
+      } else if (val > upperFence) {
+        isOutlier = "true";
+        distance = String(+(val - upperFence).toFixed(4));
+        outlierCount++;
+      }
+    }
+
+    return [...row.map(v => csvEscapeField(v)), isOutlier, distance].join(",");
+  });
+
+  const summary = `Tukey fence (${multiplier}×IQR) on "${column}": ${outlierCount} outliers found. Fences: [${lowerFence.toFixed(2)}, ${upperFence.toFixed(2)}], IQR=${iqr.toFixed(2)}.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    outlier_count: outlierCount,
+    lower_fence: lowerFence,
+    upper_fence: upperFence,
+    q1,
+    q3,
+    iqr,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 66: flow_moving_average — SIMPLE AND EXPONENTIAL MOVING AVERAGE
+// ============================================================================
+
+export interface MovingAverageInput {
+  csv_content: string;
+  /** Numeric column to smooth */
+  column: string;
+  /** Window size for moving average */
+  window: number;
+  /** Method: simple or exponential */
+  method: "simple" | "exponential";
+}
+
+export interface MovingAverageResult {
+  csv: string;
+  row_count: number;
+  summary: string;
+}
+
+export function flowMovingAverage(input: MovingAverageInput): MovingAverageResult {
+  const { csv_content, column, window: windowSize, method } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  const suffix = method === "simple" ? "_sma" : "_ema";
+  const outColName = `${column}${suffix}`;
+
+  const values: (number | null)[] = rows.map(row => {
+    const val = Number(row[colIdx] ?? "");
+    return isNaN(val) ? null : val;
+  });
+
+  const result: string[] = [];
+
+  if (method === "simple") {
+    for (let i = 0; i < values.length; i++) {
+      if (i < windowSize - 1) {
+        result.push("");
+        continue;
+      }
+      let sum = 0;
+      let count = 0;
+      for (let j = i - windowSize + 1; j <= i; j++) {
+        if (values[j] !== null) {
+          sum += values[j]!;
+          count++;
+        }
+      }
+      if (count === windowSize) {
+        result.push(String(+(sum / count).toFixed(4)));
+      } else {
+        result.push("");
+      }
+    }
+  } else {
+    // Exponential moving average
+    const alpha = 2 / (windowSize + 1);
+    let ema: number | null = null;
+
+    for (let i = 0; i < values.length; i++) {
+      const val = values[i];
+      if (val === null) {
+        result.push(ema !== null ? String(+ema.toFixed(4)) : "");
+        continue;
+      }
+      if (ema === null) {
+        ema = val;
+      } else {
+        ema = alpha * val + (1 - alpha) * ema;
+      }
+      result.push(String(+ema.toFixed(4)));
+    }
+  }
+
+  const outHeaders = [...headers, outColName];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), result[i]].join(",");
+  });
+
+  const summary = `${method === "simple" ? "Simple" : "Exponential"} moving average (window=${windowSize}) on "${column}" (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    summary,
+  };
+}
