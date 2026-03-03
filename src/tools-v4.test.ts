@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -2219,5 +2219,178 @@ describe("flowRenameColumns", () => {
   it("throws on non-existent column in renames", () => {
     const csv = "a,b\n1,2";
     expect(() => flowRenameColumns({ csv_content: csv, renames: { missing: "x" } })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 45: flow_filter_rows
+// ============================================================================
+
+describe("flowFilterRows", () => {
+  it("filters with equals condition", () => {
+    const csv = "name,age\nAlice,30\nBob,25\nCharlie,30";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "age", operator: "equals", value: "30" }],
+    });
+    expect(result.matched_rows).toBe(2);
+    expect(result.csv).toContain("Alice");
+    expect(result.csv).toContain("Charlie");
+    expect(result.csv).not.toContain("Bob");
+  });
+
+  it("filters with not_equals condition", () => {
+    const csv = "name,age\nAlice,30\nBob,25\nCharlie,30";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "age", operator: "not_equals", value: "30" }],
+    });
+    expect(result.matched_rows).toBe(1);
+    expect(result.csv).toContain("Bob");
+  });
+
+  it("filters with greater_than", () => {
+    const csv = "name,score\nAlice,90\nBob,70\nCharlie,85";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "score", operator: "greater_than", value: "80" }],
+    });
+    expect(result.matched_rows).toBe(2); // 90, 85
+  });
+
+  it("filters with less_than", () => {
+    const csv = "name,score\nAlice,90\nBob,70\nCharlie,85";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "score", operator: "less_than", value: "80" }],
+    });
+    expect(result.matched_rows).toBe(1); // 70
+  });
+
+  it("filters with contains", () => {
+    const csv = "city\nNew York\nLos Angeles\nNew Orleans";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "city", operator: "contains", value: "New" }],
+    });
+    expect(result.matched_rows).toBe(2);
+  });
+
+  it("combines multiple conditions (AND)", () => {
+    const csv = "name,age,city\nAlice,30,NYC\nBob,25,LA\nCharlie,30,NYC\nDiana,35,LA";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [
+        { column: "age", operator: "greater_than", value: "28" },
+        { column: "city", operator: "equals", value: "NYC" },
+      ],
+    });
+    expect(result.matched_rows).toBe(2); // Alice + Charlie
+  });
+
+  it("preserves all columns", () => {
+    const csv = "a,b,c\n1,2,3\n4,5,6";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "a", operator: "equals", value: "1" }],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("a,b,c");
+  });
+
+  it("returns total_rows and summary", () => {
+    const csv = "val\n10\n20\n30";
+    const result = flowFilterRows({
+      csv_content: csv,
+      conditions: [{ column: "val", operator: "greater_than", value: "15" }],
+    });
+    expect(result.total_rows).toBe(3);
+    expect(result.matched_rows).toBe(2);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing column", () => {
+    const csv = "val\n10";
+    expect(() => flowFilterRows({ csv_content: csv, conditions: [{ column: "missing", operator: "equals", value: "x" }] })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 46: flow_split_dataset
+// ============================================================================
+
+describe("flowSplitDataset", () => {
+  it("splits by column value", () => {
+    const csv = "group,val\nA,1\nB,2\nA,3\nB,4";
+    const result = flowSplitDataset({
+      csv_content: csv,
+      split_column: "group",
+    });
+    expect(result.splits.length).toBe(2);
+    const splitA = result.splits.find(s => s.value === "A");
+    const splitB = result.splits.find(s => s.value === "B");
+    expect(splitA).toBeTruthy();
+    expect(splitB).toBeTruthy();
+    expect(splitA!.row_count).toBe(2);
+    expect(splitB!.row_count).toBe(2);
+  });
+
+  it("each split has correct CSV content", () => {
+    const csv = "group,val\nA,1\nB,2\nA,3";
+    const result = flowSplitDataset({
+      csv_content: csv,
+      split_column: "group",
+    });
+    const splitA = result.splits.find(s => s.value === "A");
+    expect(splitA!.csv).toContain("group,val");
+    expect(splitA!.csv).toContain("A,1");
+    expect(splitA!.csv).toContain("A,3");
+    expect(splitA!.csv).not.toContain("B,2");
+  });
+
+  it("splits three groups", () => {
+    const csv = "cat,val\nX,1\nY,2\nZ,3\nX,4";
+    const result = flowSplitDataset({
+      csv_content: csv,
+      split_column: "cat",
+    });
+    expect(result.splits.length).toBe(3);
+    expect(result.total_groups).toBe(3);
+  });
+
+  it("preserves all columns in splits", () => {
+    const csv = "group,a,b\nX,1,2\nY,3,4";
+    const result = flowSplitDataset({
+      csv_content: csv,
+      split_column: "group",
+    });
+    for (const split of result.splits) {
+      const header = split.csv.trim().split("\n")[0];
+      expect(header).toBe("group,a,b");
+    }
+  });
+
+  it("returns split row counts that sum to total", () => {
+    const csv = "group,val\nA,1\nB,2\nA,3\nB,4\nC,5";
+    const result = flowSplitDataset({
+      csv_content: csv,
+      split_column: "group",
+    });
+    const totalSplit = result.splits.reduce((sum, s) => sum + s.row_count, 0);
+    expect(totalSplit).toBe(result.total_rows);
+  });
+
+  it("returns summary", () => {
+    const csv = "group,val\nA,1\nB,2";
+    const result = flowSplitDataset({
+      csv_content: csv,
+      split_column: "group",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing split column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowSplitDataset({ csv_content: csv, split_column: "missing" })).toThrow();
   });
 });

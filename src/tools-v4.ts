@@ -2547,3 +2547,156 @@ export function flowRenameColumns(input: RenameColumnsInput): RenameColumnsResul
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 45: flow_filter_rows — FILTER/SELECT ROWS BY CONDITIONS
+// ============================================================================
+
+export interface FilterCondition {
+  column: string;
+  operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains" | "not_contains";
+  value: string;
+}
+
+export interface FilterRowsInput {
+  csv_content: string;
+  conditions: FilterCondition[];
+}
+
+export interface FilterRowsResult {
+  csv: string;
+  total_rows: number;
+  matched_rows: number;
+  removed_rows: number;
+  summary: string;
+}
+
+export function flowFilterRows(input: FilterRowsInput): FilterRowsResult {
+  const { csv_content, conditions } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate columns exist
+  for (const cond of conditions) {
+    if (!headers.includes(cond.column)) {
+      throw new Error(`Column "${cond.column}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const matchedRows = rows.filter(row => {
+    return conditions.every(cond => {
+      const colIdx = headers.indexOf(cond.column);
+      const val = row[colIdx] || "";
+      const cmpVal = cond.value;
+
+      switch (cond.operator) {
+        case "equals":
+          return val === cmpVal;
+        case "not_equals":
+          return val !== cmpVal;
+        case "greater_than": {
+          const a = Number(val), b = Number(cmpVal);
+          return !isNaN(a) && !isNaN(b) && a > b;
+        }
+        case "less_than": {
+          const a = Number(val), b = Number(cmpVal);
+          return !isNaN(a) && !isNaN(b) && a < b;
+        }
+        case "contains":
+          return val.includes(cmpVal);
+        case "not_contains":
+          return !val.includes(cmpVal);
+        default:
+          return true;
+      }
+    });
+  });
+
+  const resultLines = [headers.map(h => csvEscapeField(h)).join(",")];
+  for (const row of matchedRows) {
+    resultLines.push(row.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const summary = `Filtered ${rows.length} rows → ${matchedRows.length} matched (${rows.length - matchedRows.length} removed). ` +
+    `Conditions: ${conditions.map(c => `${c.column} ${c.operator} "${c.value}"`).join(" AND ")}.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    total_rows: rows.length,
+    matched_rows: matchedRows.length,
+    removed_rows: rows.length - matchedRows.length,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 46: flow_split_dataset — SPLIT CSV BY COLUMN VALUES
+// ============================================================================
+
+export interface SplitDatasetInput {
+  csv_content: string;
+  split_column: string;
+}
+
+export interface DatasetSplit {
+  value: string;
+  csv: string;
+  row_count: number;
+}
+
+export interface SplitDatasetResult {
+  splits: DatasetSplit[];
+  total_rows: number;
+  total_groups: number;
+  summary: string;
+}
+
+export function flowSplitDataset(input: SplitDatasetInput): SplitDatasetResult {
+  const { csv_content, split_column } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(split_column);
+  if (colIdx === -1) throw new Error(`Column "${split_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Group rows by split column value
+  const groups = new Map<string, string[][]>();
+  for (const row of rows) {
+    const key = row[colIdx] || "";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(row);
+  }
+
+  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
+  const splits: DatasetSplit[] = [];
+
+  for (const [value, groupRows] of groups) {
+    const csvLines = [headerLine];
+    for (const row of groupRows) {
+      csvLines.push(row.map(v => csvEscapeField(v)).join(","));
+    }
+    splits.push({
+      value,
+      csv: csvLines.join("\n"),
+      row_count: groupRows.length,
+    });
+  }
+
+  const summary = `Split ${rows.length} rows into ${groups.size} group(s) by "${split_column}": ` +
+    splits.map(s => `${s.value} (${s.row_count} rows)`).join(", ") + ".";
+
+  return {
+    splits,
+    total_rows: rows.length,
+    total_groups: groups.size,
+    summary,
+  };
+}

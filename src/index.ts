@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2178,6 +2178,75 @@ Output: Renamed/reordered CSV with columns_renamed, columns_reordered, final_col
           required: ["csv_content"],
         },
       },
+
+      // Tool 45: flow_filter_rows
+      {
+        name: "flow_filter_rows",
+        description: `Filter CSV rows based on one or more conditions. Supports equals, not_equals, greater_than, less_than, contains, not_contains operators. Multiple conditions are combined with AND logic. Essential for selecting subsets of data for focused visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "filter", "select", "keep only", "remove rows where", or "subset" data
+- User wants rows matching specific criteria (age > 18, status = "active")
+- User needs to exclude certain categories or outlier values
+- User asks to "show only" or "get rows where" a condition is true
+- Pre-visualization data selection for focused 3D views
+
+Input: CSV data and array of conditions (column, operator, value).
+Output: Filtered CSV with total_rows, matched_rows, removed_rows, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to filter",
+            },
+            conditions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  column: { type: "string", description: "Column name to apply condition to" },
+                  operator: { type: "string", enum: ["equals", "not_equals", "greater_than", "less_than", "contains", "not_contains"], description: "Comparison operator" },
+                  value: { type: "string", description: "Value to compare against" },
+                },
+                required: ["column", "operator", "value"],
+              },
+              description: "Filter conditions (combined with AND logic)",
+            },
+          },
+          required: ["csv_content", "conditions"],
+        },
+      },
+
+      // Tool 46: flow_split_dataset
+      {
+        name: "flow_split_dataset",
+        description: `Split a CSV dataset into multiple subsets based on unique values in a column. Each unique value becomes a separate CSV with all rows matching that value. Essential for creating comparison visualizations or processing groups independently.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "split", "group", "separate", or "break apart" data by a category
+- User wants separate CSVs per category for individual visualization
+- User needs to compare groups side-by-side in 3D
+- User asks to "split by region" or "separate by type"
+- Data has categorical groups that should be visualized independently
+
+Input: CSV data and column name to split on.
+Output: Array of splits, each with value, csv, and row_count, plus total_groups and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to split",
+            },
+            split_column: {
+              type: "string",
+              description: "Column whose unique values determine the splits",
+            },
+          },
+          required: ["csv_content", "split_column"],
+        },
+      },
     ],
   };
 });
@@ -2658,6 +2727,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_rename_columns": {
       try {
         const result = flowRenameColumns(args as unknown as RenameColumnsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_filter_rows": {
+      try {
+        const result = flowFilterRows(args as unknown as FilterRowsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_split_dataset": {
+      try {
+        const result = flowSplitDataset(args as unknown as SplitDatasetInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5659,7 +5746,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 44, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 46, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
