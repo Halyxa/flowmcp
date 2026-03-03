@@ -5211,3 +5211,217 @@ export function flowDistanceMatrix(input: DistanceMatrixInput): DistanceMatrixRe
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 77: flow_interpolate_missing — FILL GAPS IN NUMERIC DATA
+// ============================================================================
+
+export interface InterpolateMissingInput {
+  csv_content: string;
+  columns: string[];
+  method: "linear" | "nearest" | "zero";
+}
+
+export interface InterpolateMissingResult {
+  csv: string;
+  row_count: number;
+  filled_count: number;
+  summary: string;
+}
+
+export function flowInterpolateMissing(input: InterpolateMissingInput): InterpolateMissingResult {
+  const lines = input.csv_content.trim().split("\n");
+  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate columns exist
+  for (const col of input.columns) {
+    if (!headers.includes(col)) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+  }
+
+  let totalFilled = 0;
+
+  for (const col of input.columns) {
+    const colIdx = headers.indexOf(col);
+    const values: (number | null)[] = rows.map(r => {
+      const v = r[colIdx]?.trim();
+      if (v === "" || v === undefined || v === null) return null;
+      const n = Number(v);
+      return isNaN(n) ? null : n;
+    });
+
+    if (input.method === "zero") {
+      for (let i = 0; i < values.length; i++) {
+        if (values[i] === null) {
+          values[i] = 0;
+          totalFilled++;
+        }
+      }
+    } else if (input.method === "linear") {
+      // Linear interpolation between known values
+      // Leading/trailing nulls: fill with nearest known value
+      for (let i = 0; i < values.length; i++) {
+        if (values[i] !== null) continue;
+
+        // Find previous known
+        let prevIdx = -1;
+        for (let j = i - 1; j >= 0; j--) {
+          if (values[j] !== null) { prevIdx = j; break; }
+        }
+
+        // Find next known
+        let nextIdx = -1;
+        for (let j = i + 1; j < values.length; j++) {
+          if (values[j] !== null) { nextIdx = j; break; }
+        }
+
+        if (prevIdx >= 0 && nextIdx >= 0) {
+          // Interpolate
+          const ratio = (i - prevIdx) / (nextIdx - prevIdx);
+          values[i] = values[prevIdx]! + ratio * (values[nextIdx]! - values[prevIdx]!);
+        } else if (prevIdx >= 0) {
+          values[i] = values[prevIdx]!;
+        } else if (nextIdx >= 0) {
+          values[i] = values[nextIdx]!;
+        }
+        // else: all null, leave as null (won't count as filled)
+
+        if (values[i] !== null) totalFilled++;
+      }
+    } else if (input.method === "nearest") {
+      // Use original values snapshot so filled values don't contaminate
+      const origValues = [...values];
+      for (let i = 0; i < values.length; i++) {
+        if (origValues[i] !== null) continue;
+
+        // Find nearest known value by distance (from originals only)
+        let bestIdx = -1;
+        let bestDist = Infinity;
+        for (let j = 0; j < origValues.length; j++) {
+          if (origValues[j] !== null && Math.abs(j - i) < bestDist) {
+            bestDist = Math.abs(j - i);
+            bestIdx = j;
+          }
+        }
+
+        if (bestIdx >= 0) {
+          values[i] = origValues[bestIdx]!;
+          totalFilled++;
+        }
+      }
+    }
+
+    // Write back
+    for (let i = 0; i < rows.length; i++) {
+      if (values[i] !== null) {
+        rows[i][colIdx] = String(values[i]);
+      }
+    }
+  }
+
+  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map(r => r.map(v => csvEscapeField(v)).join(","));
+
+  const summary = `Interpolated ${totalFilled} missing value(s) across ${input.columns.length} column(s) using ${input.method} method.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    filled_count: totalFilled,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 78: flow_rank_values — RANK NUMERIC VALUES
+// ============================================================================
+
+export interface RankValuesInput {
+  csv_content: string;
+  column: string;
+  method: "dense" | "ordinal" | "min" | "max";
+  ascending?: boolean;
+  output_column?: string;
+}
+
+export interface RankValuesResult {
+  csv: string;
+  row_count: number;
+  summary: string;
+}
+
+export function flowRankValues(input: RankValuesInput): RankValuesResult {
+  const lines = input.csv_content.trim().split("\n");
+  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  const colIdx = headers.indexOf(input.column);
+  if (colIdx < 0) throw new Error(`Column "${input.column}" not found. Available: ${headers.join(", ")}`);
+
+  const ascending = input.ascending !== false; // default true
+  const outCol = input.output_column || `${input.column}_rank`;
+
+  // Extract numeric values with original indices
+  const indexed: { idx: number; val: number }[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const v = Number(rows[i][colIdx]);
+    indexed.push({ idx: i, val: isNaN(v) ? (ascending ? Infinity : -Infinity) : v });
+  }
+
+  // Sort
+  indexed.sort((a, b) => ascending ? a.val - b.val : b.val - a.val);
+
+  // Assign ranks based on method
+  const ranks = new Array(rows.length).fill(0);
+
+  if (input.method === "ordinal") {
+    for (let i = 0; i < indexed.length; i++) {
+      ranks[indexed[i].idx] = i + 1;
+    }
+  } else if (input.method === "dense") {
+    let rank = 1;
+    ranks[indexed[0].idx] = rank;
+    for (let i = 1; i < indexed.length; i++) {
+      if (indexed[i].val !== indexed[i - 1].val) rank++;
+      ranks[indexed[i].idx] = rank;
+    }
+  } else if (input.method === "min") {
+    let i = 0;
+    while (i < indexed.length) {
+      let j = i;
+      while (j < indexed.length && indexed[j].val === indexed[i].val) j++;
+      const minRank = i + 1;
+      for (let k = i; k < j; k++) {
+        ranks[indexed[k].idx] = minRank;
+      }
+      i = j;
+    }
+  } else if (input.method === "max") {
+    let i = 0;
+    while (i < indexed.length) {
+      let j = i;
+      while (j < indexed.length && indexed[j].val === indexed[i].val) j++;
+      const maxRank = j;
+      for (let k = i; k < j; k++) {
+        ranks[indexed[k].idx] = maxRank;
+      }
+      i = j;
+    }
+  }
+
+  const outHeaders = [...headers, outCol];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((r, i) => [...r.map(v => csvEscapeField(v)), String(ranks[i])].join(","));
+
+  const summary = `Ranked ${rows.length} rows by "${input.column}" (${input.method}, ${ascending ? "ascending" : "descending"}).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    summary,
+  };
+}

@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -4843,6 +4843,170 @@ describe("flow_distance_matrix", () => {
       csv_content: csv,
       columns: ["x", "y"],
       id_column: "id",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// Tool 77: flow_interpolate_missing
+// ============================================================================
+describe("flow_interpolate_missing", () => {
+  it("linearly interpolates missing values", () => {
+    const csv = "idx,value\n1,10\n2,\n3,30";
+    const result = flowInterpolateMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "linear",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Row 2 should be interpolated to 20
+    expect(lines[2].split(",")[1]).toBe("20");
+  });
+
+  it("uses nearest interpolation", () => {
+    const csv = "idx,value\n1,10\n2,\n3,\n4,40";
+    const result = flowInterpolateMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "nearest",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Row 2 (index 1) is closer to row 1 (value 10)
+    expect(lines[2].split(",")[1]).toBe("10");
+    // Row 3 (index 2) is closer to row 4 (value 40)
+    expect(lines[3].split(",")[1]).toBe("40");
+  });
+
+  it("uses zero fill", () => {
+    const csv = "idx,value\n1,10\n2,\n3,30";
+    const result = flowInterpolateMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "zero",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2].split(",")[1]).toBe("0");
+  });
+
+  it("handles leading missing values with linear", () => {
+    const csv = "idx,value\n1,\n2,\n3,30";
+    const result = flowInterpolateMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "linear",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Leading missing: forward-fill from first known value
+    expect(lines[1].split(",")[1]).toBe("30");
+    expect(lines[2].split(",")[1]).toBe("30");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowInterpolateMissing({
+      csv_content: csv,
+      columns: ["nonexistent"],
+      method: "linear",
+    })).toThrow();
+  });
+
+  it("returns summary with fill count", () => {
+    const csv = "idx,value\n1,10\n2,\n3,30";
+    const result = flowInterpolateMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "linear",
+    });
+    expect(result.summary).toContain("1");
+    expect(result.filled_count).toBe(1);
+  });
+});
+
+// ============================================================================
+// Tool 78: flow_rank_values
+// ============================================================================
+describe("flow_rank_values", () => {
+  it("ranks values in dense mode", () => {
+    const csv = "name,score\nAlice,30\nBob,10\nCarol,20\nDave,30";
+    const result = flowRankValues({
+      csv_content: csv,
+      column: "score",
+      method: "dense",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const rankIdx = header.indexOf("score_rank");
+    expect(rankIdx).toBeGreaterThanOrEqual(0);
+    // Bob=10 → rank 1, Carol=20 → rank 2, Alice/Dave=30 → rank 3
+    expect(lines[2].split(",")[rankIdx]).toBe("1"); // Bob
+    expect(lines[3].split(",")[rankIdx]).toBe("2"); // Carol
+    expect(lines[1].split(",")[rankIdx]).toBe("3"); // Alice
+    expect(lines[4].split(",")[rankIdx]).toBe("3"); // Dave
+  });
+
+  it("ranks values in ordinal mode", () => {
+    const csv = "name,score\nAlice,30\nBob,10\nCarol,30";
+    const result = flowRankValues({
+      csv_content: csv,
+      column: "score",
+      method: "ordinal",
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const rankIdx = header.indexOf("score_rank");
+    // Bob=10 → rank 1, Alice=30 → rank 2, Carol=30 → rank 3 (ordinal: no ties)
+    expect(lines[2].split(",")[rankIdx]).toBe("1"); // Bob
+    // Alice and Carol both 30, ordinal assigns sequentially
+    const aliceRank = Number(lines[1].split(",")[rankIdx]);
+    const carolRank = Number(lines[3].split(",")[rankIdx]);
+    expect(aliceRank + carolRank).toBe(5); // 2 + 3 = 5
+  });
+
+  it("ranks in descending order", () => {
+    const csv = "name,score\nAlice,30\nBob,10\nCarol,20";
+    const result = flowRankValues({
+      csv_content: csv,
+      column: "score",
+      method: "dense",
+      ascending: false,
+    });
+    const lines = result.csv.trim().split("\n");
+    const header = lines[0].split(",");
+    const rankIdx = header.indexOf("score_rank");
+    // Descending: Alice=30 → rank 1, Carol=20 → rank 2, Bob=10 → rank 3
+    expect(lines[1].split(",")[rankIdx]).toBe("1"); // Alice
+    expect(lines[3].split(",")[rankIdx]).toBe("2"); // Carol
+    expect(lines[2].split(",")[rankIdx]).toBe("3"); // Bob
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowRankValues({
+      csv_content: csv,
+      column: "nonexistent",
+      method: "dense",
+    })).toThrow();
+  });
+
+  it("uses custom output column name", () => {
+    const csv = "name,score\nAlice,30\nBob,10";
+    const result = flowRankValues({
+      csv_content: csv,
+      column: "score",
+      method: "dense",
+      output_column: "my_rank",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("my_rank");
+  });
+
+  it("returns summary", () => {
+    const csv = "name,score\nAlice,30\nBob,10";
+    const result = flowRankValues({
+      csv_content: csv,
+      column: "score",
+      method: "dense",
     });
     expect(result.summary).toBeTruthy();
   });

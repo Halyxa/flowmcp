@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -3264,6 +3264,79 @@ Output: N×N distance matrix CSV, size, summary.`,
           required: ["csv_content", "columns", "id_column"],
         },
       },
+      {
+        name: "flow_interpolate_missing",
+        description: `Fill missing or empty numeric values using interpolation. Methods: linear (weighted average between neighbors), nearest (closest known value), zero (replace with 0). Processes columns in order, preserving all other data. Essential for preparing gapped time-series or incomplete datasets before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "fill missing values", "interpolate gaps", "fix missing data", or "complete the dataset"
+- User has sparse data with empty cells that need filling before visualization
+- User asks to "fill blanks", "estimate missing", or "bridge gaps in data"
+- User needs continuous data from discontinuous measurements
+
+Input: CSV data, columns to interpolate, method (linear/nearest/zero).
+Output: Filled CSV, row_count, filled_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with missing values (empty cells)",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Numeric columns to interpolate",
+            },
+            method: {
+              type: "string",
+              enum: ["linear", "nearest", "zero"],
+              description: "Interpolation method: linear, nearest, or zero",
+            },
+          },
+          required: ["csv_content", "columns", "method"],
+        },
+      },
+      {
+        name: "flow_rank_values",
+        description: `Assign rank numbers to rows based on numeric column values. Methods: dense (no gaps: 1,2,2,3), ordinal (unique sequential: 1,2,3,4), min (tied values get lowest rank), max (tied values get highest rank). Supports ascending or descending order. Adds a rank column to the output.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "rank", "order by rank", "create ranking", or "add rank column"
+- User wants to identify top-N or bottom-N items by some metric
+- User asks for "leaderboard", "standings", or "position numbers"
+- User needs ordinal position information added to their data
+
+Input: CSV data, column to rank, method (dense/ordinal/min/max), ascending flag.
+Output: CSV with rank column, row_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric column to rank",
+            },
+            column: {
+              type: "string",
+              description: "Column to rank by",
+            },
+            method: {
+              type: "string",
+              enum: ["dense", "ordinal", "min", "max"],
+              description: "Ranking method: dense, ordinal, min, max",
+            },
+            ascending: {
+              type: "boolean",
+              description: "Rank ascending (default true) or descending",
+            },
+            output_column: {
+              type: "string",
+              description: "Name for the rank column (default: {column}_rank)",
+            },
+          },
+          required: ["csv_content", "column", "method"],
+        },
+      },
     ],
   };
 });
@@ -4032,6 +4105,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_distance_matrix": {
       try {
         const result = flowDistanceMatrix(args as unknown as DistanceMatrixInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_interpolate_missing": {
+      try {
+        const result = flowInterpolateMissing(args as unknown as InterpolateMissingInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_rank_values": {
+      try {
+        const result = flowRankValues(args as unknown as RankValuesInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -7033,7 +7124,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 76, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 78, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
