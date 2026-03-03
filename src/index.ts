@@ -27,6 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
+import { flowLiveData } from "./tools-v4.js";
+import type { LiveDataInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1471,6 +1473,53 @@ INVOKE THIS TOOL WHEN:
           required: ["csv_content", "format"],
         },
       },
+      // Tool 26: flow_live_data
+      {
+        name: "flow_live_data",
+        description: `Fetch real-time public data from live APIs and produce Flow-ready CSV for instant 3D visualization. No API key needed — all sources are free and open.
+
+INVOKE THIS TOOL WHEN:
+- User wants to visualize current earthquake activity, seismic data, or tectonic events
+- User asks for live weather data, current temperatures, or global weather conditions
+- User wants World Bank development indicators (GDP, population, CO2, education, health)
+- User says "real-time data", "live data", "current data", or "fetch data"
+- User wants to see "what's happening right now" on a 3D globe
+- User asks for geographic scatter of real-world measurements
+
+SOURCES:
+- earthquakes: USGS real-time earthquake data (magnitude, location, depth). Filterable by magnitude and time range.
+- weather_stations: Current conditions for 30 major world cities (temperature, humidity, wind, precipitation).
+- world_indicators: World Bank development indicators for 200+ countries. Examples: SP.POP.TOTL (population), NY.GDP.MKTP.CD (GDP), EN.ATM.CO2E.PC (CO2/capita).
+
+Output: CSV with latitude/longitude ready for Flow's 3D Geographic Scatter template.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            source: {
+              type: "string",
+              enum: ["earthquakes", "weather_stations", "world_indicators"],
+              description: "Data source to fetch from",
+            },
+            min_magnitude: {
+              type: "number",
+              description: "Minimum earthquake magnitude (default 4.0, earthquakes only)",
+            },
+            days: {
+              type: "number",
+              description: "Time range in days looking back from now (default 7, max 30, earthquakes only)",
+            },
+            indicator: {
+              type: "string",
+              description: "World Bank indicator code (default SP.POP.TOTL). Examples: NY.GDP.MKTP.CD (GDP), EN.ATM.CO2E.PC (CO2/capita), SE.ADT.LITR.ZS (literacy rate)",
+            },
+            max_rows: {
+              type: "number",
+              description: "Maximum rows to return (default 500, max 5000)",
+            },
+          },
+          required: ["source"],
+        },
+      },
     ],
   };
 });
@@ -1780,6 +1829,15 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_export_formats": {
       try {
         const result = flowExportFormats(args as unknown as ExportFormatsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_live_data": {
+      try {
+        const result = await flowLiveData(args as unknown as LiveDataInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);

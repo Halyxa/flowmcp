@@ -1,8 +1,8 @@
 # FlowMCP
 
-The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **25 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
+The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **26 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**468 tests. Zero competitors in 3D data visualization MCP.**
+**495 tests. Zero competitors in 3D data visualization MCP.**
 
 ## What It Does
 
@@ -66,9 +66,9 @@ MCP_HTTP_PORT=8080 node dist/index.js --http # Custom port
 MCP_HTTP_HOST=0.0.0.0 node dist/index.js --http # Bind to all interfaces
 ```
 
-Health check: `GET /health` returns `{"status":"ok","tools":25,"transport":"streamable-http"}`
+Health check: `GET /health` returns `{"status":"ok","tools":26,"transport":"streamable-http"}`
 
-## Tools (25)
+## Tools (26)
 
 ### Data Analysis & Preparation
 
@@ -145,6 +145,12 @@ Health check: `GET /health` returns `{"status":"ok","tools":25,"transport":"stre
 |---|------|-------------|
 | 25 | `flow_export_formats` | CSV → JSON, GeoJSON, standalone HTML 3D viewer (Three.js), or statistical summary |
 
+### Live Data
+
+| # | Tool | Description |
+|---|------|-------------|
+| 26 | `flow_live_data` | Fetch real-time data from USGS earthquakes, Open-Meteo weather, or World Bank indicators — no API key needed |
+
 Plus **3 prompts** (recommendation, data prep, getting started) and **5 resources** (overview, CSV format, network graphs, Python client, viz types).
 
 ## Demos
@@ -177,7 +183,7 @@ Run the pipeline demo: `node demos/pipeline-demo.mjs`
 ## Testing
 
 ```bash
-npm test           # 468 tests (unit + integration + benchmark + perf + property + edge cases)
+npm test           # 480 tests (unit + integration + benchmark + perf + property + edge + v4)
 npm run smoke-test # 15 standalone MCP checks
 npm run ci         # Full pipeline: build + test + smoke
 ```
@@ -185,22 +191,23 @@ npm run ci         # Full pipeline: build + test + smoke
 | Test Suite | Count |
 |-----------|-------|
 | Unit tests | 135 |
-| Integration tests | 27 |
+| Integration tests | 28 |
 | Benchmark tests | 7 |
 | Performance profiling | 59 |
 | Search tests | 23 |
 | Tools v2 tests | 36 |
 | Tools v3 tests | 33 |
+| Tools v4 tests | 12 |
 | Edge case tests | 110 |
 | Property tests | 23 |
 | Smoke tests | 15 |
-| **Total** | **468** |
+| **Total** | **495** |
 
 ## Tool Description Optimization
 
 FlowMCP uses genetic algorithms to optimize tool descriptions for AI routing accuracy:
 
-- **120 gold queries** covering all 25 tools
+- **120 gold queries** covering all 26 tools
 - **DEAP genetic algorithm** with 500-population, 500-generation runs across 64 CPU cores
 - **10M+ evaluations** across 7 optimizer frameworks (DEAP, Optuna, Nevergrad, Hyperopt, pymoo, CMA-ES)
 - **F1 = 0.91** routing accuracy (precision 0.92, recall 0.91)
