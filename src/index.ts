@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2933,6 +2933,66 @@ Output: CSV with appended moving average column (_sma or _ema suffix), row_count
           required: ["csv_content", "column", "window", "method"],
         },
       },
+      {
+        name: "flow_entropy",
+        description: `Calculate Shannon entropy (information content) for a categorical column. Returns entropy in bits, max possible entropy, and normalized entropy (0-1). Measures diversity and unpredictability of values — useful for feature selection and data quality assessment.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "entropy", "information content", "column diversity", or "feature importance"
+- User wants to measure how much information a column carries
+- User asks which columns have the most variability or predictive power
+- User needs to compare columns by their information content
+
+Input: CSV data, column name.
+Output: entropy (bits), max_entropy, normalized_entropy (0-1), unique_count, total_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to analyze",
+            },
+            column: {
+              type: "string",
+              description: "Column to calculate entropy for",
+            },
+          },
+          required: ["csv_content", "column"],
+        },
+      },
+      {
+        name: "flow_standardize",
+        description: `Standardize numeric columns using standard (mean/std) or robust (median/MAD) methods. Appends _standardized suffix columns. Robust method resists outlier influence — use when data has extreme values.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "standardize", "scale features", "normalize for ML", or "center the data"
+- User needs z-scores or robust scaling for machine learning preprocessing
+- User asks for "robust scaling", "MAD normalization", or "outlier-resistant standardization"
+- User wants all numeric features on the same scale for comparison
+
+Input: CSV data, column names, method (standard or robust).
+Output: CSV with appended standardized columns, columns_standardized count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to standardize",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Column names to standardize",
+            },
+            method: {
+              type: "string",
+              enum: ["standard", "robust"],
+              description: "standard (mean/std) or robust (median/MAD)",
+            },
+          },
+          required: ["csv_content", "columns", "method"],
+        },
+      },
     ],
   };
 });
@@ -3611,6 +3671,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_moving_average": {
       try {
         const result = flowMovingAverage(args as unknown as MovingAverageInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_entropy": {
+      try {
+        const result = flowEntropy(args as unknown as EntropyInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_standardize": {
+      try {
+        const result = flowStandardize(args as unknown as StandardizeInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6612,7 +6690,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 66, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 68, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -4119,6 +4119,152 @@ describe("flow_moving_average", () => {
       column: "x",
       window: 2,
       method: "simple",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 67: flow_entropy
+// ============================================================================
+
+describe("flow_entropy", () => {
+  it("calculates Shannon entropy for a column", () => {
+    const csv = "x\na\nb\nc\nd"; // 4 unique values, uniform = max entropy
+    const result = flowEntropy({
+      csv_content: csv,
+      column: "x",
+    });
+    // Uniform distribution of 4 values: entropy = log2(4) = 2.0
+    expect(result.entropy).toBeCloseTo(2.0, 1);
+    expect(result.max_entropy).toBeCloseTo(2.0, 1);
+    expect(result.normalized_entropy).toBeCloseTo(1.0, 1);
+  });
+
+  it("returns 0 entropy for single value", () => {
+    const csv = "x\na\na\na";
+    const result = flowEntropy({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.entropy).toBe(0);
+  });
+
+  it("calculates entropy for skewed distribution", () => {
+    const csv = "x\na\na\na\na\nb"; // Very skewed: a=80%, b=20%
+    const result = flowEntropy({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.entropy).toBeGreaterThan(0);
+    expect(result.entropy).toBeLessThan(1); // Less than log2(2)=1
+    expect(result.normalized_entropy).toBeLessThan(1.0);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowEntropy({
+        csv_content: csv,
+        column: "missing",
+      })
+    ).toThrow();
+  });
+
+  it("returns unique_count and total_count", () => {
+    const csv = "x\na\nb\na";
+    const result = flowEntropy({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.unique_count).toBe(2);
+    expect(result.total_count).toBe(3);
+  });
+
+  it("returns summary", () => {
+    const csv = "x\na\nb\nc";
+    const result = flowEntropy({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 68: flow_standardize
+// ============================================================================
+
+describe("flow_standardize", () => {
+  it("standardizes using robust method (median/MAD)", () => {
+    const csv = "x\n1\n2\n3\n4\n100";
+    const result = flowStandardize({
+      csv_content: csv,
+      columns: ["x"],
+      method: "robust",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("x_standardized");
+    // The outlier (100) should have a large standardized value
+    const lastVal = parseFloat(lines[5].split(",").pop()!);
+    expect(Math.abs(lastVal)).toBeGreaterThan(2);
+  });
+
+  it("standardizes using standard method (mean/std)", () => {
+    const csv = "x\n10\n20\n30\n40\n50";
+    const result = flowStandardize({
+      csv_content: csv,
+      columns: ["x"],
+      method: "standard",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("x_standardized");
+    // Mean should be ~0 after standardization
+    const vals = lines.slice(1).map(l => parseFloat(l.split(",").pop()!));
+    const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+    expect(Math.abs(mean)).toBeLessThan(0.01);
+  });
+
+  it("handles multiple columns", () => {
+    const csv = "a,b\n1,10\n2,20\n3,30";
+    const result = flowStandardize({
+      csv_content: csv,
+      columns: ["a", "b"],
+      method: "standard",
+    });
+    expect(result.csv).toContain("a_standardized");
+    expect(result.csv).toContain("b_standardized");
+  });
+
+  it("handles zero variance (all same values)", () => {
+    const csv = "x\n5\n5\n5";
+    const result = flowStandardize({
+      csv_content: csv,
+      columns: ["x"],
+      method: "standard",
+    });
+    const lines = result.csv.trim().split("\n");
+    // All values should be 0 when all inputs are the same
+    expect(lines[1]).toContain("0");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() =>
+      flowStandardize({
+        csv_content: csv,
+        columns: ["missing"],
+        method: "standard",
+      })
+    ).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n1\n2\n3";
+    const result = flowStandardize({
+      csv_content: csv,
+      columns: ["x"],
+      method: "robust",
     });
     expect(result.summary).toBeTruthy();
   });

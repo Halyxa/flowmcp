@@ -4421,3 +4421,157 @@ export function flowMovingAverage(input: MovingAverageInput): MovingAverageResul
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 67: flow_entropy — SHANNON ENTROPY FOR CATEGORICAL COLUMNS
+// ============================================================================
+
+export interface EntropyInput {
+  csv_content: string;
+  /** Column to calculate entropy for */
+  column: string;
+}
+
+export interface EntropyResult {
+  entropy: number;
+  max_entropy: number;
+  normalized_entropy: number;
+  unique_count: number;
+  total_count: number;
+  summary: string;
+}
+
+export function flowEntropy(input: EntropyInput): EntropyResult {
+  const { csv_content, column } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  // Count value frequencies
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const val = row[colIdx] ?? "";
+    counts.set(val, (counts.get(val) || 0) + 1);
+  }
+
+  const total = rows.length;
+  const uniqueCount = counts.size;
+
+  // Shannon entropy: H = -Σ p(x) * log2(p(x))
+  let entropy = 0;
+  for (const count of counts.values()) {
+    const p = count / total;
+    if (p > 0) {
+      entropy -= p * Math.log2(p);
+    }
+  }
+
+  const maxEntropy = uniqueCount > 1 ? Math.log2(uniqueCount) : 0;
+  const normalizedEntropy = maxEntropy > 0 ? entropy / maxEntropy : 0;
+
+  const summary = `Shannon entropy for "${column}": ${entropy.toFixed(4)} bits (normalized: ${(normalizedEntropy * 100).toFixed(1)}%, ${uniqueCount} unique values, ${total} rows).`;
+
+  return {
+    entropy: +entropy.toFixed(6),
+    max_entropy: +maxEntropy.toFixed(6),
+    normalized_entropy: +normalizedEntropy.toFixed(6),
+    unique_count: uniqueCount,
+    total_count: total,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 68: flow_standardize — ROBUST AND STANDARD STANDARDIZATION
+// ============================================================================
+
+export interface StandardizeInput {
+  csv_content: string;
+  /** Columns to standardize */
+  columns: string[];
+  /** Method: standard (mean/std) or robust (median/MAD) */
+  method: "standard" | "robust";
+}
+
+export interface StandardizeResult {
+  csv: string;
+  row_count: number;
+  columns_standardized: number;
+  summary: string;
+}
+
+export function flowStandardize(input: StandardizeInput): StandardizeResult {
+  const { csv_content, columns, method } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  // Extract numeric values per column
+  const colValues: number[][] = colIndices.map(idx =>
+    rows.map(row => Number(row[idx] ?? "")).filter(v => !isNaN(v))
+  );
+
+  // Calculate center and scale per column
+  const params: { center: number; scale: number }[] = colValues.map(vals => {
+    if (vals.length === 0) return { center: 0, scale: 1 };
+
+    if (method === "standard") {
+      const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+      const variance = vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length;
+      const std = Math.sqrt(variance);
+      return { center: mean, scale: std === 0 ? 1 : std };
+    } else {
+      // Robust: median and MAD
+      const sorted = [...vals].sort((a, b) => a - b);
+      const median = sorted.length % 2 === 0
+        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+        : sorted[Math.floor(sorted.length / 2)];
+      const deviations = vals.map(v => Math.abs(v - median)).sort((a, b) => a - b);
+      const mad = deviations.length % 2 === 0
+        ? (deviations[deviations.length / 2 - 1] + deviations[deviations.length / 2]) / 2
+        : deviations[Math.floor(deviations.length / 2)];
+      return { center: median, scale: mad === 0 ? 1 : mad };
+    }
+  });
+
+  // Build output with standardized columns appended
+  const newHeaders = columns.map(c => `${c}_standardized`);
+  const outHeaders = [...headers, ...newHeaders];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+
+  const dataLines = rows.map(row => {
+    const standardized = colIndices.map((colIdx, i) => {
+      const val = Number(row[colIdx] ?? "");
+      if (isNaN(val)) return "";
+      const result = (val - params[i].center) / params[i].scale;
+      return String(+result.toFixed(6));
+    });
+    return [...row.map(v => csvEscapeField(v)), ...standardized].join(",");
+  });
+
+  const methodLabel = method === "standard" ? "mean/std" : "median/MAD";
+  const summary = `Standardized ${columns.length} column(s) using ${methodLabel} (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    columns_standardized: columns.length,
+    summary,
+  };
+}
