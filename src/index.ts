@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2247,6 +2247,75 @@ Output: Array of splits, each with value, csv, and row_count, plus total_groups 
           required: ["csv_content", "split_column"],
         },
       },
+
+      // Tool 47: flow_select_columns
+      {
+        name: "flow_select_columns",
+        description: `Select or exclude specific columns from a CSV dataset. In include mode, keeps only specified columns in the order you specify. In exclude mode, removes specified columns and keeps the rest. Essential for reducing data to only the dimensions needed for visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "select columns", "keep only", "pick columns", or "drop columns"
+- User wants to remove unnecessary columns before visualization
+- User needs to reduce a wide dataset to specific dimensions
+- User asks to "project" or "slice" their data by columns
+
+Input: CSV data, column list, and mode (include/exclude).
+Output: Filtered CSV with selected_count, row_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to select columns from",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Column names to include or exclude",
+            },
+            mode: {
+              type: "string",
+              enum: ["include", "exclude"],
+              description: "include: keep only specified columns; exclude: remove specified columns (default: include)",
+            },
+          },
+          required: ["csv_content", "columns"],
+        },
+      },
+
+      // Tool 48: flow_sort_rows
+      {
+        name: "flow_sort_rows",
+        description: `Sort CSV rows by a column in ascending or descending order. Automatically detects numeric vs. text columns and sorts accordingly. Essential for ranking data, finding top/bottom values, or ordering time series before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "sort", "order", "rank", or "arrange" data by a column
+- User wants "top N" or "bottom N" values (sort + sample)
+- User needs chronological ordering for time series
+- User asks to "sort by score" or "order by date"
+
+Input: CSV data, column to sort by, and order (asc/desc, default: asc).
+Output: Sorted CSV with row_count, sort_column, sort_order, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to sort",
+            },
+            sort_by: {
+              type: "string",
+              description: "Column name to sort by",
+            },
+            order: {
+              type: "string",
+              enum: ["asc", "desc"],
+              description: "Sort order: ascending or descending (default: asc)",
+            },
+          },
+          required: ["csv_content", "sort_by"],
+        },
+      },
     ],
   };
 });
@@ -2745,6 +2814,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_split_dataset": {
       try {
         const result = flowSplitDataset(args as unknown as SplitDatasetInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_select_columns": {
+      try {
+        const result = flowSelectColumns(args as unknown as SelectColumnsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_sort_rows": {
+      try {
+        const result = flowSortRows(args as unknown as SortRowsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5746,7 +5833,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 46, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 48, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

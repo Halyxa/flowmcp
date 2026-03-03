@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -2392,5 +2392,156 @@ describe("flowSplitDataset", () => {
   it("throws on missing split column", () => {
     const csv = "a,b\n1,2";
     expect(() => flowSplitDataset({ csv_content: csv, split_column: "missing" })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 47: flow_select_columns
+// ============================================================================
+
+describe("flowSelectColumns", () => {
+  it("selects specified columns", () => {
+    const csv = "a,b,c\n1,2,3\n4,5,6";
+    const result = flowSelectColumns({
+      csv_content: csv,
+      columns: ["a", "c"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("a,c");
+    expect(lines[1]).toBe("1,3");
+    expect(lines[2]).toBe("4,6");
+  });
+
+  it("selects single column", () => {
+    const csv = "name,age,city\nAlice,30,NYC\nBob,25,LA";
+    const result = flowSelectColumns({
+      csv_content: csv,
+      columns: ["name"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("name");
+    expect(lines[1]).toBe("Alice");
+  });
+
+  it("preserves column order as specified", () => {
+    const csv = "a,b,c\n1,2,3";
+    const result = flowSelectColumns({
+      csv_content: csv,
+      columns: ["c", "a"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("c,a");
+    expect(lines[1]).toBe("3,1");
+  });
+
+  it("supports exclude mode", () => {
+    const csv = "a,b,c\n1,2,3";
+    const result = flowSelectColumns({
+      csv_content: csv,
+      columns: ["b"],
+      mode: "exclude",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("a,c");
+    expect(lines[1]).toBe("1,3");
+  });
+
+  it("returns selected_count and summary", () => {
+    const csv = "a,b,c\n1,2,3";
+    const result = flowSelectColumns({
+      csv_content: csv,
+      columns: ["a", "c"],
+    });
+    expect(result.selected_count).toBe(2);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowSelectColumns({ csv_content: csv, columns: ["missing"] })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 48: flow_sort_rows
+// ============================================================================
+
+describe("flowSortRows", () => {
+  it("sorts ascending by numeric column", () => {
+    const csv = "name,score\nBob,80\nAlice,95\nCharlie,70";
+    const result = flowSortRows({
+      csv_content: csv,
+      sort_by: "score",
+      order: "asc",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("Charlie"); // 70
+    expect(lines[2]).toContain("Bob");     // 80
+    expect(lines[3]).toContain("Alice");   // 95
+  });
+
+  it("sorts descending by numeric column", () => {
+    const csv = "name,score\nBob,80\nAlice,95\nCharlie,70";
+    const result = flowSortRows({
+      csv_content: csv,
+      sort_by: "score",
+      order: "desc",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("Alice");   // 95
+    expect(lines[2]).toContain("Bob");     // 80
+    expect(lines[3]).toContain("Charlie"); // 70
+  });
+
+  it("sorts alphabetically by text column", () => {
+    const csv = "name,score\nCharlie,70\nAlice,95\nBob,80";
+    const result = flowSortRows({
+      csv_content: csv,
+      sort_by: "name",
+      order: "asc",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("Alice");
+    expect(lines[2]).toContain("Bob");
+    expect(lines[3]).toContain("Charlie");
+  });
+
+  it("preserves all columns", () => {
+    const csv = "a,b,c\n3,x,y\n1,p,q\n2,r,s";
+    const result = flowSortRows({
+      csv_content: csv,
+      sort_by: "a",
+      order: "asc",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("a,b,c");
+  });
+
+  it("returns row_count and summary", () => {
+    const csv = "val\n3\n1\n2";
+    const result = flowSortRows({
+      csv_content: csv,
+      sort_by: "val",
+      order: "asc",
+    });
+    expect(result.row_count).toBe(3);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("defaults to ascending", () => {
+    const csv = "val\n3\n1\n2";
+    const result = flowSortRows({
+      csv_content: csv,
+      sort_by: "val",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("1");
+    expect(lines[2]).toBe("2");
+    expect(lines[3]).toBe("3");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "val\n1";
+    expect(() => flowSortRows({ csv_content: csv, sort_by: "missing" })).toThrow();
   });
 });

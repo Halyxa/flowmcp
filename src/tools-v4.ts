@@ -2700,3 +2700,130 @@ export function flowSplitDataset(input: SplitDatasetInput): SplitDatasetResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 47: flow_select_columns — PICK OR DROP COLUMNS
+// ============================================================================
+
+export interface SelectColumnsInput {
+  csv_content: string;
+  columns: string[];
+  /** "include" keeps only specified columns, "exclude" removes them (default: include) */
+  mode?: "include" | "exclude";
+}
+
+export interface SelectColumnsResult {
+  csv: string;
+  selected_count: number;
+  row_count: number;
+  summary: string;
+}
+
+export function flowSelectColumns(input: SelectColumnsInput): SelectColumnsResult {
+  const { csv_content, columns, mode = "include" } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate columns exist
+  for (const col of columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  let selectedIndices: number[];
+  let selectedHeaders: string[];
+
+  if (mode === "exclude") {
+    const excludeSet = new Set(columns);
+    selectedIndices = headers.map((_, i) => i).filter(i => !excludeSet.has(headers[i]));
+    selectedHeaders = selectedIndices.map(i => headers[i]);
+  } else {
+    // Include mode — preserve the order specified by user
+    selectedIndices = columns.map(c => headers.indexOf(c));
+    selectedHeaders = columns;
+  }
+
+  const resultLines = [selectedHeaders.map(h => csvEscapeField(h)).join(",")];
+  for (const row of rows) {
+    resultLines.push(selectedIndices.map(i => csvEscapeField(row[i] || "")).join(","));
+  }
+
+  const summary = mode === "exclude"
+    ? `Excluded ${columns.length} column(s), kept ${selectedHeaders.length} column(s) across ${rows.length} rows.`
+    : `Selected ${selectedHeaders.length} column(s) from ${headers.length} total across ${rows.length} rows.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    selected_count: selectedHeaders.length,
+    row_count: rows.length,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 48: flow_sort_rows — SORT CSV ROWS BY COLUMN
+// ============================================================================
+
+export interface SortRowsInput {
+  csv_content: string;
+  sort_by: string;
+  order?: "asc" | "desc";
+}
+
+export interface SortRowsResult {
+  csv: string;
+  row_count: number;
+  sort_column: string;
+  sort_order: string;
+  summary: string;
+}
+
+export function flowSortRows(input: SortRowsInput): SortRowsResult {
+  const { csv_content, sort_by, order = "asc" } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(sort_by);
+  if (colIdx === -1) throw new Error(`Column "${sort_by}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Sort: try numeric first, fall back to string comparison
+  rows.sort((a, b) => {
+    const va = a[colIdx] || "";
+    const vb = b[colIdx] || "";
+    const na = Number(va);
+    const nb = Number(vb);
+
+    let cmp: number;
+    if (!isNaN(na) && !isNaN(nb) && va !== "" && vb !== "") {
+      cmp = na - nb;
+    } else {
+      cmp = va.localeCompare(vb);
+    }
+
+    return order === "desc" ? -cmp : cmp;
+  });
+
+  const resultLines = [headers.map(h => csvEscapeField(h)).join(",")];
+  for (const row of rows) {
+    resultLines.push(row.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const summary = `Sorted ${rows.length} rows by "${sort_by}" in ${order}ending order.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    row_count: rows.length,
+    sort_column: sort_by,
+    sort_order: order,
+    summary,
+  };
+}
