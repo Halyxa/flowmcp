@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -3307,6 +3307,148 @@ describe("flowCoalesceColumns", () => {
       csv_content: csv,
       columns: ["missing"],
       output_column: "out",
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 57: flow_describe_dataset
+// ============================================================================
+
+describe("flowDescribeDataset", () => {
+  it("returns shape with row and column counts", () => {
+    const csv = "name,age,score\nAlice,30,95\nBob,25,80\nCarol,35,70";
+    const result = flowDescribeDataset({ csv_content: csv });
+    expect(result.rows).toBe(3);
+    expect(result.columns).toBe(3);
+  });
+
+  it("identifies numeric and text column types", () => {
+    const csv = "name,age,score\nAlice,30,95\nBob,25,80";
+    const result = flowDescribeDataset({ csv_content: csv });
+    const nameProfile = result.column_profiles.find(p => p.name === "name");
+    const ageProfile = result.column_profiles.find(p => p.name === "age");
+    expect(nameProfile?.type).toBe("text");
+    expect(ageProfile?.type).toBe("numeric");
+  });
+
+  it("counts null/empty values per column", () => {
+    const csv = "a,b\n1,\n2,x\n,y";
+    const result = flowDescribeDataset({ csv_content: csv });
+    const aProfile = result.column_profiles.find(p => p.name === "a");
+    const bProfile = result.column_profiles.find(p => p.name === "b");
+    expect(aProfile?.null_count).toBe(1);
+    expect(bProfile?.null_count).toBe(1);
+  });
+
+  it("counts unique values per column", () => {
+    const csv = "color\nred\nblue\nred\ngreen";
+    const result = flowDescribeDataset({ csv_content: csv });
+    const profile = result.column_profiles[0];
+    expect(profile.unique_count).toBe(3);
+  });
+
+  it("provides sample values", () => {
+    const csv = "val\n1\n2\n3\n4\n5";
+    const result = flowDescribeDataset({ csv_content: csv });
+    const profile = result.column_profiles[0];
+    expect(profile.sample_values.length).toBeGreaterThan(0);
+    expect(profile.sample_values.length).toBeLessThanOrEqual(5);
+  });
+
+  it("returns summary string", () => {
+    const csv = "a,b\n1,x\n2,y";
+    const result = flowDescribeDataset({ csv_content: csv });
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("handles single column", () => {
+    const csv = "val\n1\n2\n3";
+    const result = flowDescribeDataset({ csv_content: csv });
+    expect(result.columns).toBe(1);
+    expect(result.column_profiles.length).toBe(1);
+  });
+});
+
+// ============================================================================
+// TOOL 58: flow_lag_lead
+// ============================================================================
+
+describe("flowLagLead", () => {
+  it("creates lag column shifted back by N rows", () => {
+    const csv = "day,val\n1,10\n2,20\n3,30\n4,40";
+    const result = flowLagLead({
+      csv_content: csv,
+      value_column: "val",
+      shift: -1,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("val_lag1");
+    // Row 1: no previous value
+    // Row 2: previous val=10
+    // Row 3: previous val=20
+    expect(lines[2]).toContain("10");
+    expect(lines[3]).toContain("20");
+    expect(result.row_count).toBe(4);
+  });
+
+  it("creates lead column shifted forward by N rows", () => {
+    const csv = "day,val\n1,10\n2,20\n3,30\n4,40";
+    const result = flowLagLead({
+      csv_content: csv,
+      value_column: "val",
+      shift: 1,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("val_lead1");
+    // Row 1: next val=20
+    // Row 4: no next value
+    expect(lines[1]).toContain("20");
+  });
+
+  it("handles shift of 2", () => {
+    const csv = "t,v\n1,10\n2,20\n3,30\n4,40\n5,50";
+    const result = flowLagLead({
+      csv_content: csv,
+      value_column: "v",
+      shift: -2,
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("v_lag2");
+    // Row 3: value from row 1 = 10
+    const lines = result.csv.trim().split("\n");
+    expect(lines[3]).toContain("10");
+  });
+
+  it("preserves all original columns", () => {
+    const csv = "a,b,c\n1,10,x\n2,20,y";
+    const result = flowLagLead({
+      csv_content: csv,
+      value_column: "b",
+      shift: -1,
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a");
+    expect(header).toContain("b");
+    expect(header).toContain("c");
+  });
+
+  it("returns summary with shift details", () => {
+    const csv = "t,v\n1,10\n2,20";
+    const result = flowLagLead({
+      csv_content: csv,
+      value_column: "v",
+      shift: -1,
+    });
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() => flowLagLead({
+      csv_content: csv,
+      value_column: "missing",
+      shift: -1,
     })).toThrow();
   });
 });

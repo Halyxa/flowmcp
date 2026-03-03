@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2607,6 +2607,62 @@ Output: Original CSV with appended coalesced column, row_count, filled_count, an
           required: ["csv_content", "columns", "output_column"],
         },
       },
+      // Tool 57: flow_describe_dataset
+      {
+        name: "flow_describe_dataset",
+        description: `Generate a comprehensive profile of a CSV dataset. Reports shape (rows × columns), data type per column (numeric vs text), null/empty counts, unique value counts, and sample values. The first tool to run on any new dataset.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "describe", "profile", "summarize", or "inspect" a dataset
+- User asks "what's in this data" or "tell me about this CSV"
+- User wants to understand the structure before analysis
+- User needs a quick data quality check (nulls, types, cardinality)
+
+Input: CSV data.
+Output: Dataset shape, column profiles (type, null_count, unique_count, sample_values), and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to profile and describe",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
+      // Tool 58: flow_lag_lead
+      {
+        name: "flow_lag_lead",
+        description: `Shift column values forward (lead) or backward (lag) by N rows. Creates a new column with offset values — essential for time series differencing, computing changes between periods, and comparing current vs previous values.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "lag", "lead", "previous value", "next value", or "shift"
+- User wants to compute period-over-period changes
+- User needs "yesterday's value" or "next week's forecast comparison"
+- User asks for "time series differencing" or "change from previous"
+
+Input: CSV data, value_column, and shift (negative = lag/look back, positive = lead/look forward).
+Output: Original CSV with appended lag/lead column, row_count, shift details, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data (rows in desired order, e.g., chronological)",
+            },
+            value_column: {
+              type: "string",
+              description: "Column to shift",
+            },
+            shift: {
+              type: "number",
+              description: "Shift amount: negative for lag (look back), positive for lead (look forward)",
+            },
+          },
+          required: ["csv_content", "value_column", "shift"],
+        },
+      },
     ],
   };
 });
@@ -3195,6 +3251,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_coalesce_columns": {
       try {
         const result = flowCoalesceColumns(args as unknown as CoalesceColumnsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_describe_dataset": {
+      try {
+        const result = flowDescribeDataset(args as unknown as DescribeDatasetInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_lag_lead": {
+      try {
+        const result = flowLagLead(args as unknown as LagLeadInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6196,7 +6270,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 56, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 58, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

@@ -3637,3 +3637,142 @@ export function flowCoalesceColumns(input: CoalesceColumnsInput): CoalesceColumn
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 57: flow_describe_dataset — COMPREHENSIVE DATASET PROFILING
+// ============================================================================
+
+export interface DescribeDatasetInput {
+  csv_content: string;
+}
+
+export interface ColumnProfile {
+  name: string;
+  type: "numeric" | "text";
+  null_count: number;
+  unique_count: number;
+  sample_values: string[];
+}
+
+export interface DescribeDatasetResult {
+  rows: number;
+  columns: number;
+  column_profiles: ColumnProfile[];
+  summary: string;
+}
+
+export function flowDescribeDataset(input: DescribeDatasetInput): DescribeDatasetResult {
+  const { csv_content } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  const profiles: ColumnProfile[] = [];
+
+  for (let c = 0; c < headers.length; c++) {
+    const colName = headers[c];
+    const values = rows.map(r => (r[c] || "").trim());
+    const nonEmpty = values.filter(v => v !== "");
+
+    // Determine type: if >50% of non-empty values are numeric, it's numeric
+    const numericCount = nonEmpty.filter(v => !isNaN(Number(v))).length;
+    const isNumeric = nonEmpty.length > 0 && numericCount / nonEmpty.length > 0.5;
+
+    const nullCount = values.filter(v => v === "").length;
+    const uniqueCount = new Set(nonEmpty).size;
+
+    // Sample: up to 5 unique values
+    const uniqueVals = [...new Set(nonEmpty)];
+    const sampleValues = uniqueVals.slice(0, 5);
+
+    profiles.push({
+      name: colName,
+      type: isNumeric ? "numeric" : "text",
+      null_count: nullCount,
+      unique_count: uniqueCount,
+      sample_values: sampleValues,
+    });
+  }
+
+  const numericCols = profiles.filter(p => p.type === "numeric").length;
+  const textCols = profiles.filter(p => p.type === "text").length;
+  const summary = `Dataset: ${rows.length} rows × ${headers.length} columns (${numericCols} numeric, ${textCols} text).`;
+
+  return {
+    rows: rows.length,
+    columns: headers.length,
+    column_profiles: profiles,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 58: flow_lag_lead — SHIFT COLUMN VALUES BY N ROWS
+// ============================================================================
+
+export interface LagLeadInput {
+  csv_content: string;
+  value_column: string;
+  shift: number; // negative = lag (look back), positive = lead (look forward)
+}
+
+export interface LagLeadResult {
+  csv: string;
+  row_count: number;
+  value_column: string;
+  shift: number;
+  new_column: string;
+  summary: string;
+}
+
+export function flowLagLead(input: LagLeadInput): LagLeadResult {
+  const { csv_content, value_column, shift } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const valIdx = headers.indexOf(value_column);
+  if (valIdx === -1) throw new Error(`Value column "${value_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+  const values = rows.map(r => r[valIdx] || "");
+
+  const absShift = Math.abs(shift);
+  const direction = shift < 0 ? "lag" : "lead";
+  const newColName = `${value_column}_${direction}${absShift}`;
+
+  // Compute shifted values
+  const shifted: string[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    // For lag (shift < 0): look at i + shift (i.e., earlier rows)
+    // For lead (shift > 0): look at i + shift (i.e., later rows)
+    const sourceIdx = i + shift;
+    if (sourceIdx >= 0 && sourceIdx < rows.length) {
+      shifted.push(values[sourceIdx]);
+    } else {
+      shifted.push("");
+    }
+  }
+
+  // Build output
+  const outHeaders = [...headers, newColName];
+  const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const outRows = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), csvEscapeField(shifted[i])].join(",");
+  });
+
+  const summary = `Created ${direction} column "${newColName}" with shift of ${absShift} (${rows.length} rows).`;
+
+  return {
+    csv: [outHeaderLine, ...outRows].join("\n"),
+    row_count: rows.length,
+    value_column,
+    shift,
+    new_column: newColName,
+    summary,
+  };
+}
