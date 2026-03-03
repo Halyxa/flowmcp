@@ -1,8 +1,8 @@
 # FlowMCP
 
-The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **46 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
+The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **50 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**799 tests. Zero competitors in 3D data visualization MCP.**
+**814 tests. Zero competitors in 3D data visualization MCP.**
 
 ## What It Does
 
@@ -180,6 +180,10 @@ Health check: `GET /health` returns `{"status":"ok","tools":36,"transport":"stre
 | 44 | `flow_rename_columns` | Rename and reorder CSV columns |
 | 45 | `flow_filter_rows` | Filter rows by conditions: equals, greater_than, contains, etc. |
 | 46 | `flow_split_dataset` | Split dataset into subsets by column values |
+| 47 | `flow_select_columns` | Select or exclude columns from CSV |
+| 48 | `flow_sort_rows` | Sort rows by column with numeric-aware ordering |
+| 49 | `flow_unpivot` | Melt wide format to long format (reverse of pivot) |
+| 50 | `flow_join_datasets` | SQL-style joins (inner/left/right/full) on shared key |
 
 Plus **3 prompts** (recommendation, data prep, getting started) and **5 resources** (overview, CSV format, network graphs, Python client, viz types).
 
