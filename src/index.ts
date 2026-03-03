@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1807,6 +1807,70 @@ Output: Deduplicated CSV with duplicate count and summary statistics.`,
           required: ["csv_content"],
         },
       },
+
+      // Tool 35: flow_bin_data
+      {
+        name: "flow_bin_data",
+        description: `Create histogram bins from a numeric column. Produces bin_label, bin_min, bin_max, count, and frequency columns ready for bar chart or 3D histogram visualization. Auto-selects optimal bin count using Sturges' rule when not specified.
+
+INVOKE THIS TOOL WHEN:
+- User asks for a "histogram", "distribution", "frequency chart", or "bin" their data
+- User wants to see the distribution of values in a numeric column
+- User asks "how is the data distributed?", "show me the spread", or "create bins"
+- User wants to convert continuous numeric data into categorical bins for bar charts
+- User asks for frequency analysis or value distribution breakdown
+
+Input: CSV data, numeric column name, optional bin count.
+Output: Binned CSV with bin_label, bin_min, bin_max, count, and frequency columns.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data containing the column to bin",
+            },
+            column: {
+              type: "string",
+              description: "Numeric column to create histogram bins from",
+            },
+            bins: {
+              type: "number",
+              description: "Number of bins (optional — auto-selects using Sturges' rule)",
+            },
+          },
+          required: ["csv_content", "column"],
+        },
+      },
+
+      // Tool 36: flow_transpose_data
+      {
+        name: "flow_transpose_data",
+        description: `Transpose a CSV dataset — swap rows and columns. One column becomes the new column headers, remaining columns become rows. Essential for reshaping data when the natural visualization axis is different from the data layout.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "transpose", "pivot", "rotate", "flip rows and columns", or "reshape" their data
+- User has metrics as columns but wants them as rows (or vice versa)
+- User has time periods as columns and wants to compare metrics across time
+- User asks to "make rows into columns" or "convert wide format to long"
+- Data is in wide format but visualization tool needs it in a different orientation
+
+Input: CSV data and optional header column name.
+Output: Transposed CSV with row_count, column_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to transpose",
+            },
+            header_column: {
+              type: "string",
+              description: "Column to use as new column headers (optional — defaults to first column)",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
     ],
   };
 });
@@ -2197,6 +2261,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_deduplicate_rows": {
       try {
         const result = flowDeduplicateRows(args as unknown as DeduplicateRowsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_bin_data": {
+      try {
+        const result = flowBinData(args as unknown as BinDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_transpose_data": {
+      try {
+        const result = flowTransposeData(args as unknown as TransposeDataInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5198,7 +5280,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 34, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 36, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

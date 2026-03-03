@@ -1503,3 +1503,146 @@ export function flowDeduplicateRows(input: DeduplicateRowsInput): DeduplicateRow
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 35: flow_bin_data — HISTOGRAM BINNING FOR BAR CHART VISUALIZATION
+// ============================================================================
+
+export interface BinDataInput {
+  csv_content: string;
+  column: string;
+  /** Number of bins (optional — auto-selects using Sturges' rule if omitted) */
+  bins?: number;
+}
+
+export interface BinDataResult {
+  csv: string;
+  bin_count: number;
+  total_values: number;
+  min_value: number;
+  max_value: number;
+  summary: string;
+}
+
+export function flowBinData(input: BinDataInput): BinDataResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  const colIdx = headers.indexOf(input.column);
+  if (colIdx === -1) {
+    throw new Error(`Column "${input.column}" not found. Available: ${headers.join(", ")}`);
+  }
+
+  // Extract numeric values
+  const values: number[] = [];
+  for (const row of rows) {
+    const v = Number(row[colIdx]);
+    if (!isNaN(v)) values.push(v);
+  }
+
+  if (values.length === 0) {
+    throw new Error(`Column "${input.column}" has no numeric values.`);
+  }
+
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+
+  // Determine bin count: use Sturges' rule if not specified
+  const binCount = input.bins ?? Math.max(1, Math.ceil(Math.log2(values.length) + 1));
+
+  // Create bins
+  const range = maxVal - minVal;
+  const binWidth = range > 0 ? range / binCount : 1;
+
+  const bins: { min: number; max: number; count: number }[] = [];
+  for (let i = 0; i < binCount; i++) {
+    bins.push({
+      min: Math.round((minVal + i * binWidth) * 10000) / 10000,
+      max: Math.round((minVal + (i + 1) * binWidth) * 10000) / 10000,
+      count: 0,
+    });
+  }
+
+  // Assign values to bins
+  for (const v of values) {
+    let idx = range > 0 ? Math.floor((v - minVal) / binWidth) : 0;
+    if (idx >= binCount) idx = binCount - 1; // max value goes in last bin
+    bins[idx].count++;
+  }
+
+  // Build output CSV
+  const outHeaders = ["bin_label", "bin_min", "bin_max", "count", "frequency"];
+  const outLines = [outHeaders.join(",")];
+  for (const bin of bins) {
+    const freq = Math.round((bin.count / values.length) * 10000) / 10000;
+    const label = `${bin.min}-${bin.max}`;
+    outLines.push([csvEscapeField(label), String(bin.min), String(bin.max), String(bin.count), String(freq)].join(","));
+  }
+
+  const summary = `Binned ${values.length} values from column "${input.column}" into ${binCount} bins. ` +
+    `Range: ${minVal} to ${maxVal} (width: ${Math.round(binWidth * 10000) / 10000}).`;
+
+  return {
+    csv: outLines.join("\n"),
+    bin_count: binCount,
+    total_values: values.length,
+    min_value: minVal,
+    max_value: maxVal,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 36: flow_transpose_data — SWAP ROWS AND COLUMNS
+// ============================================================================
+
+export interface TransposeDataInput {
+  csv_content: string;
+  /** Column to use as new column headers (optional — defaults to first column) */
+  header_column?: string;
+}
+
+export interface TransposeDataResult {
+  csv: string;
+  row_count: number;
+  column_count: number;
+  summary: string;
+}
+
+export function flowTransposeData(input: TransposeDataInput): TransposeDataResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  const headerCol = input.header_column ?? headers[0];
+  const headerIdx = headers.indexOf(headerCol);
+  if (headerIdx === -1) {
+    throw new Error(`Column "${headerCol}" not found. Available: ${headers.join(", ")}`);
+  }
+
+  // Get the row labels from the header column
+  const rowLabels = rows.map(r => r[headerIdx]);
+
+  // Get data columns (everything except the header column)
+  const dataCols = headers.filter((_, i) => i !== headerIdx);
+  const dataColIndices = dataCols.map(c => headers.indexOf(c));
+
+  // Transpose: each data column becomes a row, each original row becomes a column
+  const newHeaders = ["metric", ...rowLabels];
+  const outLines = [newHeaders.map(h => csvEscapeField(h)).join(",")];
+
+  for (let c = 0; c < dataCols.length; c++) {
+    const colIdx = dataColIndices[c];
+    const rowValues = rows.map(r => r[colIdx]);
+    outLines.push([csvEscapeField(dataCols[c]), ...rowValues.map(v => csvEscapeField(v))].join(","));
+  }
+
+  const summary = `Transposed ${rows.length} rows × ${dataCols.length} data columns → ${dataCols.length} rows × ${rows.length + 1} columns. ` +
+    `Used "${headerCol}" as column headers.`;
+
+  return {
+    csv: outLines.join("\n"),
+    row_count: dataCols.length,
+    column_count: rows.length + 1, // +1 for the "metric" column
+    summary,
+  };
+}

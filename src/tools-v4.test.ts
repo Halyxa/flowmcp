@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -1213,5 +1213,195 @@ describe("flow_deduplicate_rows", () => {
     });
     expect(result.summary).toBeDefined();
     expect(result.summary.length).toBeGreaterThan(0);
+  });
+});
+
+// =============================================================================
+// TOOL 35: flow_bin_data — HISTOGRAM BINNING
+// =============================================================================
+
+describe("flow_bin_data", () => {
+  const CSV = "value\n1\n5\n10\n15\n20\n25\n30\n35\n40\n45";
+
+  it("creates correct number of bins", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 5,
+    });
+    expect(result.bin_count).toBe(5);
+  });
+
+  it("CSV has bin_min, bin_max, count, frequency columns", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 5,
+    });
+    expect(result.csv).toContain("bin_min");
+    expect(result.csv).toContain("bin_max");
+    expect(result.csv).toContain("count");
+    expect(result.csv).toContain("frequency");
+  });
+
+  it("all values are assigned to bins (count sums to total)", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 5,
+    });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const countIdx = headers.indexOf("count");
+    let total = 0;
+    for (let i = 1; i < lines.length; i++) {
+      total += Number(lines[i].split(",")[countIdx]);
+    }
+    expect(total).toBe(10);
+  });
+
+  it("frequency values sum to ~1.0", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 5,
+    });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const freqIdx = headers.indexOf("frequency");
+    let total = 0;
+    for (let i = 1; i < lines.length; i++) {
+      total += Number(lines[i].split(",")[freqIdx]);
+    }
+    expect(Math.abs(total - 1.0)).toBeLessThan(0.01);
+  });
+
+  it("auto-selects bins when not specified", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+    });
+    expect(result.bin_count).toBeGreaterThan(0);
+  });
+
+  it("throws on nonexistent column", () => {
+    expect(() =>
+      flowBinData({ csv_content: CSV, column: "nonexistent", bins: 5 })
+    ).toThrow();
+  });
+
+  it("throws on non-numeric column", () => {
+    const csv = "name\nAlice\nBob\nCharlie";
+    expect(() =>
+      flowBinData({ csv_content: csv, column: "name", bins: 5 })
+    ).toThrow();
+  });
+
+  it("single bin captures all values", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 1,
+    });
+    expect(result.bin_count).toBe(1);
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const countIdx = headers.indexOf("count");
+    expect(Number(lines[1].split(",")[countIdx])).toBe(10);
+  });
+
+  it("returns summary text", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 5,
+    });
+    expect(result.summary).toBeDefined();
+    expect(result.summary.length).toBeGreaterThan(0);
+  });
+
+  it("includes bin_label column", () => {
+    const result = flowBinData({
+      csv_content: CSV,
+      column: "value",
+      bins: 5,
+    });
+    expect(result.csv).toContain("bin_label");
+  });
+});
+
+// =============================================================================
+// TOOL 36: flow_transpose_data — ROWS ↔ COLUMNS
+// =============================================================================
+
+describe("flow_transpose_data", () => {
+  it("transposes rows and columns", () => {
+    const csv = "name,q1,q2,q3\nRevenue,100,200,300\nProfit,50,80,120";
+    const result = flowTransposeData({
+      csv_content: csv,
+      header_column: "name",
+    });
+    // Should have columns: metric, Revenue, Profit
+    expect(result.csv).toContain("Revenue");
+    expect(result.csv).toContain("Profit");
+    expect(result.row_count).toBe(3); // q1, q2, q3
+    expect(result.column_count).toBe(3); // metric, Revenue, Profit
+  });
+
+  it("preserves values correctly", () => {
+    const csv = "name,a,b\nX,1,2\nY,3,4";
+    const result = flowTransposeData({
+      csv_content: csv,
+      header_column: "name",
+    });
+    // After transpose: metric,X,Y\na,1,3\nb,2,4
+    expect(result.csv).toContain("1");
+    expect(result.csv).toContain("4");
+  });
+
+  it("uses first column as header when not specified", () => {
+    const csv = "label,val1,val2\nA,10,20\nB,30,40";
+    const result = flowTransposeData({
+      csv_content: csv,
+    });
+    expect(result.csv).toContain("A");
+    expect(result.csv).toContain("B");
+  });
+
+  it("handles single row", () => {
+    const csv = "name,a,b,c\nX,1,2,3";
+    const result = flowTransposeData({
+      csv_content: csv,
+      header_column: "name",
+    });
+    expect(result.row_count).toBe(3); // a, b, c
+    expect(result.column_count).toBe(2); // metric, X
+  });
+
+  it("throws on nonexistent header column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowTransposeData({ csv_content: csv, header_column: "nonexistent" })
+    ).toThrow();
+  });
+
+  it("returns summary text", () => {
+    const csv = "name,a,b\nX,1,2\nY,3,4";
+    const result = flowTransposeData({
+      csv_content: csv,
+      header_column: "name",
+    });
+    expect(result.summary).toBeDefined();
+    expect(result.summary.length).toBeGreaterThan(0);
+  });
+
+  it("handles many columns gracefully", () => {
+    const cols = Array.from({ length: 20 }, (_, i) => `c${i}`);
+    const csv = "name," + cols.join(",") + "\nrow1," + cols.map((_, i) => i).join(",");
+    const result = flowTransposeData({
+      csv_content: csv,
+      header_column: "name",
+    });
+    expect(result.row_count).toBe(20);
   });
 });
