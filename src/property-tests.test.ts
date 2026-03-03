@@ -12,7 +12,7 @@ import {
   flowMergeDatasets,
 } from "./tools-v2.js";
 import { flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
 
 // ============================================================================
 // Helpers: CSV generators for fast-check (v4 API)
@@ -1649,6 +1649,189 @@ describe("flow_transpose_data properties", () => {
         }
       ),
       { numRuns: 100 }
+    );
+  });
+});
+
+// ============================================================================
+// Section 29: flow_sample_data property tests
+// ============================================================================
+
+describe("flow_sample_data properties", () => {
+  it("sampled rows <= min(n, total)", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 20 }),
+        fc.integer({ min: 1, max: 30 }),
+        (nRows, n) => {
+          const csv = "val\n" + Array.from({ length: nRows }, (_, i) => `${i}`).join("\n");
+          const result = flowSampleData({ csv_content: csv, n, method: "random" });
+          expect(result.sampled_rows).toBeLessThanOrEqual(Math.min(n, nRows));
+          expect(result.sampled_rows).toBeGreaterThan(0);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("first-N preserves order", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 3, max: 15 }),
+        (nRows) => {
+          const csv = "val\n" + Array.from({ length: nRows }, (_, i) => `${i}`).join("\n");
+          const n = Math.min(3, nRows);
+          const result = flowSampleData({ csv_content: csv, n, method: "first" });
+          const lines = result.csv.trim().split("\n");
+          for (let i = 1; i <= n; i++) {
+            expect(lines[i]).toBe(`${i - 1}`);
+          }
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("every_nth produces bounded samples", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 5, max: 20 }),
+        (nRows) => {
+          const csv = "idx\n" + Array.from({ length: nRows }, (_, i) => `${i}`).join("\n");
+          const n = Math.max(2, Math.floor(nRows / 3));
+          const result = flowSampleData({ csv_content: csv, n, method: "every_nth" });
+          expect(result.sampled_rows).toBeLessThanOrEqual(n);
+          expect(result.total_rows).toBe(nRows);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("stratified samples from multiple categories", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 4 }),
+        fc.integer({ min: 3, max: 6 }),
+        (nCategories, perCat) => {
+          const rows: string[] = [];
+          for (let c = 0; c < nCategories; c++) {
+            for (let r = 0; r < perCat; r++) {
+              rows.push(`cat${c},${c * 100 + r}`);
+            }
+          }
+          const csv = "group,val\n" + rows.join("\n");
+          const total = nCategories * perCat;
+          // Use n large enough that each category gets at least 1 row (n >= total * 0.8)
+          const n = Math.max(nCategories * 2, Math.ceil(total * 0.8));
+          const result = flowSampleData({ csv_content: csv, n, method: "stratified", stratify_column: "group" });
+          const lines = result.csv.trim().split("\n").slice(1);
+          const cats = new Set(lines.map(l => l.split(",")[0]));
+          // With enough budget per category, all should be represented
+          expect(cats.size).toBe(nCategories);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+});
+
+// ============================================================================
+// Section 30: flow_column_stats property tests
+// ============================================================================
+
+describe("flow_column_stats properties", () => {
+  it("mean is between min and max", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 3, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowColumnStats({ csv_content: csv });
+          expect(result.stats.length).toBe(1);
+          const s = result.stats[0];
+          expect(s.mean).toBeGreaterThanOrEqual(s.min);
+          expect(s.mean).toBeLessThanOrEqual(s.max);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("median is between min and max", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 3, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowColumnStats({ csv_content: csv });
+          const s = result.stats[0];
+          expect(s.median).toBeGreaterThanOrEqual(s.min);
+          expect(s.median).toBeLessThanOrEqual(s.max);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("std is non-negative", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 3, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowColumnStats({ csv_content: csv });
+          expect(result.stats[0].std).toBeGreaterThanOrEqual(0);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("count equals number of input rows", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 2, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowColumnStats({ csv_content: csv });
+          expect(result.stats[0].count).toBe(values.length);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("q1 <= median <= q3", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 5, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowColumnStats({ csv_content: csv });
+          const s = result.stats[0];
+          if (s.q1 !== undefined && s.q3 !== undefined) {
+            expect(s.q1).toBeLessThanOrEqual(s.median + 1e-10);
+            expect(s.median).toBeLessThanOrEqual(s.q3 + 1e-10);
+          }
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("range equals max - min", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 2, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowColumnStats({ csv_content: csv });
+          const s = result.stats[0];
+          expect(s.range).toBeCloseTo(s.max - s.min, 5);
+        }
+      ),
+      { numRuns: 200 }
     );
   });
 });

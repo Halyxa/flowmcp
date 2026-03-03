@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
 import {
   flowSemanticSearch,
   scoreMatch,
@@ -1769,5 +1769,158 @@ describe("flowTransposeData — edge cases", () => {
     // First column "id" used as header
     expect(result.csv).toContain("1");
     expect(result.csv).toContain("2");
+  });
+});
+
+// ============================================================================
+// flowSampleData — edge cases
+// ============================================================================
+
+describe("flowSampleData — edge cases", () => {
+  it("n greater than total returns all rows", () => {
+    const csv = "val\n1\n2\n3";
+    const result = flowSampleData({ csv_content: csv, n: 100, method: "random" });
+    expect(result.sampled_rows).toBe(3);
+    expect(result.total_rows).toBe(3);
+  });
+
+  it("n = 1 returns exactly one row", () => {
+    const csv = "val\n10\n20\n30\n40\n50";
+    const result = flowSampleData({ csv_content: csv, n: 1, method: "random" });
+    expect(result.sampled_rows).toBe(1);
+    const lines = result.csv.trim().split("\n");
+    expect(lines.length).toBe(2); // header + 1 row
+  });
+
+  it("first method takes first N rows", () => {
+    const csv = "val\n1\n2\n3\n4\n5";
+    const result = flowSampleData({ csv_content: csv, n: 2, method: "first" });
+    expect(result.sampled_rows).toBe(2);
+    expect(result.csv).toContain("1");
+    expect(result.csv).toContain("2");
+  });
+
+  it("every_nth with n=1 returns first row only", () => {
+    const csv = "val\n10\n20\n30\n40\n50";
+    const result = flowSampleData({ csv_content: csv, n: 1, method: "every_nth" });
+    expect(result.sampled_rows).toBe(1);
+  });
+
+  it("stratified with missing column throws", () => {
+    const csv = "a,b\n1,2\n3,4";
+    expect(() => flowSampleData({ csv_content: csv, n: 1, method: "stratified", stratify_column: "missing" })).toThrow();
+  });
+
+  it("stratified without stratify_column throws", () => {
+    const csv = "a,b\n1,2\n3,4";
+    expect(() => flowSampleData({ csv_content: csv, n: 1, method: "stratified" })).toThrow();
+  });
+
+  it("preserves all columns", () => {
+    const csv = "name,age,city\nAlice,30,NYC\nBob,25,LA\nCharlie,35,SF\nDiana,28,NYC";
+    const result = flowSampleData({ csv_content: csv, n: 2, method: "first" });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toBe("name,age,city");
+  });
+
+  it("summary includes method name", () => {
+    const csv = "val\n1\n2\n3";
+    const result = flowSampleData({ csv_content: csv, n: 2, method: "every_nth" });
+    expect(result.method).toBe("every_nth");
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("empty data returns zero rows", () => {
+    const result = flowSampleData({ csv_content: "val", n: 1, method: "random" });
+    expect(result.sampled_rows).toBe(0);
+    expect(result.total_rows).toBe(0);
+  });
+});
+
+// ============================================================================
+// flowColumnStats — edge cases
+// ============================================================================
+
+describe("flowColumnStats — edge cases", () => {
+  it("auto-detects numeric columns ignoring text", () => {
+    const csv = "name,score,grade\nAlice,95,A\nBob,85,B\nCharlie,92,A";
+    const result = flowColumnStats({ csv_content: csv });
+    expect(result.stats.length).toBe(1);
+    expect(result.stats[0].column).toBe("score");
+  });
+
+  it("specific column parameter overrides auto-detect", () => {
+    const csv = "a,b,c\n1,10,100\n2,20,200\n3,30,300";
+    const result = flowColumnStats({ csv_content: csv, columns: ["b"] });
+    expect(result.stats.length).toBe(1);
+    expect(result.stats[0].column).toBe("b");
+  });
+
+  it("all identical values produce std=0", () => {
+    const csv = "val\n5\n5\n5\n5\n5";
+    const result = flowColumnStats({ csv_content: csv });
+    expect(result.stats[0].std).toBe(0);
+    expect(result.stats[0].min).toBe(5);
+    expect(result.stats[0].max).toBe(5);
+    expect(result.stats[0].mean).toBe(5);
+    expect(result.stats[0].median).toBe(5);
+  });
+
+  it("two values compute correct stats", () => {
+    const csv = "val\n10\n20";
+    const result = flowColumnStats({ csv_content: csv });
+    const s = result.stats[0];
+    expect(s.count).toBe(2);
+    expect(s.mean).toBe(15);
+    expect(s.min).toBe(10);
+    expect(s.max).toBe(20);
+    expect(s.range).toBe(10);
+  });
+
+  it("negative values handled correctly", () => {
+    const csv = "val\n-10\n-20\n-5\n-15";
+    const result = flowColumnStats({ csv_content: csv });
+    const s = result.stats[0];
+    expect(s.min).toBe(-20);
+    expect(s.max).toBe(-5);
+    expect(s.mean).toBe(-12.5);
+    expect(s.range).toBe(15);
+  });
+
+  it("mixed positive and negative", () => {
+    const csv = "val\n-100\n0\n100";
+    const result = flowColumnStats({ csv_content: csv });
+    const s = result.stats[0];
+    expect(s.mean).toBeCloseTo(0, 5);
+    expect(s.median).toBe(0);
+  });
+
+  it("missing values counted correctly", () => {
+    const csv = "val\n1\n\n3\n\n5";
+    const result = flowColumnStats({ csv_content: csv });
+    const s = result.stats[0];
+    expect(s.missing).toBeGreaterThan(0);
+    expect(s.count + s.missing).toBeLessThanOrEqual(5);
+  });
+
+  it("csv output has correct headers", () => {
+    const csv = "x,y\n1,10\n2,20\n3,30";
+    const result = flowColumnStats({ csv_content: csv });
+    const csvHeader = result.csv.trim().split("\n")[0];
+    expect(csvHeader).toContain("column");
+    expect(csvHeader).toContain("mean");
+    expect(csvHeader).toContain("median");
+    expect(csvHeader).toContain("std");
+  });
+
+  it("empty data returns empty stats", () => {
+    const result = flowColumnStats({ csv_content: "val" });
+    expect(result.stats.length).toBe(0);
+  });
+
+  it("no numeric columns returns empty stats", () => {
+    const csv = "name,city\nAlice,NYC\nBob,LA";
+    const result = flowColumnStats({ csv_content: csv });
+    expect(result.stats.length).toBe(0);
   });
 });
