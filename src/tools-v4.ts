@@ -1102,3 +1102,240 @@ export function flowCompareDatasets(input: CompareDataInput): CompareDataResult 
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 31: flow_pivot_table — GROUP BY + AGGREGATE FOR 3D VISUALIZATION
+// ============================================================================
+
+export interface PivotTableInput {
+  csv_content: string;
+  /** Columns to group by */
+  group_by: string[];
+  /** Column → aggregation function mapping */
+  aggregations: Record<string, "sum" | "avg" | "count" | "min" | "max">;
+}
+
+export interface PivotTableResult {
+  csv: string;
+  row_count: number;
+  group_columns: string[];
+  aggregated_columns: string[];
+  summary: string;
+}
+
+export function flowPivotTable(input: PivotTableInput): PivotTableResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  // Validate group_by columns exist
+  for (const col of input.group_by) {
+    if (!headers.includes(col)) {
+      throw new Error(`Group-by column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  // Validate aggregation columns exist
+  const aggEntries = Object.entries(input.aggregations);
+  for (const [col] of aggEntries) {
+    if (!headers.includes(col)) {
+      throw new Error(`Aggregation column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  // Build groups
+  const groups = new Map<string, number[][]>();
+  const groupByIndices = input.group_by.map(c => headers.indexOf(c));
+  const aggIndices = aggEntries.map(([col]) => headers.indexOf(col));
+
+  for (const row of rows) {
+    const key = groupByIndices.map(i => row[i]).join("\x00");
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(row.map((v, i) => {
+      if (aggIndices.includes(i)) return [Number(v)];
+      return [v];
+    }).flat() as any);
+  }
+
+  // Compute aggregations per group
+  const aggColNames = aggEntries.map(([col, fn]) => `${col}_${fn}`);
+  const outHeaders = [...input.group_by, ...aggColNames, "_group_size"];
+  const outRows: string[][] = [];
+
+  for (const [key, groupRows] of groups) {
+    const keyParts = key.split("\x00");
+    const aggValues: number[] = [];
+
+    for (let a = 0; a < aggEntries.length; a++) {
+      const [col, fn] = aggEntries[a];
+      const colIdx = headers.indexOf(col);
+      const values = groupRows.map(r => Number((r as any)[colIdx])).filter(v => !isNaN(v));
+
+      switch (fn) {
+        case "sum":
+          aggValues.push(values.reduce((s, v) => s + v, 0));
+          break;
+        case "avg":
+          aggValues.push(values.length > 0 ? Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10000) / 10000 : 0);
+          break;
+        case "count":
+          aggValues.push(values.length);
+          break;
+        case "min":
+          aggValues.push(values.length > 0 ? Math.min(...values) : 0);
+          break;
+        case "max":
+          aggValues.push(values.length > 0 ? Math.max(...values) : 0);
+          break;
+      }
+    }
+
+    outRows.push([...keyParts, ...aggValues.map(String), String(groupRows.length)]);
+  }
+
+  const csvLines = [outHeaders.join(","), ...outRows.map(r => r.map(v => csvEscapeField(v)).join(","))];
+
+  const summary = `Pivoted ${rows.length} rows into ${outRows.length} groups by ${input.group_by.join(", ")}. ` +
+    `Aggregations: ${aggEntries.map(([col, fn]) => `${fn}(${col})`).join(", ")}.`;
+
+  return {
+    csv: csvLines.join("\n"),
+    row_count: outRows.length,
+    group_columns: input.group_by,
+    aggregated_columns: aggColNames,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 32: flow_regression_analysis — LINEAR REGRESSION FOR TREND VISUALIZATION
+// ============================================================================
+
+export interface RegressionAnalysisInput {
+  csv_content: string;
+  x_column: string;
+  y_column: string;
+}
+
+export interface RegressionAnalysisResult {
+  csv: string;
+  slope: number;
+  intercept: number;
+  r_squared: number;
+  equation: string;
+  n_points: number;
+  p_value: number;
+  summary: string;
+}
+
+export function flowRegressionAnalysis(input: RegressionAnalysisInput): RegressionAnalysisResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  const xIdx = headers.indexOf(input.x_column);
+  const yIdx = headers.indexOf(input.y_column);
+
+  if (xIdx === -1) throw new Error(`Column "${input.x_column}" not found. Available: ${headers.join(", ")}`);
+  if (yIdx === -1) throw new Error(`Column "${input.y_column}" not found. Available: ${headers.join(", ")}`);
+
+  // Parse x and y values, filtering non-numeric
+  const points: { x: number; y: number; rowIdx: number }[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const x = Number(rows[i][xIdx]);
+    const y = Number(rows[i][yIdx]);
+    if (!isNaN(x) && !isNaN(y)) {
+      points.push({ x, y, rowIdx: i });
+    }
+  }
+
+  if (points.length < 2) {
+    throw new Error(`Need at least 2 numeric data points. Found ${points.length} valid pairs in columns "${input.x_column}" and "${input.y_column}".`);
+  }
+
+  // Check if x column is actually numeric (not names)
+  const xNonNumeric = rows.filter(r => isNaN(Number(r[xIdx]))).length;
+  if (xNonNumeric > rows.length / 2) {
+    throw new Error(`Column "${input.x_column}" is not numeric (${xNonNumeric}/${rows.length} values are non-numeric).`);
+  }
+
+  const n = points.length;
+  const sumX = points.reduce((s, p) => s + p.x, 0);
+  const sumY = points.reduce((s, p) => s + p.y, 0);
+  const sumXY = points.reduce((s, p) => s + p.x * p.y, 0);
+  const sumX2 = points.reduce((s, p) => s + p.x * p.x, 0);
+  const sumY2 = points.reduce((s, p) => s + p.y * p.y, 0);
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+
+  // Slope and intercept (least squares)
+  const denominator = n * sumX2 - sumX * sumX;
+  const slope = denominator !== 0 ? (n * sumXY - sumX * sumY) / denominator : 0;
+  const intercept = meanY - slope * meanX;
+
+  // R² (coefficient of determination)
+  const ssRes = points.reduce((s, p) => {
+    const predicted = slope * p.x + intercept;
+    return s + (p.y - predicted) ** 2;
+  }, 0);
+  const ssTot = points.reduce((s, p) => s + (p.y - meanY) ** 2, 0);
+  const r_squared = ssTot !== 0 ? 1 - ssRes / ssTot : 1;
+
+  // p-value approximation using t-test on slope
+  // t = slope / SE(slope), SE(slope) = sqrt(MSE / sum((xi - mean_x)^2))
+  const mse = ssRes / (n - 2);
+  const sumXDevSq = points.reduce((s, p) => s + (p.x - meanX) ** 2, 0);
+  const seSlope = sumXDevSq > 0 && n > 2 ? Math.sqrt(mse / sumXDevSq) : 0;
+  const tStat = seSlope > 0 ? Math.abs(slope / seSlope) : Infinity;
+
+  // Approximate p-value from t-distribution using approximation
+  // For large n, use normal approximation; for small n, use rough beta approximation
+  const df = n - 2;
+  let pValue: number;
+  if (df <= 0 || !isFinite(tStat)) {
+    pValue = 0;
+  } else {
+    // Approximation: p ≈ 2 * (1 - Φ(t * √(df/(df + t²))))
+    // This is the normal approximation for the t-distribution
+    const z = tStat * Math.sqrt(df / (df + tStat * tStat));
+    // Standard normal CDF approximation (Abramowitz & Stegun)
+    const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+    const a4 = -1.453152027, a5 = 1.061405429;
+    const p = 0.3275911;
+    const t = 1 / (1 + p * Math.abs(z));
+    const phi = 1 - (a1 * t + a2 * t ** 2 + a3 * t ** 3 + a4 * t ** 4 + a5 * t ** 5) * Math.exp(-z * z / 2);
+    pValue = 2 * (1 - phi);
+    pValue = Math.max(0, Math.min(1, pValue));
+  }
+
+  // Build output CSV with _predicted and _residual columns
+  const outHeaders = [...headers, "_predicted", "_residual"];
+  const outLines = [outHeaders.join(",")];
+
+  for (let i = 0; i < rows.length; i++) {
+    const x = Number(rows[i][xIdx]);
+    const y = Number(rows[i][yIdx]);
+    const predicted = !isNaN(x) ? Math.round((slope * x + intercept) * 10000) / 10000 : "";
+    const residual = !isNaN(x) && !isNaN(y) ? Math.round((y - (slope * x + intercept)) * 10000) / 10000 : "";
+    outLines.push([...rows[i].map(v => csvEscapeField(v)), String(predicted), String(residual)].join(","));
+  }
+
+  const roundSlope = Math.round(slope * 10000) / 10000;
+  const roundIntercept = Math.round(intercept * 10000) / 10000;
+  const sign = roundIntercept >= 0 ? "+" : "-";
+  const equation = `y = ${roundSlope}x ${sign} ${Math.abs(roundIntercept)}`;
+
+  const strength = r_squared > 0.9 ? "very strong" : r_squared > 0.7 ? "strong" : r_squared > 0.5 ? "moderate" : r_squared > 0.3 ? "weak" : "very weak";
+  const direction = slope > 0 ? "positive" : slope < 0 ? "negative" : "flat";
+  const summary = `Linear regression: ${equation} (R²=${Math.round(r_squared * 10000) / 10000}). ` +
+    `${strength} ${direction} relationship between ${input.x_column} and ${input.y_column} across ${n} data points.`;
+
+  return {
+    csv: outLines.join("\n"),
+    slope: Math.round(slope * 10000) / 10000,
+    intercept: Math.round(intercept * 10000) / 10000,
+    r_squared: Math.round(r_squared * 10000) / 10000,
+    equation,
+    n_points: n,
+    p_value: Math.round(pValue * 10000) / 10000,
+    summary,
+  };
+}

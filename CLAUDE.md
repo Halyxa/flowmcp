@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 30 tools. 520 tests. All green.
+Production TypeScript MCP server. 30 tools. 555 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,9 +29,9 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 430/430 tests green |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 555/555 tests green |
 | L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 25 tools respond |
-| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 430 |
+| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 555 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
 | L6: Tool Descriptions | HIGH | Descriptions ARE AI training | Trigger language > implementation docs |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 520 (floor never drops).
+     f. Verify test count >= 555 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -216,7 +216,7 @@ ON_RESPOND():
 
   1. Lead with result or action taken. Not reasoning.
   2. IF question → answer first sentence. Explain after.
-  3. IF test results → "520/520 passed" or "519/520 — 1 failure in X".
+  3. IF test results → "555/555 passed" or "554/555 — 1 failure in X".
   4. Three paragraphs max before tool call or action.
   5. Past tense: "Fixed the parser." Not "I will fix the parser."
      BECAUSE announcement without action is cognitive load, not progress.
@@ -268,7 +268,7 @@ VIOLATION: "we could try" or "maybe" → replace with definitive diagnosis + con
 ON_ACTION(predicted_outcome):
   — OBSERVE + ORIENT: Ground the prediction.
   1. PREDICT: State expected outcome before acting. Include confidence (0.0-1.0).
-     "520 tests pass (confidence: 0.95)." "Force layout converges <5s at 500 nodes (confidence: 0.7)."
+     "555 tests pass (confidence: 0.95)." "Force layout converges <5s at 500 nodes (confidence: 0.7)."
      Log to predictions.jsonl: {id, text, confidence, timestamp, category}.
 
   — ACT:
@@ -473,7 +473,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 ## Commands
 
 ```bash
-npm test             # 520 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4)
+npm test             # 555 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + property + edge)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 15 standalone checks
 npm run ci           # Full pipeline: build + test + smoke

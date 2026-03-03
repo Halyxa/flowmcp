@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1663,6 +1663,79 @@ Output: Merged CSV with _diff_status column (added/removed/changed/unchanged), p
           required: ["csv_a", "csv_b"],
         },
       },
+
+      // Tool 31: flow_pivot_table
+      {
+        name: "flow_pivot_table",
+        description: `Group rows by one or more categorical columns and aggregate numeric columns with sum, avg, count, min, or max. Produces a condensed summary CSV with _group_size column for 3D visualization of aggregated data.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "group by", "aggregate", "summarize by category", "pivot", or "roll up" their data
+- User wants totals, averages, or counts per category (e.g., "total revenue by region", "average score per department")
+- User has detailed transactional data and wants category-level summaries for visualization
+- User asks for a pivot table, cross-tabulation, or grouped statistics
+- User wants to reduce granularity before visualizing (e.g., daily → monthly, individual → department)
+
+Input: CSV data, group-by columns, and aggregation functions per numeric column.
+Output: Aggregated CSV with one row per group, computed metrics, and _group_size column.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to pivot/aggregate",
+            },
+            group_by: {
+              type: "array",
+              items: { type: "string" },
+              description: "Column names to group by",
+            },
+            aggregations: {
+              type: "object",
+              description: "Column name → aggregation function (sum, avg, count, min, max)",
+              additionalProperties: {
+                type: "string",
+                enum: ["sum", "avg", "count", "min", "max"],
+              },
+            },
+          },
+          required: ["csv_content", "group_by", "aggregations"],
+        },
+      },
+
+      // Tool 32: flow_regression_analysis
+      {
+        name: "flow_regression_analysis",
+        description: `Compute linear regression (ordinary least squares) between two numeric columns. Returns slope, intercept, R², p-value, equation, and a CSV with _predicted and _residual columns for trend visualization in 3D.
+
+INVOKE THIS TOOL WHEN:
+- User asks about trends, correlations, or relationships between two variables
+- User wants to "fit a line", "predict", "forecast", or find the "trend" in their data
+- User asks "does X affect Y?", "is there a relationship between X and Y?", or "what's the trend?"
+- User wants regression analysis, R-squared, slope, or trend line overlay
+- User has time series or scatter data and wants to quantify the linear relationship
+
+Input: CSV data with two numeric columns (x and y).
+Output: CSV with _predicted and _residual columns, plus slope, intercept, R², p-value, and human-readable equation.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data containing the variables",
+            },
+            x_column: {
+              type: "string",
+              description: "Independent variable column name",
+            },
+            y_column: {
+              type: "string",
+              description: "Dependent variable column name",
+            },
+          },
+          required: ["csv_content", "x_column", "y_column"],
+        },
+      },
     ],
   };
 });
@@ -2017,6 +2090,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_compare_datasets": {
       try {
         const result = flowCompareDatasets(args as unknown as CompareDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_pivot_table": {
+      try {
+        const result = flowPivotTable(args as unknown as PivotTableInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_regression_analysis": {
+      try {
+        const result = flowRegressionAnalysis(args as unknown as RegressionAnalysisInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5018,7 +5109,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 30, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 32, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
