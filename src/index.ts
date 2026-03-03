@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -3129,6 +3129,77 @@ Output: CSV with rounded values, row_count, summary.`,
           required: ["csv_content", "columns", "decimals"],
         },
       },
+      {
+        name: "flow_clamp_values",
+        description: `Clamp (winsorize) numeric values in a column to a min/max range. Values below min are set to min, values above max are set to max. Limits outlier impact without removing rows.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "clamp values", "cap values", "limit range", "winsorize", or "clip values"
+- User wants to bound data to a reasonable range without deleting rows
+- User asks to "set minimum/maximum threshold" or "constrain values"
+- User needs to prepare data for visualization with bounded scales
+
+Input: CSV data, column, optional min and/or max bounds.
+Output: CSV with clamped values, clamped_count, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric column",
+            },
+            column: {
+              type: "string",
+              description: "Column to clamp",
+            },
+            min: {
+              type: "number",
+              description: "Minimum allowed value",
+            },
+            max: {
+              type: "number",
+              description: "Maximum allowed value",
+            },
+          },
+          required: ["csv_content", "column"],
+        },
+      },
+      {
+        name: "flow_string_split",
+        description: `Split a string column into multiple new columns by a delimiter. Creates separate columns from combined values (e.g., "City, State" → city + state columns). Handles missing parts gracefully.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "split column", "separate by delimiter", "extract parts", or "parse field"
+- User has combined values like "first last" or "city, state" that need splitting
+- User asks to "break apart", "tokenize", or "split on comma/dash/space"
+- User needs to create multiple columns from a single combined field
+
+Input: CSV data, column to split, delimiter, array of new column names.
+Output: CSV with original columns plus new split columns, columns_created, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with column to split",
+            },
+            column: {
+              type: "string",
+              description: "Column to split",
+            },
+            delimiter: {
+              type: "string",
+              description: "Delimiter to split on (e.g., ', ', '-', ' ')",
+            },
+            new_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Names for the resulting columns",
+            },
+          },
+          required: ["csv_content", "column", "delimiter", "new_columns"],
+        },
+      },
     ],
   };
 });
@@ -3861,6 +3932,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_round_values": {
       try {
         const result = flowRoundValues(args as unknown as RoundValuesInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_clamp_values": {
+      try {
+        const result = flowClampValues(args as unknown as ClampValuesInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_string_split": {
+      try {
+        const result = flowStringSplit(args as unknown as StringSplitInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6862,7 +6951,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 72, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 74, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

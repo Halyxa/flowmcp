@@ -16,7 +16,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-const EXPECTED_TOOLS = 72;
+const EXPECTED_TOOLS = 74;
 const EXPECTED_PROMPTS = 3;
 const EXPECTED_RESOURCES = 5;
 

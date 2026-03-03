@@ -4876,3 +4876,116 @@ export function flowRoundValues(input: RoundValuesInput): RoundValuesResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 73: flow_clamp_values — CLAMP NUMERIC VALUES TO MIN/MAX RANGE
+// ============================================================================
+
+export interface ClampValuesInput {
+  csv_content: string;
+  /** Column to clamp */
+  column: string;
+  /** Minimum allowed value */
+  min?: number;
+  /** Maximum allowed value */
+  max?: number;
+}
+
+export interface ClampValuesResult {
+  csv: string;
+  row_count: number;
+  clamped_count: number;
+  summary: string;
+}
+
+export function flowClampValues(input: ClampValuesInput): ClampValuesResult {
+  const { csv_content, column, min, max } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+  let clampedCount = 0;
+
+  const outRows = rows.map(row => {
+    const newRow = [...row];
+    const val = Number(row[colIdx] ?? "");
+    if (!isNaN(val)) {
+      let clamped = val;
+      if (min !== undefined && val < min) { clamped = min; clampedCount++; }
+      else if (max !== undefined && val > max) { clamped = max; clampedCount++; }
+      newRow[colIdx] = String(clamped);
+    }
+    return newRow;
+  });
+
+  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
+  const dataLines = outRows.map(row => row.map(v => csvEscapeField(v)).join(","));
+
+  const range = [min !== undefined ? `min=${min}` : "", max !== undefined ? `max=${max}` : ""].filter(Boolean).join(", ");
+  const summary = `Clamped "${column}" to [${range}]: ${clampedCount} values clamped (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    clamped_count: clampedCount,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 74: flow_string_split — SPLIT STRING COLUMN BY DELIMITER
+// ============================================================================
+
+export interface StringSplitInput {
+  csv_content: string;
+  /** Column to split */
+  column: string;
+  /** Delimiter to split on */
+  delimiter: string;
+  /** Names for the new columns */
+  new_columns: string[];
+}
+
+export interface StringSplitResult {
+  csv: string;
+  row_count: number;
+  columns_created: number;
+  summary: string;
+}
+
+export function flowStringSplit(input: StringSplitInput): StringSplitResult {
+  const { csv_content, column, delimiter, new_columns } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  const outHeaders = [...headers, ...new_columns];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+
+  const dataLines = rows.map(row => {
+    const val = row[colIdx] ?? "";
+    const parts = val.split(delimiter);
+    const newVals = new_columns.map((_, i) => parts[i] ?? "");
+    return [...row.map(v => csvEscapeField(v)), ...newVals.map(v => csvEscapeField(v))].join(",");
+  });
+
+  const summary = `Split "${column}" by "${delimiter}" into ${new_columns.length} columns: ${new_columns.join(", ")} (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    columns_created: new_columns.length,
+    summary,
+  };
+}
