@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2016,6 +2016,92 @@ Output: CSV with new date component columns appended, parsed_count, and summary.
           required: ["csv_content", "date_column", "output_components"],
         },
       },
+
+      // Tool 41: flow_string_transform
+      {
+        name: "flow_string_transform",
+        description: `Transform text values in CSV columns: uppercase, lowercase, trim whitespace, title case, or find-and-replace. Essential for cleaning inconsistent text data before visualization — standardize categories, fix formatting, normalize labels.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "clean", "fix", "standardize", or "transform" text data
+- User wants to convert case (uppercase/lowercase/title case)
+- User needs to remove leading/trailing whitespace from values
+- User asks to "replace", "find and replace", or "substitute" text in columns
+- Category labels are inconsistent and need normalization before grouping
+
+Input: CSV data, column list, transform type, optional find/replace_with strings.
+Output: Transformed CSV with row_count, columns_transformed, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to transform",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Column names to apply the transform to",
+            },
+            transform: {
+              type: "string",
+              enum: ["uppercase", "lowercase", "trim", "title_case", "replace"],
+              description: "Transform to apply: uppercase, lowercase, trim, title_case, or replace",
+            },
+            find: {
+              type: "string",
+              description: "String to find (required for replace transform)",
+            },
+            replace_with: {
+              type: "string",
+              description: "Replacement string (required for replace transform, empty string to delete)",
+            },
+          },
+          required: ["csv_content", "columns", "transform"],
+        },
+      },
+
+      // Tool 42: flow_validate_rules
+      {
+        name: "flow_validate_rules",
+        description: `Validate CSV data against a set of quality rules and report violations. Rules: not_null, min, max, unique, pattern (regex), in_set. Returns pass/fail with detailed violation report — row numbers, column names, and violation messages. Essential for data quality checks before uploading to Flow.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "validate", "check", "verify", or "audit" data quality
+- User needs to ensure required fields are not empty (not_null)
+- User wants to check numeric ranges (min/max boundaries)
+- User needs to find duplicates in an ID column (unique)
+- User wants to verify values match a pattern (email, phone) or allowed set
+- Data quality gate before visualization upload
+
+Input: CSV data and array of validation rules.
+Output: pass/fail, total_rows, valid_rows, invalid_rows, violation details, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to validate",
+            },
+            rules: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  column: { type: "string", description: "Column name to validate" },
+                  rule: { type: "string", enum: ["not_null", "min", "max", "unique", "pattern", "in_set"], description: "Validation rule type" },
+                  value: { type: "number", description: "Numeric threshold for min/max rules" },
+                  pattern: { type: "string", description: "Regex pattern for pattern rule" },
+                  allowed_values: { type: "array", items: { type: "string" }, description: "Allowed values for in_set rule" },
+                },
+                required: ["column", "rule"],
+              },
+              description: "List of validation rules to apply",
+            },
+          },
+          required: ["csv_content", "rules"],
+        },
+      },
     ],
   };
 });
@@ -2460,6 +2546,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_parse_dates": {
       try {
         const result = flowParseDates(args as unknown as ParseDatesInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_string_transform": {
+      try {
+        const result = flowStringTransform(args as unknown as StringTransformInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_validate_rules": {
+      try {
+        const result = flowValidateRules(args as unknown as ValidateRulesInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5461,7 +5565,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 40, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 42, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -1827,5 +1827,212 @@ describe("flowParseDates", () => {
   it("throws on missing date column", () => {
     const csv = "val\n100";
     expect(() => flowParseDates({ csv_content: csv, date_column: "date", output_components: ["year"] })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 41: flow_string_transform
+// ============================================================================
+
+describe("flowStringTransform", () => {
+  it("converts to uppercase", () => {
+    const csv = "name,val\nalice,1\nbob,2";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["name"],
+      transform: "uppercase",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("ALICE");
+    expect(lines[2]).toContain("BOB");
+  });
+
+  it("converts to lowercase", () => {
+    const csv = "name,val\nALICE,1\nBOB,2";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["name"],
+      transform: "lowercase",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("alice");
+    expect(lines[2]).toContain("bob");
+  });
+
+  it("trims whitespace", () => {
+    const csv = "name,val\n\" alice \",1\n\" bob \",2";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["name"],
+      transform: "trim",
+    });
+    expect(result.csv).toContain("alice");
+    expect(result.csv).toContain("bob");
+  });
+
+  it("applies title case", () => {
+    const csv = "name\nhello world\nfoo bar";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["name"],
+      transform: "title_case",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("Hello World");
+    expect(lines[2]).toBe("Foo Bar");
+  });
+
+  it("replaces substrings", () => {
+    const csv = "text\nhello world\nhello foo";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["text"],
+      transform: "replace",
+      find: "hello",
+      replace_with: "hi",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("hi world");
+    expect(lines[2]).toBe("hi foo");
+  });
+
+  it("transforms multiple columns", () => {
+    const csv = "a,b\nhello,world\nfoo,bar";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["a", "b"],
+      transform: "uppercase",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("HELLO,WORLD");
+    expect(lines[2]).toBe("FOO,BAR");
+  });
+
+  it("preserves non-transformed columns", () => {
+    const csv = "name,score\nalice,100\nbob,200";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["name"],
+      transform: "uppercase",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toBe("ALICE,100");
+    expect(lines[2]).toBe("BOB,200");
+  });
+
+  it("returns row_count and summary", () => {
+    const csv = "name\nalice\nbob\ncharlie";
+    const result = flowStringTransform({
+      csv_content: csv,
+      columns: ["name"],
+      transform: "uppercase",
+    });
+    expect(result.row_count).toBe(3);
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("throws on missing column", () => {
+    const csv = "name\nalice";
+    expect(() => flowStringTransform({ csv_content: csv, columns: ["missing"], transform: "uppercase" })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 42: flow_validate_rules
+// ============================================================================
+
+describe("flowValidateRules", () => {
+  it("validates not_null rule", () => {
+    const csv = "name,age\nAlice,30\n,25\nCharlie,";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "name", rule: "not_null" }],
+    });
+    expect(result.total_violations).toBeGreaterThan(0);
+    expect(result.violations.length).toBeGreaterThan(0);
+    expect(result.violations[0].column).toBe("name");
+  });
+
+  it("validates min rule", () => {
+    const csv = "age\n30\n5\n25";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "age", rule: "min", value: 18 }],
+    });
+    expect(result.total_violations).toBe(1); // age=5 < 18
+  });
+
+  it("validates max rule", () => {
+    const csv = "score\n50\n150\n80";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "score", rule: "max", value: 100 }],
+    });
+    expect(result.total_violations).toBe(1); // 150 > 100
+  });
+
+  it("validates unique rule", () => {
+    const csv = "id\n1\n2\n1\n3";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "id", rule: "unique" }],
+    });
+    expect(result.total_violations).toBe(1); // id=1 duplicated
+  });
+
+  it("validates pattern rule (regex)", () => {
+    const csv = "email\nfoo@bar.com\ninvalid\ntest@test.org";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "email", rule: "pattern", pattern: "^.+@.+\\..+$" }],
+    });
+    expect(result.total_violations).toBe(1); // "invalid" doesn't match
+  });
+
+  it("validates in_set rule", () => {
+    const csv = "status\nactive\npending\nunknown\nactive";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "status", rule: "in_set", allowed_values: ["active", "pending", "completed"] }],
+    });
+    expect(result.total_violations).toBe(1); // "unknown" not in set
+  });
+
+  it("validates multiple rules at once", () => {
+    const csv = "name,age\nAlice,30\n,5\nCharlie,25";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [
+        { column: "name", rule: "not_null" },
+        { column: "age", rule: "min", value: 18 },
+      ],
+    });
+    expect(result.total_violations).toBe(2); // name is null + age=5
+  });
+
+  it("returns valid_rows and invalid_rows counts", () => {
+    const csv = "val\n10\n20\n30";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "val", rule: "max", value: 25 }],
+    });
+    expect(result.valid_rows).toBe(2);
+    expect(result.invalid_rows).toBe(1);
+    expect(result.total_rows).toBe(3);
+  });
+
+  it("returns pass=true when no violations", () => {
+    const csv = "val\n10\n20\n30";
+    const result = flowValidateRules({
+      csv_content: csv,
+      rules: [{ column: "val", rule: "min", value: 0 }],
+    });
+    expect(result.pass).toBe(true);
+    expect(result.total_violations).toBe(0);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "val\n10";
+    expect(() => flowValidateRules({ csv_content: csv, rules: [{ column: "missing", rule: "not_null" }] })).toThrow();
   });
 });

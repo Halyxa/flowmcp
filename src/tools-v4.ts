@@ -2081,3 +2081,262 @@ export function flowParseDates(input: ParseDatesInput): ParseDatesResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 41: flow_string_transform — TEXT CLEANUP AND TRANSFORMATION
+// ============================================================================
+
+export interface StringTransformInput {
+  csv_content: string;
+  columns: string[];
+  transform: "uppercase" | "lowercase" | "trim" | "title_case" | "replace";
+  /** Required for "replace" transform */
+  find?: string;
+  /** Required for "replace" transform */
+  replace_with?: string;
+}
+
+export interface StringTransformResult {
+  csv: string;
+  row_count: number;
+  columns_transformed: number;
+  summary: string;
+}
+
+export function flowStringTransform(input: StringTransformInput): StringTransformResult {
+  const { csv_content, columns, transform, find, replace_with } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+
+  // Validate columns exist
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+  const resultLines = [headers.map(h => csvEscapeField(h)).join(",")];
+
+  for (const row of rows) {
+    const newRow = [...row];
+    for (const idx of colIndices) {
+      let val = newRow[idx] || "";
+      switch (transform) {
+        case "uppercase":
+          val = val.toUpperCase();
+          break;
+        case "lowercase":
+          val = val.toLowerCase();
+          break;
+        case "trim":
+          val = val.trim();
+          break;
+        case "title_case":
+          val = val.replace(/\b\w/g, c => c.toUpperCase());
+          break;
+        case "replace":
+          if (find !== undefined) {
+            val = val.split(find).join(replace_with || "");
+          }
+          break;
+      }
+      newRow[idx] = val;
+    }
+    resultLines.push(newRow.map(v => csvEscapeField(v)).join(","));
+  }
+
+  const summary = `Applied ${transform} to ${columns.length} column(s) (${columns.join(", ")}) across ${rows.length} rows.`;
+
+  return {
+    csv: resultLines.join("\n"),
+    row_count: rows.length,
+    columns_transformed: columns.length,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 42: flow_validate_rules — DATA QUALITY VALIDATION
+// ============================================================================
+
+export interface ValidationRule {
+  column: string;
+  rule: "not_null" | "min" | "max" | "unique" | "pattern" | "in_set";
+  value?: number;
+  pattern?: string;
+  allowed_values?: string[];
+}
+
+export interface Violation {
+  column: string;
+  rule: string;
+  row?: number;
+  value?: string;
+  message: string;
+}
+
+export interface ValidateRulesInput {
+  csv_content: string;
+  rules: ValidationRule[];
+}
+
+export interface ValidateRulesResult {
+  pass: boolean;
+  total_rows: number;
+  valid_rows: number;
+  invalid_rows: number;
+  total_violations: number;
+  violations: Violation[];
+  summary: string;
+}
+
+export function flowValidateRules(input: ValidateRulesInput): ValidateRulesResult {
+  const { csv_content, rules } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Validate that all rule columns exist
+  for (const rule of rules) {
+    if (!headers.includes(rule.column)) {
+      throw new Error(`Column "${rule.column}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const violations: Violation[] = [];
+  const violatedRows = new Set<number>();
+
+  for (const rule of rules) {
+    const colIdx = headers.indexOf(rule.column);
+
+    switch (rule.rule) {
+      case "not_null": {
+        for (let r = 0; r < rows.length; r++) {
+          const val = (rows[r][colIdx] || "").trim();
+          if (val === "") {
+            violations.push({
+              column: rule.column,
+              rule: "not_null",
+              row: r + 1,
+              value: val,
+              message: `Row ${r + 1}: "${rule.column}" is empty/null`,
+            });
+            violatedRows.add(r);
+          }
+        }
+        break;
+      }
+      case "min": {
+        const minVal = rule.value ?? 0;
+        for (let r = 0; r < rows.length; r++) {
+          const num = Number(rows[r][colIdx]);
+          if (!isNaN(num) && num < minVal) {
+            violations.push({
+              column: rule.column,
+              rule: "min",
+              row: r + 1,
+              value: rows[r][colIdx],
+              message: `Row ${r + 1}: "${rule.column}" value ${num} < minimum ${minVal}`,
+            });
+            violatedRows.add(r);
+          }
+        }
+        break;
+      }
+      case "max": {
+        const maxVal = rule.value ?? 0;
+        for (let r = 0; r < rows.length; r++) {
+          const num = Number(rows[r][colIdx]);
+          if (!isNaN(num) && num > maxVal) {
+            violations.push({
+              column: rule.column,
+              rule: "max",
+              row: r + 1,
+              value: rows[r][colIdx],
+              message: `Row ${r + 1}: "${rule.column}" value ${num} > maximum ${maxVal}`,
+            });
+            violatedRows.add(r);
+          }
+        }
+        break;
+      }
+      case "unique": {
+        const seen = new Map<string, number>();
+        for (let r = 0; r < rows.length; r++) {
+          const val = rows[r][colIdx] || "";
+          if (seen.has(val)) {
+            violations.push({
+              column: rule.column,
+              rule: "unique",
+              row: r + 1,
+              value: val,
+              message: `Row ${r + 1}: "${rule.column}" value "${val}" is duplicate (first at row ${seen.get(val)})`,
+            });
+            violatedRows.add(r);
+          } else {
+            seen.set(val, r + 1);
+          }
+        }
+        break;
+      }
+      case "pattern": {
+        const re = new RegExp(rule.pattern || ".*");
+        for (let r = 0; r < rows.length; r++) {
+          const val = rows[r][colIdx] || "";
+          if (val.trim() !== "" && !re.test(val)) {
+            violations.push({
+              column: rule.column,
+              rule: "pattern",
+              row: r + 1,
+              value: val,
+              message: `Row ${r + 1}: "${rule.column}" value "${val}" doesn't match pattern /${rule.pattern}/`,
+            });
+            violatedRows.add(r);
+          }
+        }
+        break;
+      }
+      case "in_set": {
+        const allowed = new Set(rule.allowed_values || []);
+        for (let r = 0; r < rows.length; r++) {
+          const val = rows[r][colIdx] || "";
+          if (val.trim() !== "" && !allowed.has(val)) {
+            violations.push({
+              column: rule.column,
+              rule: "in_set",
+              row: r + 1,
+              value: val,
+              message: `Row ${r + 1}: "${rule.column}" value "${val}" not in allowed set`,
+            });
+            violatedRows.add(r);
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  const invalidRows = violatedRows.size;
+  const validRows = rows.length - invalidRows;
+  const summary = violations.length === 0
+    ? `All ${rows.length} rows pass ${rules.length} validation rule(s).`
+    : `${violations.length} violation(s) found across ${invalidRows} row(s). ${validRows}/${rows.length} rows are valid.`;
+
+  return {
+    pass: violations.length === 0,
+    total_rows: rows.length,
+    valid_rows: validRows,
+    invalid_rows: invalidRows,
+    total_violations: violations.length,
+    violations,
+    summary,
+  };
+}
