@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1590,6 +1590,79 @@ Output: Original CSV with _cluster and _distance_to_centroid columns added, plus
           required: ["csv_content"],
         },
       },
+
+      // Tool 29: flow_hierarchical_data
+      {
+        name: "flow_hierarchical_data",
+        description: `Convert flat categorical CSV data into a hierarchical tree structure for 3D network visualization in Flow. Automatically builds parent-child relationships and aggregates numeric values up the hierarchy.
+
+INVOKE THIS TOOL WHEN:
+- User has flat data with category columns and wants to visualize organizational structure, taxonomies, or nested groupings
+- User asks for a treemap, sunburst, org chart, or hierarchical visualization
+- User says "show me the hierarchy", "organizational structure", "drill-down by category"
+- User wants to explore data grouped by multiple levels (e.g., continent → country → city, department → team → person)
+- User has product catalogs, taxonomies, file systems, or any nested categorical data
+
+Input: CSV with categorical columns defining hierarchy levels, plus optional numeric value column for aggregation.
+Output: Flow network-format CSV with id, connections (pipe-delimited), label, level, and aggregated values — ready for 3D Network Graph template.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with headers",
+            },
+            hierarchy_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns defining hierarchy levels in order of depth (e.g., [\"continent\", \"country\", \"city\"])",
+            },
+            value_column: {
+              type: "string",
+              description: "Numeric column to aggregate (sum) at parent levels (optional)",
+            },
+            root_name: {
+              type: "string",
+              description: "Name for the root node (default \"Root\")",
+            },
+          },
+          required: ["csv_content", "hierarchy_columns"],
+        },
+      },
+
+      // Tool 30: flow_compare_datasets
+      {
+        name: "flow_compare_datasets",
+        description: `Compare two CSV datasets row-by-row using a key column. Identifies added, removed, changed, and unchanged rows. Computes statistical deltas for numeric columns. Produces a diff CSV with _diff_status column for color-coded 3D visualization.
+
+INVOKE THIS TOOL WHEN:
+- User has two versions of data and wants to find differences (before/after, v1/v2, this year/last year)
+- User asks "what changed", "compare these datasets", "diff these CSVs", or "find differences"
+- User wants to track changes over time between dataset snapshots
+- User asks for before/after analysis, A/B comparison, or delta report
+- User has monthly/quarterly reports and wants to visualize what moved
+
+Input: Two CSV datasets (csv_a and csv_b) with a common key column.
+Output: Merged CSV with _diff_status column (added/removed/changed/unchanged), plus numeric column deltas and summary statistics.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_a: {
+              type: "string",
+              description: "First CSV dataset (baseline/before)",
+            },
+            csv_b: {
+              type: "string",
+              description: "Second CSV dataset (comparison/after)",
+            },
+            key_column: {
+              type: "string",
+              description: "Column to use as row key for matching (optional — defaults to first column)",
+            },
+          },
+          required: ["csv_a", "csv_b"],
+        },
+      },
     ],
   };
 });
@@ -1926,6 +1999,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_cluster_data": {
       try {
         const result = flowClusterData(args as unknown as ClusterDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_hierarchical_data": {
+      try {
+        const result = flowHierarchicalData(args as unknown as HierarchicalDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_compare_datasets": {
+      try {
+        const result = flowCompareDatasets(args as unknown as CompareDataInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -4927,7 +5018,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 28, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 30, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

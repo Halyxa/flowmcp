@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -484,5 +484,247 @@ describe("flow_cluster_data", () => {
     const result = flowClusterData({ csv_content: csv, k: 2, columns: ["x", "y"] });
     // Should handle missing values (skip or fill with mean)
     expect(result.rows).toBeGreaterThanOrEqual(4);
+  });
+});
+
+// ============================================================================
+// TOOL 29: flow_hierarchical_data
+// ============================================================================
+
+describe("flow_hierarchical_data", () => {
+  const ORG_CSV = [
+    "department,team,employee,salary",
+    "Engineering,Frontend,Alice,120000",
+    "Engineering,Frontend,Bob,115000",
+    "Engineering,Backend,Carol,130000",
+    "Engineering,Backend,Dave,125000",
+    "Engineering,Backend,Eve,128000",
+    "Sales,Enterprise,Frank,95000",
+    "Sales,Enterprise,Grace,92000",
+    "Sales,SMB,Hank,85000",
+    "Marketing,Digital,Ivy,88000",
+    "Marketing,Digital,Jack,90000",
+  ].join("\n");
+
+  it("produces hierarchical CSV with id and connections columns", () => {
+    const result = flowHierarchicalData({
+      csv_content: ORG_CSV,
+      hierarchy_columns: ["department", "team", "employee"],
+    });
+    expect(result.csv).toContain("id");
+    expect(result.csv).toContain("connections");
+    // Root node should exist
+    expect(result.csv).toContain("Root");
+  });
+
+  it("computes correct node count from categories", () => {
+    const result = flowHierarchicalData({
+      csv_content: ORG_CSV,
+      hierarchy_columns: ["department", "team", "employee"],
+    });
+    // Root(1) + departments(3) + teams(5) + employees(10) = 19
+    expect(result.total_nodes).toBe(19);
+  });
+
+  it("aggregates value column at parent levels", () => {
+    const result = flowHierarchicalData({
+      csv_content: ORG_CSV,
+      hierarchy_columns: ["department", "team"],
+      value_column: "salary",
+    });
+    // Should have aggregate values at parent nodes
+    const lines = result.csv.split("\n");
+    const header = lines[0].split(",");
+    const valueIdx = header.indexOf("value");
+    expect(valueIdx).toBeGreaterThan(-1);
+    // Engineering total salary = 120000+115000+130000+125000+128000 = 618000
+    // Find Engineering node and check its value
+    const engLine = lines.find(l => {
+      const fields = l.split(",");
+      return fields[0] === "Engineering" && !fields[0].includes("/");
+    });
+    expect(engLine).toBeDefined();
+  });
+
+  it("handles two-level hierarchy", () => {
+    const csv = "region,country,gdp\nAsia,China,18000\nAsia,Japan,5000\nEurope,Germany,4000\nEurope,France,3000";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["region", "country"],
+      value_column: "gdp",
+    });
+    // Root(1) + regions(2) + countries(4) = 7
+    expect(result.total_nodes).toBe(7);
+    expect(result.depth).toBe(3); // root → region → country
+  });
+
+  it("handles single-level hierarchy (flat grouping)", () => {
+    const csv = "category,item,count\nFruit,Apple,10\nFruit,Banana,8\nVegetable,Carrot,5";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["category"],
+      value_column: "count",
+    });
+    // Root(1) + categories(2) = 3 nodes (items are not included since hierarchy is only 1 level)
+    expect(result.total_nodes).toBe(3);
+  });
+
+  it("produces Flow network format with pipe-delimited connections", () => {
+    const csv = "a,b\nX,1\nX,2\nY,3";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["a", "b"],
+    });
+    // Root should connect to X and Y
+    const lines = result.csv.split("\n").slice(1);
+    const rootLine = lines.find(l => l.startsWith("Root,"));
+    expect(rootLine).toBeDefined();
+    // Root's connections should contain X and Y
+    if (rootLine) {
+      expect(rootLine).toContain("X");
+      expect(rootLine).toContain("Y");
+    }
+  });
+
+  it("throws on empty hierarchy columns", () => {
+    expect(() =>
+      flowHierarchicalData({ csv_content: ORG_CSV, hierarchy_columns: [] })
+    ).toThrow();
+  });
+
+  it("throws on non-existent column", () => {
+    expect(() =>
+      flowHierarchicalData({
+        csv_content: ORG_CSV,
+        hierarchy_columns: ["nonexistent"],
+      })
+    ).toThrow();
+  });
+
+  it("returns suggested template", () => {
+    const result = flowHierarchicalData({
+      csv_content: ORG_CSV,
+      hierarchy_columns: ["department", "team"],
+    });
+    expect(result.suggested_template).toBeDefined();
+    expect(typeof result.suggested_template).toBe("string");
+  });
+
+  it("handles duplicate values across different branches", () => {
+    const csv = "dept,role,name\nEng,Dev,Alice\nSales,Dev,Bob";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["dept", "role"],
+    });
+    // "Dev" appears under both Eng and Sales — should be distinct nodes
+    // Root(1) + depts(2) + roles(2 unique under different parents) = 5
+    expect(result.total_nodes).toBe(5);
+  });
+});
+
+// ============================================================================
+// TOOL 30: flow_compare_datasets
+// ============================================================================
+
+describe("flow_compare_datasets", () => {
+  const CSV_A = [
+    "id,name,revenue",
+    "1,Acme,100",
+    "2,Beta,200",
+    "3,Gamma,300",
+  ].join("\n");
+
+  const CSV_B = [
+    "id,name,revenue",
+    "1,Acme,120",
+    "2,Beta,200",
+    "4,Delta,400",
+  ].join("\n");
+
+  it("identifies added, removed, and changed rows", () => {
+    const result = flowCompareDatasets({
+      csv_a: CSV_A,
+      csv_b: CSV_B,
+      key_column: "id",
+    });
+    expect(result.added_rows).toBe(1); // Delta
+    expect(result.removed_rows).toBe(1); // Gamma
+    expect(result.changed_rows).toBe(1); // Acme (revenue 100→120)
+    expect(result.unchanged_rows).toBe(1); // Beta
+  });
+
+  it("produces diff CSV with _diff_status column", () => {
+    const result = flowCompareDatasets({
+      csv_a: CSV_A,
+      csv_b: CSV_B,
+      key_column: "id",
+    });
+    expect(result.csv).toContain("_diff_status");
+    expect(result.csv).toContain("added");
+    expect(result.csv).toContain("removed");
+    expect(result.csv).toContain("changed");
+    expect(result.csv).toContain("unchanged");
+  });
+
+  it("computes numeric column deltas", () => {
+    const result = flowCompareDatasets({
+      csv_a: CSV_A,
+      csv_b: CSV_B,
+      key_column: "id",
+    });
+    expect(result.column_deltas.length).toBeGreaterThan(0);
+    const revenueDelta = result.column_deltas.find(d => d.column === "revenue");
+    expect(revenueDelta).toBeDefined();
+    if (revenueDelta) {
+      expect(revenueDelta.mean_a).toBeDefined();
+      expect(revenueDelta.mean_b).toBeDefined();
+    }
+  });
+
+  it("handles identical datasets", () => {
+    const result = flowCompareDatasets({
+      csv_a: CSV_A,
+      csv_b: CSV_A,
+      key_column: "id",
+    });
+    expect(result.added_rows).toBe(0);
+    expect(result.removed_rows).toBe(0);
+    expect(result.changed_rows).toBe(0);
+    expect(result.unchanged_rows).toBe(3);
+  });
+
+  it("handles completely different datasets", () => {
+    const csvC = "id,name,revenue\n10,Zeta,999\n11,Omega,888";
+    const result = flowCompareDatasets({
+      csv_a: CSV_A,
+      csv_b: csvC,
+      key_column: "id",
+    });
+    expect(result.added_rows).toBe(2);
+    expect(result.removed_rows).toBe(3);
+    expect(result.changed_rows).toBe(0);
+  });
+
+  it("throws on missing key column", () => {
+    expect(() =>
+      flowCompareDatasets({ csv_a: CSV_A, csv_b: CSV_B, key_column: "nonexistent" })
+    ).toThrow();
+  });
+
+  it("auto-detects first column as key when not specified", () => {
+    const result = flowCompareDatasets({ csv_a: CSV_A, csv_b: CSV_B });
+    expect(result.key_column).toBe("id");
+    expect(result.added_rows + result.removed_rows + result.changed_rows + result.unchanged_rows).toBe(4);
+  });
+
+  it("summary describes the comparison", () => {
+    const result = flowCompareDatasets({
+      csv_a: CSV_A,
+      csv_b: CSV_B,
+      key_column: "id",
+    });
+    expect(result.summary).toBeDefined();
+    expect(typeof result.summary).toBe("string");
+    expect(result.summary.length).toBeGreaterThan(10);
   });
 });

@@ -765,3 +765,340 @@ export function flowClusterData(input: ClusterDataInput): ClusterDataResult {
     silhouette_score: Math.round(finalSilhouette * 10000) / 10000,
   };
 }
+
+// ============================================================================
+// TOOL 29: flow_hierarchical_data — FLAT DATA → TREE STRUCTURE
+// ============================================================================
+
+export interface HierarchicalDataInput {
+  csv_content: string;
+  /** Columns defining the hierarchy levels (e.g. ["continent", "country", "city"]). Order = depth order. */
+  hierarchy_columns: string[];
+  /** Column to aggregate as node value (sum at parent levels). Optional. */
+  value_column?: string;
+  /** Name for the root node (default "Root"). */
+  root_name?: string;
+}
+
+export interface HierarchicalDataResult {
+  csv: string;
+  total_nodes: number;
+  depth: number;
+  suggested_template: string;
+}
+
+export function flowHierarchicalData(input: HierarchicalDataInput): HierarchicalDataResult {
+  if (!input.hierarchy_columns || input.hierarchy_columns.length === 0) {
+    throw new Error("hierarchy_columns must be a non-empty array");
+  }
+
+  const { headers, rows } = parseCsvToRows(input.csv_content);
+
+  // Validate columns exist
+  for (const col of input.hierarchy_columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Column "${col}" not found in CSV. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const colIndices = input.hierarchy_columns.map((c) => headers.indexOf(c));
+  const valueIdx = input.value_column ? headers.indexOf(input.value_column) : -1;
+  const rootName = input.root_name ?? "Root";
+
+  // Build tree structure
+  // Each node: { id, parentId, children: Set<string>, value }
+  interface TreeNode {
+    id: string;
+    parentId: string | null;
+    children: Set<string>;
+    value: number;
+    level: number;
+    label: string;
+  }
+
+  const nodes = new Map<string, TreeNode>();
+
+  // Create root
+  nodes.set(rootName, {
+    id: rootName,
+    parentId: null,
+    children: new Set(),
+    value: 0,
+    level: 0,
+    label: rootName,
+  });
+
+  // Process each row
+  for (const row of rows) {
+    let parentId = rootName;
+
+    for (let level = 0; level < colIndices.length; level++) {
+      const rawValue = row[colIndices[level]]?.trim() || "Unknown";
+      // Create unique node ID by prefixing with parent path to handle duplicates
+      const nodeId = level === 0 ? rawValue : `${parentId}/${rawValue}`;
+      const displayLabel = rawValue;
+
+      if (!nodes.has(nodeId)) {
+        nodes.set(nodeId, {
+          id: nodeId,
+          parentId,
+          children: new Set(),
+          value: 0,
+          level: level + 1,
+          label: displayLabel,
+        });
+        // Add to parent's children
+        const parent = nodes.get(parentId);
+        if (parent) parent.children.add(nodeId);
+      }
+
+      // Add value at leaf level (deepest hierarchy column)
+      if (level === colIndices.length - 1 && valueIdx >= 0) {
+        const val = Number(row[valueIdx]?.trim());
+        if (!isNaN(val)) {
+          const node = nodes.get(nodeId)!;
+          node.value += val;
+        }
+      }
+
+      parentId = nodeId;
+    }
+  }
+
+  // Aggregate values bottom-up (leaf values sum to parents)
+  if (valueIdx >= 0) {
+    const maxLevel = input.hierarchy_columns.length;
+    for (let level = maxLevel; level >= 0; level--) {
+      for (const node of nodes.values()) {
+        if (node.level === level && node.children.size > 0) {
+          let childSum = 0;
+          for (const childId of node.children) {
+            const child = nodes.get(childId);
+            if (child) childSum += child.value;
+          }
+          node.value = childSum;
+        }
+      }
+    }
+  }
+
+  // Build output CSV in Flow network format: id, connections, label, level, value
+  const outHeaders = ["id", "connections", "label", "level"];
+  if (valueIdx >= 0) outHeaders.push("value");
+
+  const outLines = [outHeaders.join(",")];
+
+  // Sort nodes by level then by id for consistent output
+  const sortedNodes = Array.from(nodes.values()).sort((a, b) => {
+    if (a.level !== b.level) return a.level - b.level;
+    return a.id.localeCompare(b.id);
+  });
+
+  for (const node of sortedNodes) {
+    const connections = node.children.size > 0
+      ? Array.from(node.children).join("|")
+      : "";
+
+    const fields = [
+      csvEscapeField(node.id),
+      csvEscapeField(connections),
+      csvEscapeField(node.label),
+      String(node.level),
+    ];
+    if (valueIdx >= 0) fields.push(String(node.value));
+
+    outLines.push(fields.join(","));
+  }
+
+  const depth = input.hierarchy_columns.length + 1; // +1 for root
+
+  return {
+    csv: outLines.join("\n"),
+    total_nodes: nodes.size,
+    depth,
+    suggested_template: "3D Network Graph",
+  };
+}
+
+// ============================================================================
+// TOOL 30: flow_compare_datasets — SIDE-BY-SIDE DATASET COMPARISON
+// ============================================================================
+
+export interface CompareDataInput {
+  csv_a: string;
+  csv_b: string;
+  /** Column to use as row key for matching. If omitted, first column is used. */
+  key_column?: string;
+}
+
+export interface ColumnDelta {
+  column: string;
+  mean_a: number;
+  mean_b: number;
+  delta: number;
+  delta_pct: number;
+}
+
+export interface CompareDataResult {
+  csv: string;
+  key_column: string;
+  total_rows_a: number;
+  total_rows_b: number;
+  added_rows: number;
+  removed_rows: number;
+  changed_rows: number;
+  unchanged_rows: number;
+  column_deltas: ColumnDelta[];
+  summary: string;
+}
+
+export function flowCompareDatasets(input: CompareDataInput): CompareDataResult {
+  const parsedA = parseCsvToRows(input.csv_a);
+  const parsedB = parseCsvToRows(input.csv_b);
+
+  // Determine key column
+  const keyCol = input.key_column ?? parsedA.headers[0];
+  const keyIdxA = parsedA.headers.indexOf(keyCol);
+  const keyIdxB = parsedB.headers.indexOf(keyCol);
+
+  if (keyIdxA < 0) {
+    throw new Error(`Key column "${keyCol}" not found in dataset A. Available: ${parsedA.headers.join(", ")}`);
+  }
+  if (keyIdxB < 0) {
+    throw new Error(`Key column "${keyCol}" not found in dataset B. Available: ${parsedB.headers.join(", ")}`);
+  }
+
+  // Build lookup maps by key
+  const mapA = new Map<string, string[]>();
+  for (const row of parsedA.rows) {
+    const key = row[keyIdxA]?.trim() ?? "";
+    mapA.set(key, row);
+  }
+
+  const mapB = new Map<string, string[]>();
+  for (const row of parsedB.rows) {
+    const key = row[keyIdxB]?.trim() ?? "";
+    mapB.set(key, row);
+  }
+
+  // Find common columns (excluding key)
+  const commonCols = parsedA.headers.filter(
+    (h) => h !== keyCol && parsedB.headers.includes(h)
+  );
+
+  // Classify rows
+  let added = 0, removed = 0, changed = 0, unchanged = 0;
+
+  type DiffRow = { key: string; status: string; values: string[] };
+  const diffRows: DiffRow[] = [];
+
+  // Check A rows
+  for (const [key, rowA] of mapA) {
+    const rowB = mapB.get(key);
+    if (!rowB) {
+      removed++;
+      diffRows.push({ key, status: "removed", values: rowA });
+    } else {
+      // Compare common columns
+      let hasChange = false;
+      for (const col of commonCols) {
+        const idxA = parsedA.headers.indexOf(col);
+        const idxB = parsedB.headers.indexOf(col);
+        if ((rowA[idxA]?.trim() ?? "") !== (rowB[idxB]?.trim() ?? "")) {
+          hasChange = true;
+          break;
+        }
+      }
+      if (hasChange) {
+        changed++;
+        diffRows.push({ key, status: "changed", values: rowB });
+      } else {
+        unchanged++;
+        diffRows.push({ key, status: "unchanged", values: rowA });
+      }
+    }
+  }
+
+  // Check B-only rows (added)
+  for (const [key, rowB] of mapB) {
+    if (!mapA.has(key)) {
+      added++;
+      diffRows.push({ key, status: "added", values: rowB });
+    }
+  }
+
+  // Build output CSV using A's headers + _diff_status
+  const outHeaders = [...parsedA.headers, "_diff_status"];
+  const outLines = [outHeaders.join(",")];
+
+  for (const dr of diffRows) {
+    // For added rows, map B columns to A headers
+    const fields: string[] = [];
+    for (const header of parsedA.headers) {
+      if (dr.status === "added") {
+        const bIdx = parsedB.headers.indexOf(header);
+        fields.push(csvEscapeField(bIdx >= 0 ? (dr.values[bIdx] ?? "") : ""));
+      } else {
+        const aIdx = parsedA.headers.indexOf(header);
+        if (dr.status === "changed") {
+          // Use B's values for changed rows
+          const bIdx = parsedB.headers.indexOf(header);
+          fields.push(csvEscapeField(bIdx >= 0 ? (mapB.get(dr.key)?.[bIdx] ?? dr.values[aIdx] ?? "") : (dr.values[aIdx] ?? "")));
+        } else {
+          fields.push(csvEscapeField(dr.values[aIdx] ?? ""));
+        }
+      }
+    }
+    fields.push(dr.status);
+    outLines.push(fields.join(","));
+  }
+
+  // Compute numeric column deltas
+  const numericCols = identifyNumericColumns(parsedA.headers, parsedA.rows);
+  const commonNumeric = numericCols.filter((c) => c !== keyCol && parsedB.headers.includes(c));
+
+  const columnDeltas: ColumnDelta[] = [];
+  for (const col of commonNumeric) {
+    const idxA = parsedA.headers.indexOf(col);
+    const idxB = parsedB.headers.indexOf(col);
+
+    const valsA = parsedA.rows.map(r => Number(r[idxA]?.trim())).filter(v => !isNaN(v));
+    const valsB = parsedB.rows.map(r => Number(r[idxB]?.trim())).filter(v => !isNaN(v));
+
+    if (valsA.length === 0 && valsB.length === 0) continue;
+
+    const meanA = valsA.length > 0 ? valsA.reduce((s, v) => s + v, 0) / valsA.length : 0;
+    const meanB = valsB.length > 0 ? valsB.reduce((s, v) => s + v, 0) / valsB.length : 0;
+    const delta = meanB - meanA;
+    const deltaPct = meanA !== 0 ? (delta / meanA) * 100 : 0;
+
+    columnDeltas.push({
+      column: col,
+      mean_a: Math.round(meanA * 100) / 100,
+      mean_b: Math.round(meanB * 100) / 100,
+      delta: Math.round(delta * 100) / 100,
+      delta_pct: Math.round(deltaPct * 100) / 100,
+    });
+  }
+
+  const total = added + removed + changed + unchanged;
+  const summary = `Compared ${parsedA.rows.length} rows (A) vs ${parsedB.rows.length} rows (B) on key "${keyCol}". ` +
+    `${unchanged} unchanged, ${changed} changed, ${added} added, ${removed} removed. ` +
+    `${total} total unique keys.` +
+    (columnDeltas.length > 0
+      ? ` Numeric deltas: ${columnDeltas.map(d => `${d.column} ${d.delta >= 0 ? "+" : ""}${d.delta} (${d.delta_pct >= 0 ? "+" : ""}${d.delta_pct}%)`).join(", ")}.`
+      : "");
+
+  return {
+    csv: outLines.join("\n"),
+    key_column: keyCol,
+    total_rows_a: parsedA.rows.length,
+    total_rows_b: parsedB.rows.length,
+    added_rows: added,
+    removed_rows: removed,
+    changed_rows: changed,
+    unchanged_rows: unchanged,
+    column_deltas: columnDeltas,
+    summary,
+  };
+}

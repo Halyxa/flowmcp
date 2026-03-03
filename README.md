@@ -1,8 +1,8 @@
 # FlowMCP
 
-The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **28 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
+The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **30 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**517 tests. Zero competitors in 3D data visualization MCP.**
+**535 tests. Zero competitors in 3D data visualization MCP.**
 
 ## What It Does
 
@@ -66,9 +66,9 @@ MCP_HTTP_PORT=8080 node dist/index.js --http # Custom port
 MCP_HTTP_HOST=0.0.0.0 node dist/index.js --http # Bind to all interfaces
 ```
 
-Health check: `GET /health` returns `{"status":"ok","tools":28,"transport":"streamable-http"}`
+Health check: `GET /health` returns `{"status":"ok","tools":30,"transport":"streamable-http"}`
 
-## Tools (28)
+## Tools (30)
 
 ### Data Analysis & Preparation
 
@@ -157,6 +157,8 @@ Health check: `GET /health` returns `{"status":"ok","tools":28,"transport":"stre
 |---|------|-------------|
 | 27 | `flow_correlation_matrix` | Pairwise Pearson correlations for numeric columns — heatmap-ready matrix CSV |
 | 28 | `flow_cluster_data` | K-means clustering with automatic k selection via silhouette scoring — adds `_cluster` column |
+| 29 | `flow_hierarchical_data` | Flat categorical data → hierarchical tree structure for sunburst/treemap visualization |
+| 30 | `flow_compare_datasets` | Side-by-side dataset diff with `_diff_status` column (added/removed/changed/unchanged) |
 
 Plus **3 prompts** (recommendation, data prep, getting started) and **5 resources** (overview, CSV format, network graphs, Python client, viz types).
 
@@ -190,7 +192,7 @@ Run the pipeline demo: `node demos/pipeline-demo.mjs`
 ## Testing
 
 ```bash
-npm test           # 502 tests (unit + integration + benchmark + perf + property + edge + v4)
+npm test           # 520 tests (unit + integration + benchmark + perf + property + edge + v4)
 npm run smoke-test # 15 standalone MCP checks
 npm run ci         # Full pipeline: build + test + smoke
 ```
@@ -204,11 +206,11 @@ npm run ci         # Full pipeline: build + test + smoke
 | Search tests | 23 |
 | Tools v2 tests | 36 |
 | Tools v3 tests | 33 |
-| Tools v4 tests | 34 |
+| Tools v4 tests | 52 |
 | Edge case tests | 110 |
 | Property tests | 23 |
 | Smoke tests | 15 |
-| **Total** | **517** |
+| **Total** | **535** |
 
 ## Tool Description Optimization
 
@@ -224,7 +226,7 @@ The tool descriptions ARE training data — every word shapes how AI assistants 
 
 ## Architecture
 
-- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`, `src/tools-v4.ts`
+- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`, `src/tools-v4.ts` (5 tools)
 - **Proper CSV parsing** — state-machine parser handles quoted fields with embedded commas
 - **Fetch timeouts** — all API calls use AbortController with 15s timeout
 - **Safety limits** — max CSV 10MB, max rows 500k, max nodes 50k, max edges 200k
