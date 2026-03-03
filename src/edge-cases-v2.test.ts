@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
 import {
   flowSemanticSearch,
   scoreMatch,
@@ -1205,5 +1206,239 @@ describe("Cross-tool chaos tests", () => {
     const csv = 'name,value\n"Smith, John",10\n"Doe, Jane",20\n"X, Y",100';
     const result = flowAnomalyDetect({ csv_content: csv });
     expect(result.summary.total_rows).toBe(3);
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_correlation_matrix (Tool 27)
+// ============================================================================
+
+describe("flowCorrelationMatrix — edge cases", () => {
+  it("handles constant column (zero variance)", () => {
+    const csv = "x,y\n5,1\n5,2\n5,3\n5,4";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    // Constant column x has zero variance — correlation should be 0
+    expect(result.matrix[0][1]).toBe(0);
+  });
+
+  it("handles two rows (minimum for correlation)", () => {
+    const csv = "a,b\n1,2\n3,4";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.columns.length).toBe(2);
+    expect(result.matrix[0][1]).toBeCloseTo(1.0);
+  });
+
+  it("skips non-numeric columns automatically", () => {
+    const csv = "name,age,city,salary\nAlice,30,NYC,100000\nBob,35,LA,120000\nCarol,28,NYC,95000";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.columns).toContain("age");
+    expect(result.columns).toContain("salary");
+    expect(result.columns).not.toContain("name");
+    expect(result.columns).not.toContain("city");
+  });
+
+  it("handles single row gracefully", () => {
+    const csv = "a,b\n1,2";
+    // Single row can still produce a matrix (though correlations are degenerate)
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.columns.length).toBe(2);
+  });
+
+  it("handles CSV with mixed numeric/text in same column", () => {
+    const csv = "val\n1\n2\nN/A\n4\n5";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    // Should still identify "val" as numeric (>50% numeric)
+    expect(result.columns).toContain("val");
+  });
+
+  it("handles large number of columns", () => {
+    const cols = Array.from({ length: 20 }, (_, i) => `c${i}`);
+    const rows = Array.from({ length: 5 }, () =>
+      cols.map(() => String(Math.random() * 100)).join(",")
+    );
+    const csv = cols.join(",") + "\n" + rows.join("\n");
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.matrix.length).toBe(20);
+    expect(result.matrix[0].length).toBe(20);
+  });
+
+  it("strongest_correlations excludes self-correlations", () => {
+    const csv = "a,b,c\n1,2,10\n2,4,20\n3,6,30";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    for (const pair of result.strongest_correlations) {
+      expect(pair.column_a).not.toBe(pair.column_b);
+    }
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_cluster_data (Tool 28)
+// ============================================================================
+
+describe("flowClusterData — edge cases", () => {
+  it("handles k larger than data points", () => {
+    const csv = "x,y\n1,1\n2,2\n3,3";
+    // k=10 but only 3 points — should still work (some clusters empty)
+    expect(() =>
+      flowClusterData({ csv_content: csv, k: 10, columns: ["x", "y"] })
+    ).not.toThrow();
+  });
+
+  it("handles all identical points", () => {
+    const csv = "x,y\n5,5\n5,5\n5,5\n5,5\n5,5";
+    const result = flowClusterData({ csv_content: csv, k: 2, columns: ["x", "y"] });
+    // All distances should be 0
+    expect(result.rows).toBe(5);
+  });
+
+  it("preserves original non-numeric columns", () => {
+    const csv = "name,x,y\nAlice,1,1\nBob,10,10\nCarol,1,2\nDave,10,11";
+    const result = flowClusterData({ csv_content: csv, k: 2, columns: ["x", "y"] });
+    expect(result.csv).toContain("Alice");
+    expect(result.csv).toContain("Bob");
+    const header = result.csv.split("\n")[0].split(",");
+    expect(header).toContain("name");
+  });
+
+  it("single column clustering works", () => {
+    const csv = "val\n1\n1\n1\n100\n100\n100";
+    const result = flowClusterData({ csv_content: csv, k: 2, columns: ["val"] });
+    expect(result.k).toBe(2);
+    expect(result.columns_used).toEqual(["val"]);
+  });
+
+  it("silhouette score is between -1 and 1", () => {
+    const csv = "x,y\n1,1\n2,2\n10,10\n11,11\n20,20\n21,21";
+    const result = flowClusterData({ csv_content: csv, k: 3, columns: ["x", "y"] });
+    expect(result.silhouette_score).toBeGreaterThanOrEqual(-1);
+    expect(result.silhouette_score).toBeLessThanOrEqual(1);
+  });
+
+  it("exactly 2 points works", () => {
+    const csv = "x,y\n0,0\n100,100";
+    const result = flowClusterData({ csv_content: csv, k: 2, columns: ["x", "y"] });
+    expect(result.k).toBe(2);
+    expect(result.rows).toBe(2);
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_hierarchical_data (Tool 29)
+// ============================================================================
+
+describe("flowHierarchicalData — edge cases", () => {
+  it("handles single row", () => {
+    const csv = "dept,team\nEngineering,Frontend";
+    const result = flowHierarchicalData({ csv_content: csv, hierarchy_columns: ["dept", "team"] });
+    // Root + 1 dept + 1 team = 3
+    expect(result.total_nodes).toBe(3);
+  });
+
+  it("handles many duplicate categories", () => {
+    const csv = "cat\n" + Array(20).fill("Same").join("\n");
+    const result = flowHierarchicalData({ csv_content: csv, hierarchy_columns: ["cat"] });
+    // Root + 1 unique category = 2
+    expect(result.total_nodes).toBe(2);
+  });
+
+  it("aggregates value column correctly", () => {
+    const csv = "region,sales\nNorth,100\nNorth,200\nSouth,300";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["region"],
+      value_column: "sales",
+    });
+    // Root value should be 600 (100+200+300)
+    const lines = result.csv.split("\n");
+    const header = lines[0].split(",");
+    const valueIdx = header.indexOf("value");
+    const rootLine = lines.find(l => l.startsWith("Root,"));
+    if (rootLine && valueIdx >= 0) {
+      expect(Number(rootLine.split(",")[valueIdx])).toBe(600);
+    }
+  });
+
+  it("custom root name works", () => {
+    const csv = "a\nX\nY";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["a"],
+      root_name: "MyCompany",
+    });
+    expect(result.csv).toContain("MyCompany");
+  });
+
+  it("3-level deep hierarchy", () => {
+    const csv = "continent,country,city\nAsia,Japan,Tokyo\nAsia,Japan,Osaka\nAsia,China,Beijing\nEurope,France,Paris";
+    const result = flowHierarchicalData({
+      csv_content: csv,
+      hierarchy_columns: ["continent", "country", "city"],
+    });
+    // Root(1) + continents(2) + countries(3) + cities(4) = 10
+    expect(result.total_nodes).toBe(10);
+    expect(result.depth).toBe(4);
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_compare_datasets (Tool 30)
+// ============================================================================
+
+describe("flowCompareDatasets — edge cases", () => {
+  it("handles empty dataset A", () => {
+    const csvA = "id,val\n";
+    const csvB = "id,val\n1,100\n2,200";
+    // Should handle gracefully — note csvA has 0 data rows
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+    expect(result.added_rows).toBe(2);
+    expect(result.removed_rows).toBe(0);
+  });
+
+  it("handles empty dataset B", () => {
+    const csvA = "id,val\n1,100\n2,200";
+    const csvB = "id,val\n";
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+    expect(result.removed_rows).toBe(2);
+    expect(result.added_rows).toBe(0);
+  });
+
+  it("detects changes in non-numeric columns", () => {
+    const csvA = "id,name\n1,Alice\n2,Bob";
+    const csvB = "id,name\n1,Alice\n2,Robert";
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+    expect(result.changed_rows).toBe(1);
+    expect(result.unchanged_rows).toBe(1);
+  });
+
+  it("column_deltas computed for numeric columns only", () => {
+    const csvA = "id,name,score\n1,Alice,80\n2,Bob,90";
+    const csvB = "id,name,score\n1,Alice,85\n2,Bob,95";
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+    expect(result.column_deltas.length).toBe(1);
+    expect(result.column_deltas[0].column).toBe("score");
+    expect(result.column_deltas[0].delta).toBe(5);
+  });
+
+  it("handles datasets with different column orders", () => {
+    const csvA = "id,x,y\n1,10,20";
+    const csvB = "id,y,x\n1,20,15";
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+    // x changed (10→15), y unchanged (20→20)
+    expect(result.changed_rows).toBe(1);
+  });
+
+  it("summary string contains key column name", () => {
+    const csvA = "pk,val\n1,10";
+    const csvB = "pk,val\n1,20";
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "pk" });
+    expect(result.summary).toContain("pk");
+  });
+
+  it("handles duplicate keys in source data", () => {
+    const csvA = "id,val\n1,10\n1,20";
+    const csvB = "id,val\n1,30";
+    // Last value wins for Map
+    const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+    expect(result.changed_rows + result.unchanged_rows).toBeGreaterThanOrEqual(1);
   });
 });
