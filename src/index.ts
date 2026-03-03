@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2795,6 +2795,77 @@ Output: Combined CSV with union of all columns, row_count, column_count, and sum
           required: ["csv_content_1", "csv_content_2"],
         },
       },
+      {
+        name: "flow_value_counts",
+        description: `Count occurrences of each unique value in a CSV column. Returns value, count, and percentage sorted by frequency descending. Like pandas value_counts() — essential for data exploration and categorical analysis.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "count values", "frequency count", "how many of each", or "value distribution"
+- User wants to see the most common values in a column
+- User asks for "top N values", "most frequent", or "category counts"
+- User needs a frequency table or distribution summary
+
+Input: CSV data, column name, optional top_n limit.
+Output: CSV with value/count/percentage columns, unique_count, total_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to analyze",
+            },
+            column: {
+              type: "string",
+              description: "Column to count values in",
+            },
+            top_n: {
+              type: "number",
+              description: "Return only top N most frequent values",
+            },
+          },
+          required: ["csv_content", "column"],
+        },
+      },
+      {
+        name: "flow_date_diff",
+        description: `Calculate the difference between two date columns in days, months, or years. Adds a new column with the computed difference. Handles invalid dates gracefully with failure counting.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "calculate duration", "days between", "time difference", or "date diff"
+- User has start/end dates and wants to know the elapsed time
+- User asks for "age calculation", "tenure", or "how long between" dates
+- User needs to compute intervals from date pairs
+
+Input: CSV data, start_column, end_column, unit (days/months/years), optional output_column name.
+Output: CSV with appended difference column, computed_count, failed_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with date columns",
+            },
+            start_column: {
+              type: "string",
+              description: "Column with start dates",
+            },
+            end_column: {
+              type: "string",
+              description: "Column with end dates",
+            },
+            unit: {
+              type: "string",
+              enum: ["days", "months", "years"],
+              description: "Unit for the difference calculation",
+            },
+            output_column: {
+              type: "string",
+              description: "Name for output column (default: _date_diff)",
+            },
+          },
+          required: ["csv_content", "start_column", "end_column", "unit"],
+        },
+      },
     ],
   };
 });
@@ -3437,6 +3508,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_concat_rows": {
       try {
         const result = flowConcatRows(args as unknown as ConcatRowsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_value_counts": {
+      try {
+        const result = flowValueCounts(args as unknown as ValueCountsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_date_diff": {
+      try {
+        const result = flowDateDiff(args as unknown as DateDiffInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6438,7 +6527,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 62, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 64, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

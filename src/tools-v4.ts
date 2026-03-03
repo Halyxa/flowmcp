@@ -4073,3 +4073,152 @@ export function flowConcatRows(input: ConcatRowsInput): ConcatRowsResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 63: flow_value_counts — COUNT UNIQUE VALUE OCCURRENCES
+// ============================================================================
+
+export interface ValueCountsInput {
+  csv_content: string;
+  /** Column to count values in */
+  column: string;
+  /** Return only top N values (default: all) */
+  top_n?: number;
+}
+
+export interface ValueCountsResult {
+  csv: string;
+  unique_count: number;
+  total_count: number;
+  summary: string;
+}
+
+export function flowValueCounts(input: ValueCountsInput): ValueCountsResult {
+  const { csv_content, column, top_n } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  // Count occurrences
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const val = row[colIdx] ?? "";
+    counts.set(val, (counts.get(val) || 0) + 1);
+  }
+
+  // Sort by count descending
+  let sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  if (top_n !== undefined && top_n > 0) {
+    sorted = sorted.slice(0, top_n);
+  }
+
+  const total = rows.length;
+  const outLines = sorted.map(([value, count]) => {
+    const pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+    return `${csvEscapeField(value)},${count},${pct}`;
+  });
+
+  const headerLine = "value,count,percentage";
+  const summary = `Column "${column}": ${counts.size} unique values across ${total} rows.`;
+
+  return {
+    csv: [headerLine, ...outLines].join("\n"),
+    unique_count: counts.size,
+    total_count: total,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 64: flow_date_diff — CALCULATE DATE DIFFERENCES
+// ============================================================================
+
+export interface DateDiffInput {
+  csv_content: string;
+  /** Column with start dates */
+  start_column: string;
+  /** Column with end dates */
+  end_column: string;
+  /** Unit: days, months, or years */
+  unit: "days" | "months" | "years";
+  /** Custom output column name (default: _date_diff) */
+  output_column?: string;
+}
+
+export interface DateDiffResult {
+  csv: string;
+  row_count: number;
+  computed_count: number;
+  failed_count: number;
+  summary: string;
+}
+
+export function flowDateDiff(input: DateDiffInput): DateDiffResult {
+  const { csv_content, start_column, end_column, unit, output_column = "_date_diff" } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const startIdx = headers.indexOf(start_column);
+  const endIdx = headers.indexOf(end_column);
+
+  if (startIdx === -1) throw new Error(`Start column "${start_column}" not found. Available: ${headers.join(", ")}`);
+  if (endIdx === -1) throw new Error(`End column "${end_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  let computedCount = 0;
+  let failedCount = 0;
+
+  const diffs: string[] = rows.map(row => {
+    const startStr = row[startIdx] ?? "";
+    const endStr = row[endIdx] ?? "";
+
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      failedCount++;
+      return "";
+    }
+
+    computedCount++;
+    const msPerDay = 86400000;
+
+    if (unit === "days") {
+      const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / msPerDay);
+      return String(diffDays);
+    } else if (unit === "months") {
+      const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+                     (endDate.getMonth() - startDate.getMonth());
+      return String(months);
+    } else {
+      // years
+      const years = endDate.getFullYear() - startDate.getFullYear();
+      return String(years);
+    }
+  });
+
+  const outHeaders = [...headers, output_column];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), diffs[i]].join(",");
+  });
+
+  const summary = `Calculated ${unit} difference between "${start_column}" and "${end_column}": ${computedCount} computed, ${failedCount} failed (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    computed_count: computedCount,
+    failed_count: failedCount,
+    summary,
+  };
+}

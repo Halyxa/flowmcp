@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -3790,5 +3790,182 @@ describe("flow_concat_rows", () => {
       csv_content_2: csv2,
     });
     expect(result.summary).toContain("3");
+  });
+});
+
+// ============================================================================
+// TOOL 63: flow_value_counts
+// ============================================================================
+
+describe("flow_value_counts", () => {
+  it("counts occurrences of each unique value", () => {
+    const csv = "name,category\nAlice,A\nBob,B\nCarol,A\nDave,A\nEve,B";
+    const result = flowValueCounts({
+      csv_content: csv,
+      column: "category",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("value,count,percentage");
+    // A appears 3 times, B appears 2 times — sorted by count desc
+    expect(lines[1]).toContain("A");
+    expect(lines[1]).toContain("3");
+    expect(lines[2]).toContain("B");
+    expect(lines[2]).toContain("2");
+    expect(result.unique_count).toBe(2);
+  });
+
+  it("sorts by count descending", () => {
+    const csv = "x\na\nb\nc\na\na\nb";
+    const result = flowValueCounts({
+      csv_content: csv,
+      column: "x",
+    });
+    const lines = result.csv.trim().split("\n");
+    // a=3, b=2, c=1
+    expect(lines[1]).toContain("a");
+    expect(lines[3]).toContain("c");
+  });
+
+  it("respects top_n parameter", () => {
+    const csv = "x\na\na\nb\nc\nd\ne";
+    const result = flowValueCounts({
+      csv_content: csv,
+      column: "x",
+      top_n: 2,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines.length).toBe(3); // header + 2 rows
+  });
+
+  it("calculates correct percentages", () => {
+    const csv = "x\na\na\nb\nb";
+    const result = flowValueCounts({
+      csv_content: csv,
+      column: "x",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Each should be 50%
+    expect(lines[1]).toContain("50");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowValueCounts({
+        csv_content: csv,
+        column: "missing",
+      })
+    ).toThrow();
+  });
+
+  it("handles empty values", () => {
+    const csv = "x\na\n\na\n";
+    const result = flowValueCounts({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.unique_count).toBeGreaterThanOrEqual(1);
+  });
+
+  it("returns summary", () => {
+    const csv = "x\na\nb\nc";
+    const result = flowValueCounts({
+      csv_content: csv,
+      column: "x",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 64: flow_date_diff
+// ============================================================================
+
+describe("flow_date_diff", () => {
+  it("calculates day differences between two date columns", () => {
+    const csv = "id,start,end\n1,2024-01-01,2024-01-31\n2,2024-03-01,2024-03-15";
+    const result = flowDateDiff({
+      csv_content: csv,
+      start_column: "start",
+      end_column: "end",
+      unit: "days",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_date_diff");
+    // Jan 1 to Jan 31 = 30 days
+    expect(lines[1]).toContain("30");
+    // Mar 1 to Mar 15 = 14 days
+    expect(lines[2]).toContain("14");
+  });
+
+  it("supports month unit", () => {
+    const csv = "id,start,end\n1,2024-01-15,2024-04-15";
+    const result = flowDateDiff({
+      csv_content: csv,
+      start_column: "start",
+      end_column: "end",
+      unit: "months",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("3");
+  });
+
+  it("supports year unit", () => {
+    const csv = "id,start,end\n1,2020-06-01,2024-06-01";
+    const result = flowDateDiff({
+      csv_content: csv,
+      start_column: "start",
+      end_column: "end",
+      unit: "years",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("4");
+  });
+
+  it("handles invalid dates gracefully", () => {
+    const csv = "id,start,end\n1,2024-01-01,2024-01-31\n2,not-a-date,2024-03-15";
+    const result = flowDateDiff({
+      csv_content: csv,
+      start_column: "start",
+      end_column: "end",
+      unit: "days",
+    });
+    expect(result.failed_count).toBe(1);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowDateDiff({
+        csv_content: csv,
+        start_column: "missing",
+        end_column: "b",
+        unit: "days",
+      })
+    ).toThrow();
+  });
+
+  it("uses custom output column name", () => {
+    const csv = "start,end\n2024-01-01,2024-01-10";
+    const result = flowDateDiff({
+      csv_content: csv,
+      start_column: "start",
+      end_column: "end",
+      unit: "days",
+      output_column: "duration",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("duration");
+  });
+
+  it("returns summary", () => {
+    const csv = "start,end\n2024-01-01,2024-01-10";
+    const result = flowDateDiff({
+      csv_content: csv,
+      start_column: "start",
+      end_column: "end",
+      unit: "days",
+    });
+    expect(result.summary).toBeTruthy();
   });
 });
