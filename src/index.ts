@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -3200,6 +3200,70 @@ Output: CSV with original columns plus new split columns, columns_created, summa
           required: ["csv_content", "column", "delimiter", "new_columns"],
         },
       },
+      {
+        name: "flow_pca_reduce",
+        description: `Reduce multi-dimensional data to 2-3 principal components using PCA (Principal Component Analysis). Projects high-dimensional data into visualizable 2D/3D space while preserving maximum variance. Reports explained variance per component. Pure JavaScript — no external dependencies.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "PCA", "dimensionality reduction", "reduce dimensions", or "project to 2D/3D"
+- User has many numeric columns and wants to visualize them in 3D space
+- User asks to "find principal components", "reduce features", or "compress dimensions"
+- User needs to visualize high-dimensional data as a 2D/3D scatter plot
+
+Input: CSV data, numeric column names, n_components (2 or 3).
+Output: CSV with preserved non-numeric columns + pc1, pc2, (pc3), explained_variance percentages.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric columns to reduce",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Numeric columns to include in PCA",
+            },
+            n_components: {
+              type: "number",
+              description: "Number of components to extract (2 or 3)",
+            },
+          },
+          required: ["csv_content", "columns", "n_components"],
+        },
+      },
+      {
+        name: "flow_distance_matrix",
+        description: `Compute pairwise Euclidean distance matrix between all rows using specified numeric columns. Output is an N×N symmetric matrix with row/column labels from an ID column. Useful for similarity analysis, clustering input, and network graph creation from proximity.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "distance matrix", "pairwise distances", "similarity matrix", or "proximity analysis"
+- User wants to find which items are most similar or different
+- User asks to "measure similarity", "compute distances", or "create proximity network"
+- User needs a distance-based input for clustering or network visualization
+
+Input: CSV data, numeric columns for distance, id_column for labels.
+Output: N×N distance matrix CSV, size, summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with numeric columns",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Numeric columns to compute distances from",
+            },
+            id_column: {
+              type: "string",
+              description: "Column to use as row/column labels",
+            },
+          },
+          required: ["csv_content", "columns", "id_column"],
+        },
+      },
     ],
   };
 });
@@ -3950,6 +4014,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_string_split": {
       try {
         const result = flowStringSplit(args as unknown as StringSplitInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_pca_reduce": {
+      try {
+        const result = flowPcaReduce(args as unknown as PcaReduceInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_distance_matrix": {
+      try {
+        const result = flowDistanceMatrix(args as unknown as DistanceMatrixInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6951,7 +7033,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 74, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 76, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

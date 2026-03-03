@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -4696,6 +4696,153 @@ describe("flow_string_split", () => {
       column: "x",
       delimiter: "-",
       new_columns: ["p1", "p2"],
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 75: flow_pca_reduce
+// ============================================================================
+
+describe("flow_pca_reduce", () => {
+  it("reduces to 2 components", () => {
+    const csv = "a,b,c,d\n1,2,3,4\n5,6,7,8\n9,10,11,12\n2,4,6,8";
+    const result = flowPcaReduce({
+      csv_content: csv,
+      columns: ["a", "b", "c", "d"],
+      n_components: 2,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("pc1");
+    expect(lines[0]).toContain("pc2");
+    expect(lines[0]).not.toContain("pc3");
+    expect(result.row_count).toBe(4);
+    expect(result.components).toBe(2);
+  });
+
+  it("reduces to 3 components", () => {
+    const csv = "a,b,c,d,e\n1,2,3,4,5\n6,7,8,9,10\n11,12,13,14,15\n2,4,6,8,10\n3,6,9,12,15";
+    const result = flowPcaReduce({
+      csv_content: csv,
+      columns: ["a", "b", "c", "d", "e"],
+      n_components: 3,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("pc1");
+    expect(lines[0]).toContain("pc2");
+    expect(lines[0]).toContain("pc3");
+    expect(result.components).toBe(3);
+  });
+
+  it("reports explained variance", () => {
+    const csv = "a,b,c\n1,2,3\n4,5,6\n7,8,9\n10,11,12";
+    const result = flowPcaReduce({
+      csv_content: csv,
+      columns: ["a", "b", "c"],
+      n_components: 2,
+    });
+    expect(result.explained_variance).toBeDefined();
+    expect(result.explained_variance.length).toBe(2);
+  });
+
+  it("preserves non-selected columns", () => {
+    const csv = "name,a,b,c\nAlice,1,2,3\nBob,4,5,6";
+    const result = flowPcaReduce({
+      csv_content: csv,
+      columns: ["a", "b", "c"],
+      n_components: 2,
+    });
+    expect(result.csv).toContain("name");
+    expect(result.csv).toContain("Alice");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowPcaReduce({
+        csv_content: csv,
+        columns: ["a", "missing"],
+        n_components: 2,
+      })
+    ).toThrow();
+  });
+
+  it("returns summary", () => {
+    const csv = "a,b,c\n1,2,3\n4,5,6\n7,8,9";
+    const result = flowPcaReduce({
+      csv_content: csv,
+      columns: ["a", "b", "c"],
+      n_components: 2,
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 76: flow_distance_matrix
+// ============================================================================
+
+describe("flow_distance_matrix", () => {
+  it("computes pairwise Euclidean distances", () => {
+    const csv = "id,x,y\nA,0,0\nB,3,4\nC,0,0";
+    const result = flowDistanceMatrix({
+      csv_content: csv,
+      columns: ["x", "y"],
+      id_column: "id",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("id");
+    expect(lines[0]).toContain("A");
+    expect(lines[0]).toContain("B");
+    // A to B = sqrt(9+16) = 5
+    expect(result.csv).toContain("5");
+    // A to C = 0
+    expect(result.size).toBe(3);
+  });
+
+  it("handles 4 points", () => {
+    const csv = "id,x,y\nP1,0,0\nP2,1,0\nP3,0,1\nP4,1,1";
+    const result = flowDistanceMatrix({
+      csv_content: csv,
+      columns: ["x", "y"],
+      id_column: "id",
+    });
+    expect(result.size).toBe(4);
+    const lines = result.csv.trim().split("\n");
+    // Should be 5 lines: header + 4 rows
+    expect(lines.length).toBe(5);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "id,x\nA,1";
+    expect(() =>
+      flowDistanceMatrix({
+        csv_content: csv,
+        columns: ["x", "missing"],
+        id_column: "id",
+      })
+    ).toThrow();
+  });
+
+  it("diagonal is zero", () => {
+    const csv = "id,x,y\nA,1,2\nB,3,4";
+    const result = flowDistanceMatrix({
+      csv_content: csv,
+      columns: ["x", "y"],
+      id_column: "id",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Row A: A distance to self = 0
+    expect(lines[1].split(",")[1]).toBe("0");
+  });
+
+  it("returns summary", () => {
+    const csv = "id,x,y\nA,0,0\nB,1,1";
+    const result = flowDistanceMatrix({
+      csv_content: csv,
+      columns: ["x", "y"],
+      id_column: "id",
     });
     expect(result.summary).toBeTruthy();
   });

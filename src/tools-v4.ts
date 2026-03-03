@@ -4989,3 +4989,225 @@ export function flowStringSplit(input: StringSplitInput): StringSplitResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 75: flow_pca_reduce — PRINCIPAL COMPONENT ANALYSIS
+// ============================================================================
+
+export interface PcaReduceInput {
+  csv_content: string;
+  /** Numeric columns to reduce */
+  columns: string[];
+  /** Number of output components (2 or 3) */
+  n_components: number;
+}
+
+export interface PcaReduceResult {
+  csv: string;
+  row_count: number;
+  components: number;
+  explained_variance: number[];
+  summary: string;
+}
+
+export function flowPcaReduce(input: PcaReduceInput): PcaReduceResult {
+  const { csv_content, columns, n_components } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+  const n = rows.length;
+  const d = columns.length;
+
+  // Extract numeric matrix and center it
+  const matrix: number[][] = rows.map(row =>
+    colIndices.map(idx => Number(row[idx] ?? 0) || 0)
+  );
+
+  // Compute column means
+  const means: number[] = Array(d).fill(0);
+  for (let j = 0; j < d; j++) {
+    for (let i = 0; i < n; i++) means[j] += matrix[i][j];
+    means[j] /= n;
+  }
+
+  // Center the data
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < d; j++) {
+      matrix[i][j] -= means[j];
+    }
+  }
+
+  // Compute covariance matrix (d x d)
+  const cov: number[][] = Array(d).fill(null).map(() => Array(d).fill(0));
+  for (let i = 0; i < d; i++) {
+    for (let j = i; j < d; j++) {
+      let sum = 0;
+      for (let k = 0; k < n; k++) sum += matrix[k][i] * matrix[k][j];
+      cov[i][j] = sum / (n - 1 || 1);
+      cov[j][i] = cov[i][j];
+    }
+  }
+
+  // Power iteration to find top eigenvectors
+  const components = Math.min(n_components, d);
+  const eigenvectors: number[][] = [];
+  const eigenvalues: number[] = [];
+  const covWork = cov.map(row => [...row]);
+
+  for (let c = 0; c < components; c++) {
+    // Random initial vector
+    let v: number[] = Array(d).fill(0).map((_, i) => (i === c ? 1 : 0.1));
+    const norm = (vec: number[]) => Math.sqrt(vec.reduce((s, x) => s + x * x, 0));
+
+    // Power iteration (100 steps)
+    for (let iter = 0; iter < 100; iter++) {
+      const newV = Array(d).fill(0);
+      for (let i = 0; i < d; i++) {
+        for (let j = 0; j < d; j++) {
+          newV[i] += covWork[i][j] * v[j];
+        }
+      }
+      const n2 = norm(newV);
+      if (n2 > 0) v = newV.map(x => x / n2);
+    }
+
+    // Eigenvalue = v^T * A * v
+    const Av = Array(d).fill(0);
+    for (let i = 0; i < d; i++) {
+      for (let j = 0; j < d; j++) {
+        Av[i] += covWork[i][j] * v[j];
+      }
+    }
+    const eigenvalue = v.reduce((s, vi, i) => s + vi * Av[i], 0);
+
+    eigenvectors.push(v);
+    eigenvalues.push(eigenvalue);
+
+    // Deflate: remove this component from covariance matrix
+    for (let i = 0; i < d; i++) {
+      for (let j = 0; j < d; j++) {
+        covWork[i][j] -= eigenvalue * v[i] * v[j];
+      }
+    }
+  }
+
+  // Project data onto eigenvectors
+  const projected: number[][] = matrix.map(row =>
+    eigenvectors.map(ev =>
+      +(row.reduce((s, x, j) => s + x * ev[j], 0).toFixed(6))
+    )
+  );
+
+  // Compute explained variance ratios
+  const totalVariance = eigenvalues.reduce((s, v) => s + Math.abs(v), 0) || 1;
+  const explainedVariance = eigenvalues.map(ev => +((Math.abs(ev) / totalVariance) * 100).toFixed(2));
+
+  // Non-selected columns to preserve
+  const nonSelectedHeaders = headers.filter((_, i) => !colIndices.includes(i));
+  const nonSelectedIndices = headers.map((_, i) => i).filter(i => !colIndices.includes(i));
+
+  const pcHeaders = Array.from({ length: components }, (_, i) => `pc${i + 1}`);
+  const outHeaders = [...nonSelectedHeaders, ...pcHeaders];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+
+  const dataLines = rows.map((row, i) => {
+    const preserved = nonSelectedIndices.map(idx => csvEscapeField(row[idx] ?? ""));
+    const pcVals = projected[i].map(v => String(v));
+    return [...preserved, ...pcVals].join(",");
+  });
+
+  const varStr = explainedVariance.map((v, i) => `PC${i + 1}: ${v}%`).join(", ");
+  const summary = `PCA reduced ${d} columns to ${components} components (${n} rows). Variance: ${varStr}.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: n,
+    components,
+    explained_variance: explainedVariance,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 76: flow_distance_matrix — PAIRWISE EUCLIDEAN DISTANCE
+// ============================================================================
+
+export interface DistanceMatrixInput {
+  csv_content: string;
+  /** Numeric columns to compute distances from */
+  columns: string[];
+  /** Column to use as row/column labels */
+  id_column: string;
+}
+
+export interface DistanceMatrixResult {
+  csv: string;
+  size: number;
+  summary: string;
+}
+
+export function flowDistanceMatrix(input: DistanceMatrixInput): DistanceMatrixResult {
+  const { csv_content, columns, id_column } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+
+  const idIdx = headers.indexOf(id_column);
+  if (idIdx === -1) throw new Error(`ID column "${id_column}" not found. Available: ${headers.join(", ")}`);
+
+  const colIndices: number[] = [];
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    colIndices.push(idx);
+  }
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+  const n = rows.length;
+
+  const ids = rows.map(row => row[idIdx] ?? "");
+  const vectors: number[][] = rows.map(row =>
+    colIndices.map(idx => Number(row[idx] ?? 0) || 0)
+  );
+
+  // Compute pairwise Euclidean distances
+  const distMatrix: number[][] = Array(n).fill(null).map(() => Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      let sumSq = 0;
+      for (let k = 0; k < colIndices.length; k++) {
+        sumSq += (vectors[i][k] - vectors[j][k]) ** 2;
+      }
+      const dist = +Math.sqrt(sumSq).toFixed(4);
+      distMatrix[i][j] = dist;
+      distMatrix[j][i] = dist;
+    }
+  }
+
+  // Build output CSV
+  const outHeaders = ["id", ...ids];
+  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = rows.map((_, i) => {
+    return [csvEscapeField(ids[i]), ...distMatrix[i].map(d => String(d))].join(",");
+  });
+
+  const summary = `Euclidean distance matrix: ${n}×${n} (${columns.length} dimensions).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    size: n,
+    summary,
+  };
+}
