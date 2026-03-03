@@ -1,4 +1,4 @@
-import { csvEscapeField } from "./csv-utils.js";
+import { csvEscapeField, parseCSVLine } from "./csv-utils.js";
 
 // ============================================================================
 // TOOL 26: flow_live_data — REAL-TIME PUBLIC DATA FOR 3D VISUALIZATION
@@ -311,4 +311,457 @@ export async function flowLiveData(input: LiveDataInput): Promise<LiveDataResult
     default:
       throw new Error(`Unknown source: ${input.source}. Supported: earthquakes, weather_stations, world_indicators`);
   }
+}
+
+// ============================================================================
+// TOOL 27: flow_correlation_matrix — PAIRWISE PEARSON CORRELATIONS
+// ============================================================================
+
+export interface CorrelationMatrixInput {
+  csv_content: string;
+  /** Specific columns to correlate. If omitted, all numeric columns are used. */
+  columns?: string[];
+}
+
+export interface CorrelationPair {
+  column_a: string;
+  column_b: string;
+  correlation: number;
+}
+
+export interface CorrelationMatrixResult {
+  matrix_csv: string;
+  matrix: number[][];
+  columns: string[];
+  strongest_correlations: CorrelationPair[];
+  rows_analyzed: number;
+}
+
+function parseCsvToRows(csvContent: string): { headers: string[]; rows: string[][] } {
+  const lines = csvContent.trim().split("\n");
+  if (lines.length < 2) {
+    return { headers: parseCSVLine(lines[0] || ""), rows: [] };
+  }
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map((line) => parseCSVLine(line));
+  return { headers, rows };
+}
+
+function identifyNumericColumns(headers: string[], rows: string[][]): string[] {
+  return headers.filter((_, colIdx) => {
+    let numericCount = 0;
+    let total = 0;
+    for (const row of rows) {
+      const val = row[colIdx]?.trim();
+      if (val === undefined || val === "") continue;
+      total++;
+      if (!isNaN(Number(val))) numericCount++;
+    }
+    // Column is numeric if >50% of non-empty values parse as numbers
+    return total > 0 && numericCount / total > 0.5;
+  });
+}
+
+function pearsonCorrelation(xs: number[], ys: number[]): number {
+  // Pair up values, skip where either is NaN
+  const pairs: [number, number][] = [];
+  for (let i = 0; i < xs.length; i++) {
+    if (!isNaN(xs[i]) && !isNaN(ys[i])) {
+      pairs.push([xs[i], ys[i]]);
+    }
+  }
+  const n = pairs.length;
+  if (n < 2) return 0;
+
+  let sumX = 0, sumY = 0;
+  for (const [x, y] of pairs) { sumX += x; sumY += y; }
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+
+  let cov = 0, varX = 0, varY = 0;
+  for (const [x, y] of pairs) {
+    const dx = x - meanX;
+    const dy = y - meanY;
+    cov += dx * dy;
+    varX += dx * dx;
+    varY += dy * dy;
+  }
+
+  if (varX === 0 || varY === 0) return 0;
+  return cov / Math.sqrt(varX * varY);
+}
+
+export function flowCorrelationMatrix(input: CorrelationMatrixInput): CorrelationMatrixResult {
+  const { headers, rows } = parseCsvToRows(input.csv_content);
+
+  // Determine which columns to use
+  const allNumeric = identifyNumericColumns(headers, rows);
+  const selectedColumns = input.columns
+    ? input.columns.filter((c) => allNumeric.includes(c))
+    : allNumeric;
+
+  if (selectedColumns.length === 0) {
+    throw new Error("No numeric columns found in CSV data");
+  }
+
+  // Extract numeric data arrays
+  const colIndices = selectedColumns.map((c) => headers.indexOf(c));
+  const data: number[][] = colIndices.map((ci) =>
+    rows.map((row) => {
+      const val = row[ci]?.trim();
+      return val === undefined || val === "" ? NaN : Number(val);
+    })
+  );
+
+  // Compute correlation matrix
+  const n = selectedColumns.length;
+  const matrix: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
+    matrix[i][i] = 1.0;
+    for (let j = i + 1; j < n; j++) {
+      const r = pearsonCorrelation(data[i], data[j]);
+      const rounded = Math.round(r * 10000) / 10000;
+      matrix[i][j] = rounded;
+      matrix[j][i] = rounded;
+    }
+  }
+
+  // Build matrix CSV
+  const matrixHeader = ["column", ...selectedColumns].join(",");
+  const matrixRows = selectedColumns.map((col, i) =>
+    [csvEscapeField(col), ...matrix[i].map(String)].join(",")
+  );
+  const matrixCsv = [matrixHeader, ...matrixRows].join("\n");
+
+  // Find strongest correlations (off-diagonal)
+  const pairs: CorrelationPair[] = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      pairs.push({
+        column_a: selectedColumns[i],
+        column_b: selectedColumns[j],
+        correlation: matrix[i][j],
+      });
+    }
+  }
+  pairs.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
+
+  return {
+    matrix_csv: matrixCsv,
+    matrix,
+    columns: selectedColumns,
+    strongest_correlations: pairs.slice(0, 10),
+    rows_analyzed: rows.length,
+  };
+}
+
+// ============================================================================
+// TOOL 28: flow_cluster_data — K-MEANS CLUSTERING
+// ============================================================================
+
+export interface ClusterDataInput {
+  csv_content: string;
+  /** Number of clusters. If omitted, auto-selected via silhouette scoring (2-8). */
+  k?: number;
+  /** Columns to use for clustering. If omitted, all numeric columns are used. */
+  columns?: string[];
+  /** Maximum iterations for k-means (default 100). */
+  max_iterations?: number;
+}
+
+export interface ClusterCentroid {
+  cluster: number;
+  size: number;
+  center: Record<string, number>;
+}
+
+export interface ClusterDataResult {
+  csv: string;
+  k: number;
+  rows: number;
+  columns_used: string[];
+  centroids: ClusterCentroid[];
+  silhouette_score: number;
+}
+
+function euclideanDistance(a: number[], b: number[]): number {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) {
+    const d = a[i] - b[i];
+    sum += d * d;
+  }
+  return Math.sqrt(sum);
+}
+
+function kMeans(
+  data: number[][],
+  k: number,
+  maxIter: number
+): { assignments: number[]; centroids: number[][] } {
+  const n = data.length;
+  const dims = data[0].length;
+
+  // Initialize centroids using k-means++ style (spread out initial picks)
+  const centroids: number[][] = [];
+  const usedIndices = new Set<number>();
+
+  // First centroid: random
+  let idx = Math.floor(Math.random() * n);
+  centroids.push([...data[idx]]);
+  usedIndices.add(idx);
+
+  // Remaining centroids: pick point farthest from existing centroids
+  for (let c = 1; c < k; c++) {
+    let maxDist = -1;
+    let bestIdx = 0;
+    for (let i = 0; i < n; i++) {
+      if (usedIndices.has(i)) continue;
+      let minDistToCentroid = Infinity;
+      for (const centroid of centroids) {
+        const d = euclideanDistance(data[i], centroid);
+        if (d < minDistToCentroid) minDistToCentroid = d;
+      }
+      if (minDistToCentroid > maxDist) {
+        maxDist = minDistToCentroid;
+        bestIdx = i;
+      }
+    }
+    centroids.push([...data[bestIdx]]);
+    usedIndices.add(bestIdx);
+  }
+
+  const assignments = new Array(n).fill(0);
+
+  for (let iter = 0; iter < maxIter; iter++) {
+    // Assign each point to nearest centroid
+    let changed = false;
+    for (let i = 0; i < n; i++) {
+      let minDist = Infinity;
+      let bestCluster = 0;
+      for (let c = 0; c < k; c++) {
+        const d = euclideanDistance(data[i], centroids[c]);
+        if (d < minDist) {
+          minDist = d;
+          bestCluster = c;
+        }
+      }
+      if (assignments[i] !== bestCluster) {
+        assignments[i] = bestCluster;
+        changed = true;
+      }
+    }
+
+    if (!changed) break;
+
+    // Recompute centroids
+    const sums: number[][] = Array.from({ length: k }, () => new Array(dims).fill(0));
+    const counts = new Array(k).fill(0);
+    for (let i = 0; i < n; i++) {
+      const c = assignments[i];
+      counts[c]++;
+      for (let d = 0; d < dims; d++) {
+        sums[c][d] += data[i][d];
+      }
+    }
+    for (let c = 0; c < k; c++) {
+      if (counts[c] > 0) {
+        for (let d = 0; d < dims; d++) {
+          centroids[c][d] = sums[c][d] / counts[c];
+        }
+      }
+    }
+  }
+
+  return { assignments, centroids };
+}
+
+function silhouetteScore(data: number[][], assignments: number[], k: number): number {
+  if (k <= 1 || data.length <= k) return 0;
+
+  const n = data.length;
+  let totalScore = 0;
+
+  for (let i = 0; i < n; i++) {
+    const myCluster = assignments[i];
+
+    // a(i) = mean distance to points in same cluster
+    let aSum = 0, aCount = 0;
+    for (let j = 0; j < n; j++) {
+      if (j !== i && assignments[j] === myCluster) {
+        aSum += euclideanDistance(data[i], data[j]);
+        aCount++;
+      }
+    }
+    const a = aCount > 0 ? aSum / aCount : 0;
+
+    // b(i) = min mean distance to points in other clusters
+    let b = Infinity;
+    for (let c = 0; c < k; c++) {
+      if (c === myCluster) continue;
+      let bSum = 0, bCount = 0;
+      for (let j = 0; j < n; j++) {
+        if (assignments[j] === c) {
+          bSum += euclideanDistance(data[i], data[j]);
+          bCount++;
+        }
+      }
+      if (bCount > 0) {
+        const meanDist = bSum / bCount;
+        if (meanDist < b) b = meanDist;
+      }
+    }
+    if (b === Infinity) b = 0;
+
+    const s = Math.max(a, b) > 0 ? (b - a) / Math.max(a, b) : 0;
+    totalScore += s;
+  }
+
+  return totalScore / n;
+}
+
+export function flowClusterData(input: ClusterDataInput): ClusterDataResult {
+  const { headers, rows } = parseCsvToRows(input.csv_content);
+  const maxIter = input.max_iterations ?? 100;
+
+  // Determine columns
+  const allNumeric = identifyNumericColumns(headers, rows);
+  const selectedColumns = input.columns
+    ? input.columns.filter((c) => headers.includes(c))
+    : allNumeric;
+
+  if (selectedColumns.length === 0) {
+    throw new Error("No valid numeric columns found for clustering");
+  }
+
+  // Check requested columns are numeric
+  if (input.columns) {
+    for (const col of input.columns) {
+      if (!headers.includes(col)) {
+        throw new Error(`Column "${col}" not found in CSV`);
+      }
+    }
+  }
+
+  const colIndices = selectedColumns.map((c) => headers.indexOf(c));
+
+  // Extract numeric data, handling missing values
+  const validRowIndices: number[] = [];
+  const data: number[][] = [];
+
+  for (let r = 0; r < rows.length; r++) {
+    const point: number[] = [];
+    let valid = true;
+    for (const ci of colIndices) {
+      const val = rows[r][ci]?.trim();
+      if (val === undefined || val === "" || isNaN(Number(val))) {
+        valid = false;
+        break;
+      }
+      point.push(Number(val));
+    }
+    if (valid) {
+      validRowIndices.push(r);
+      data.push(point);
+    }
+  }
+
+  if (data.length < 2) {
+    throw new Error("Need at least 2 valid data points for clustering");
+  }
+
+  // Normalize data for clustering (z-score per column)
+  const dims = selectedColumns.length;
+  const means = new Array(dims).fill(0);
+  const stds = new Array(dims).fill(0);
+
+  for (const point of data) {
+    for (let d = 0; d < dims; d++) means[d] += point[d];
+  }
+  for (let d = 0; d < dims; d++) means[d] /= data.length;
+
+  for (const point of data) {
+    for (let d = 0; d < dims; d++) stds[d] += (point[d] - means[d]) ** 2;
+  }
+  for (let d = 0; d < dims; d++) stds[d] = Math.sqrt(stds[d] / data.length) || 1;
+
+  const normalizedData = data.map((point) =>
+    point.map((val, d) => (val - means[d]) / stds[d])
+  );
+
+  // Determine k
+  let bestK = input.k ?? 2;
+  let bestScore = -1;
+
+  if (input.k === undefined) {
+    // Auto-select k using silhouette scoring
+    const maxK = Math.min(8, Math.floor(data.length / 2));
+    for (let tryK = 2; tryK <= maxK; tryK++) {
+      const { assignments } = kMeans(normalizedData, tryK, maxIter);
+      const score = silhouetteScore(normalizedData, assignments, tryK);
+      if (score > bestScore) {
+        bestScore = score;
+        bestK = tryK;
+      }
+    }
+  }
+
+  // Final clustering with best k
+  const { assignments, centroids: normalizedCentroids } = kMeans(normalizedData, bestK, maxIter);
+
+  // Denormalize centroids
+  const centroids = normalizedCentroids.map((c) =>
+    c.map((val, d) => val * stds[d] + means[d])
+  );
+
+  // Compute distances to centroids (in original space)
+  const distances: number[] = [];
+  for (let i = 0; i < data.length; i++) {
+    distances.push(euclideanDistance(data[i], centroids[assignments[i]]));
+  }
+
+  // Build output CSV: original columns + _cluster + _distance_to_centroid
+  const outHeaders = [...headers, "_cluster", "_distance_to_centroid"];
+  const outLines = [outHeaders.join(",")];
+
+  // Map valid rows back to original row indices
+  const clusterMap = new Map<number, { cluster: number; distance: number }>();
+  for (let i = 0; i < validRowIndices.length; i++) {
+    clusterMap.set(validRowIndices[i], {
+      cluster: assignments[i],
+      distance: Math.round(distances[i] * 10000) / 10000,
+    });
+  }
+
+  for (let r = 0; r < rows.length; r++) {
+    const info = clusterMap.get(r);
+    if (info) {
+      const escapedFields = rows[r].map((f) => csvEscapeField(f));
+      outLines.push([...escapedFields, String(info.cluster), String(info.distance)].join(","));
+    }
+  }
+
+  // Build centroid metadata
+  const centroidMeta: ClusterCentroid[] = [];
+  for (let c = 0; c < bestK; c++) {
+    const size = assignments.filter((a) => a === c).length;
+    const center: Record<string, number> = {};
+    for (let d = 0; d < dims; d++) {
+      center[selectedColumns[d]] = Math.round(centroids[c][d] * 10000) / 10000;
+    }
+    centroidMeta.push({ cluster: c, size, center });
+  }
+
+  // Compute final silhouette score
+  const finalSilhouette = bestK > 1
+    ? silhouetteScore(normalizedData, assignments, bestK)
+    : 0;
+
+  return {
+    csv: outLines.join("\n"),
+    k: bestK,
+    rows: validRowIndices.length,
+    columns_used: selectedColumns,
+    centroids: centroidMeta,
+    silhouette_score: Math.round(finalSilhouette * 10000) / 10000,
+  };
 }

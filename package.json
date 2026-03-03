@@ -1,7 +1,7 @@
 {
   "name": "flow-immersive-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Flow Immersive 3D visualization — 25 tools for data analysis, network graphs, force layout pre-computation, geographic mapping, anomaly detection, time series animation, NLP-to-viz, and direct API integration. Browse 4000+ public flows, upload datasets, export standalone HTML 3D viewers.",
+  "description": "MCP server for Flow Immersive 3D visualization — 28 tools for data analysis, network graphs, force layout pre-computation, geographic mapping, anomaly detection, time series animation, NLP-to-viz, correlation analysis, clustering, live data, and direct API integration. Browse 4000+ public flows, upload datasets, export standalone HTML 3D viewers.",
   "main": "dist/index.js",
   "type": "module",
   "bin": {

@@ -1,14 +1,13 @@
 /**
- * Tests for tools-v4.ts (flow_live_data)
+ * Tests for tools-v4.ts (flow_live_data, flow_correlation_matrix, flow_cluster_data)
  *
- * Unit tests for the live data fetching tool.
- * Network-dependent tests are marked with .skip for CI —
- * they pass when run manually with network access.
+ * Unit tests for live data, correlation matrix, and clustering tools.
+ * Network-dependent tests are marked with .skip for CI.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData } from "./tools-v4.js";
-import type { LiveDataInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -264,5 +263,226 @@ describe("flow_live_data", () => {
       expect(lines.length).toBe(2); // header + 1 data row
       expect(lines[0]).toBe("id,latitude,longitude,magnitude,depth_km,place,time,type,significance,tsunami_alert");
     });
+  });
+});
+
+// ============================================================================
+// TOOL 27: flow_correlation_matrix
+// ============================================================================
+
+describe("flow_correlation_matrix", () => {
+  const SIMPLE_CSV = [
+    "name,height,weight,age",
+    "Alice,165,55,30",
+    "Bob,180,80,35",
+    "Carol,170,65,28",
+    "Dave,175,75,40",
+    "Eve,160,50,25",
+  ].join("\n");
+
+  it("computes pairwise correlations for numeric columns", () => {
+    const result = flowCorrelationMatrix({ csv_content: SIMPLE_CSV });
+    expect(result.columns).toContain("height");
+    expect(result.columns).toContain("weight");
+    expect(result.columns).toContain("age");
+    // Matrix CSV should have a header row + one row per column
+    const lines = result.matrix_csv.split("\n");
+    expect(lines.length).toBe(4); // header + 3 numeric columns
+    expect(lines[0]).toBe("column,height,weight,age");
+    // Diagonal should be 1.0
+    expect(result.matrix[0][0]).toBeCloseTo(1.0);
+    expect(result.matrix[1][1]).toBeCloseTo(1.0);
+    expect(result.matrix[2][2]).toBeCloseTo(1.0);
+  });
+
+  it("correlations are between -1 and 1", () => {
+    const result = flowCorrelationMatrix({ csv_content: SIMPLE_CSV });
+    for (const row of result.matrix) {
+      for (const val of row) {
+        expect(val).toBeGreaterThanOrEqual(-1.0);
+        expect(val).toBeLessThanOrEqual(1.0);
+      }
+    }
+  });
+
+  it("height and weight should be positively correlated", () => {
+    const result = flowCorrelationMatrix({ csv_content: SIMPLE_CSV });
+    // height is index 0, weight is index 1
+    expect(result.matrix[0][1]).toBeGreaterThan(0.5);
+  });
+
+  it("matrix is symmetric", () => {
+    const result = flowCorrelationMatrix({ csv_content: SIMPLE_CSV });
+    const n = result.matrix.length;
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        expect(result.matrix[i][j]).toBeCloseTo(result.matrix[j][i]);
+      }
+    }
+  });
+
+  it("filters to specified columns only", () => {
+    const result = flowCorrelationMatrix({
+      csv_content: SIMPLE_CSV,
+      columns: ["height", "weight"],
+    });
+    expect(result.columns).toEqual(["height", "weight"]);
+    expect(result.matrix.length).toBe(2);
+    expect(result.matrix[0].length).toBe(2);
+  });
+
+  it("reports strongest correlations", () => {
+    const result = flowCorrelationMatrix({ csv_content: SIMPLE_CSV });
+    expect(result.strongest_correlations.length).toBeGreaterThan(0);
+    for (const corr of result.strongest_correlations) {
+      expect(corr).toHaveProperty("column_a");
+      expect(corr).toHaveProperty("column_b");
+      expect(corr).toHaveProperty("correlation");
+      expect(corr.column_a).not.toBe(corr.column_b);
+    }
+  });
+
+  it("handles CSV with only one numeric column", () => {
+    const csv = "name,value\nA,1\nB,2\nC,3";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.columns).toEqual(["value"]);
+    expect(result.matrix).toEqual([[1.0]]);
+  });
+
+  it("throws on CSV with no numeric columns", () => {
+    const csv = "name,color\nAlice,red\nBob,blue";
+    expect(() => flowCorrelationMatrix({ csv_content: csv })).toThrow("No numeric columns");
+  });
+
+  it("handles missing/NaN values gracefully", () => {
+    const csv = "a,b\n1,2\n3,\n5,6\n,8";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.columns).toEqual(["a", "b"]);
+    // Should still compute correlation from valid pairs
+    expect(result.matrix[0][0]).toBeCloseTo(1.0);
+  });
+
+  it("perfectly correlated data returns r=1.0", () => {
+    const csv = "x,y\n1,2\n2,4\n3,6\n4,8\n5,10";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.matrix[0][1]).toBeCloseTo(1.0);
+  });
+
+  it("perfectly inversely correlated data returns r=-1.0", () => {
+    const csv = "x,y\n1,10\n2,8\n3,6\n4,4\n5,2";
+    const result = flowCorrelationMatrix({ csv_content: csv });
+    expect(result.matrix[0][1]).toBeCloseTo(-1.0);
+  });
+});
+
+// ============================================================================
+// TOOL 28: flow_cluster_data
+// ============================================================================
+
+describe("flow_cluster_data", () => {
+  // Three clear clusters
+  const CLUSTER_CSV = [
+    "id,x,y",
+    "A,1,1",
+    "B,1.1,1.2",
+    "C,0.9,0.8",
+    "D,10,10",
+    "E,10.1,10.2",
+    "F,9.9,9.8",
+    "G,20,20",
+    "H,20.1,20.2",
+    "I,19.9,19.8",
+  ].join("\n");
+
+  it("adds _cluster column to output CSV", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["x", "y"] });
+    expect(result.csv).toContain("_cluster");
+    const lines = result.csv.split("\n");
+    const header = lines[0].split(",");
+    expect(header).toContain("_cluster");
+    expect(header).toContain("_distance_to_centroid");
+  });
+
+  it("assigns correct number of clusters", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["x", "y"] });
+    const uniqueClusters = new Set<string>();
+    const lines = result.csv.split("\n").slice(1);
+    const clusterIdx = result.csv.split("\n")[0].split(",").indexOf("_cluster");
+    for (const line of lines) {
+      if (line.trim()) {
+        uniqueClusters.add(line.split(",")[clusterIdx]);
+      }
+    }
+    expect(uniqueClusters.size).toBe(3);
+  });
+
+  it("nearby points get same cluster", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["x", "y"] });
+    const lines = result.csv.split("\n").slice(1).filter(l => l.trim());
+    const clusterIdx = result.csv.split("\n")[0].split(",").indexOf("_cluster");
+    // Points A, B, C (indices 0, 1, 2) should share a cluster
+    const c0 = lines[0].split(",")[clusterIdx];
+    const c1 = lines[1].split(",")[clusterIdx];
+    const c2 = lines[2].split(",")[clusterIdx];
+    expect(c0).toBe(c1);
+    expect(c1).toBe(c2);
+  });
+
+  it("returns cluster centroids", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["x", "y"] });
+    expect(result.centroids.length).toBe(3);
+    for (const centroid of result.centroids) {
+      expect(centroid).toHaveProperty("cluster");
+      expect(centroid).toHaveProperty("size");
+      expect(centroid).toHaveProperty("center");
+      expect(centroid.size).toBeGreaterThan(0);
+    }
+  });
+
+  it("auto-selects k when not specified", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, columns: ["x", "y"] });
+    // Should find 2-4 clusters for this clearly separated data
+    expect(result.k).toBeGreaterThanOrEqual(2);
+    expect(result.k).toBeLessThanOrEqual(4);
+  });
+
+  it("returns proper metadata", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["x", "y"] });
+    expect(result.k).toBe(3);
+    expect(result.rows).toBe(9);
+    expect(result.columns_used).toEqual(["x", "y"]);
+  });
+
+  it("handles single cluster (k=1)", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 1, columns: ["x", "y"] });
+    expect(result.k).toBe(1);
+    expect(result.centroids.length).toBe(1);
+    expect(result.centroids[0].size).toBe(9);
+  });
+
+  it("preserves original columns in output", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["x", "y"] });
+    const header = result.csv.split("\n")[0].split(",");
+    expect(header).toContain("id");
+    expect(header).toContain("x");
+    expect(header).toContain("y");
+  });
+
+  it("throws when columns not found", () => {
+    expect(() =>
+      flowClusterData({ csv_content: CLUSTER_CSV, k: 3, columns: ["nonexistent"] })
+    ).toThrow();
+  });
+
+  it("auto-detects numeric columns when columns not specified", () => {
+    const result = flowClusterData({ csv_content: CLUSTER_CSV, k: 3 });
+    expect(result.columns_used).toEqual(["x", "y"]);
+  });
+
+  it("handles data with missing values", () => {
+    const csv = "id,x,y\nA,1,1\nB,,2\nC,3,3\nD,4,4\nE,5,5";
+    const result = flowClusterData({ csv_content: csv, k: 2, columns: ["x", "y"] });
+    // Should handle missing values (skip or fill with mean)
+    expect(result.rows).toBeGreaterThanOrEqual(4);
   });
 });

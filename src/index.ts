@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData } from "./tools-v4.js";
-import type { LiveDataInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1520,6 +1520,76 @@ Output: CSV with latitude/longitude ready for Flow's 3D Geographic Scatter templ
           required: ["source"],
         },
       },
+
+      // Tool 27: flow_correlation_matrix
+      {
+        name: "flow_correlation_matrix",
+        description: `Compute pairwise Pearson correlation coefficients for numeric columns in CSV data and output a correlation matrix ready for heatmap visualization in Flow.
+
+INVOKE THIS TOOL WHEN:
+- User wants to find relationships between numeric variables
+- User asks for correlation analysis, correlation matrix, or heatmap of correlations
+- User says "which columns are correlated" or "find relationships in my data"
+- User wants to explore multivariate data before choosing visualization type
+- User asks about feature selection or variable importance for their dataset
+
+Input: CSV data with numeric columns. Optionally specify which columns to include.
+Output: Correlation matrix as CSV, raw matrix values, and ranked list of strongest correlations.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with headers",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Specific columns to correlate (optional — defaults to all numeric columns)",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
+
+      // Tool 28: flow_cluster_data
+      {
+        name: "flow_cluster_data",
+        description: `Partition CSV data into clusters using k-means algorithm with automatic k selection via silhouette scoring. Adds _cluster and _distance_to_centroid columns for 3D color-coded visualization in Flow.
+
+INVOKE THIS TOOL WHEN:
+- User wants to find groups, segments, or clusters in their data
+- User asks for segmentation, clustering, or grouping of data points
+- User says "cluster this data", "find natural groups", or "segment my customers"
+- User wants color-coded clusters on a 3D scatter plot
+- User asks for customer segmentation, market segmentation, or data partitioning
+
+Input: CSV data with numeric columns. Optionally specify k (number of clusters) and columns to use.
+Output: Original CSV with _cluster and _distance_to_centroid columns added, plus centroid metadata.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with headers",
+            },
+            k: {
+              type: "number",
+              description: "Number of clusters (optional — auto-selected via silhouette scoring if omitted, range 2-8)",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to use for clustering (optional — defaults to all numeric columns)",
+            },
+            max_iterations: {
+              type: "number",
+              description: "Maximum k-means iterations (default 100)",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
     ],
   };
 });
@@ -1838,6 +1908,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_live_data": {
       try {
         const result = await flowLiveData(args as unknown as LiveDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_correlation_matrix": {
+      try {
+        const result = flowCorrelationMatrix(args as unknown as CorrelationMatrixInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_cluster_data": {
+      try {
+        const result = flowClusterData(args as unknown as ClusterDataInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -4839,7 +4927,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 26, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 28, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
