@@ -4816,11 +4816,30 @@ async function main() {
 
     const transports = new Map<string, StreamableHTTPServerTransport>();
 
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": process.env.MCP_CORS_ORIGIN || "*",
+      "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, mcp-session-id, Accept",
+      "Access-Control-Expose-Headers": "mcp-session-id",
+    };
+
     const httpServer = createHttpServer(async (req: IncomingMessage, res: ServerResponse) => {
+      // CORS preflight
+      if (req.method === "OPTIONS") {
+        res.writeHead(204, corsHeaders);
+        res.end();
+        return;
+      }
+
+      // Set CORS headers on all responses
+      for (const [key, value] of Object.entries(corsHeaders)) {
+        res.setHeader(key, value);
+      }
+
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 25, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 26, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

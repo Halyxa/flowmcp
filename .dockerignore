@@ -1,0 +1,13 @@
+node_modules
+src
+test
+scripts
+data
+research
+demos
+docs
+*.md
+*.jsonl
+*.test.ts
+.claude*
+.git
