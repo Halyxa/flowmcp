@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -2965,6 +2965,192 @@ describe("flowWindowFunctions", () => {
       value_column: "missing",
       window_size: 2,
       functions: ["mean"],
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 53: flow_encode_categorical
+// ============================================================================
+
+describe("flowEncodeCategorical", () => {
+  it("label-encodes a column with sorted codes", () => {
+    const csv = "color,size\nred,S\nblue,M\ngreen,L\nred,S";
+    const result = flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["color"],
+      method: "label",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("color_encoded");
+    // blue=0, green=1, red=2 (alphabetical)
+    expect(result.row_count).toBe(4);
+    expect(result.mappings).toBeTruthy();
+  });
+
+  it("one-hot encodes a column", () => {
+    const csv = "color,val\nred,1\nblue,2\nred,3";
+    const result = flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["color"],
+      method: "onehot",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("color_blue");
+    expect(header).toContain("color_red");
+    // One-hot: 0 or 1 per category column
+    const lines = result.csv.trim().split("\n");
+    expect(lines.length).toBe(4); // header + 3 rows
+  });
+
+  it("encodes multiple columns", () => {
+    const csv = "a,b,c\nX,P,1\nY,Q,2\nX,P,3";
+    const result = flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["a", "b"],
+      method: "label",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a_encoded");
+    expect(header).toContain("b_encoded");
+  });
+
+  it("preserves original columns alongside encoded ones", () => {
+    const csv = "name,val\nAlice,10\nBob,20";
+    const result = flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["name"],
+      method: "label",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("name");
+    expect(header).toContain("name_encoded");
+    expect(header).toContain("val");
+  });
+
+  it("returns mapping of categories to codes", () => {
+    const csv = "fruit\napple\nbanana\ncherry";
+    const result = flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["fruit"],
+      method: "label",
+    });
+    expect(result.mappings.fruit).toBeTruthy();
+    expect(Object.keys(result.mappings.fruit).length).toBe(3);
+  });
+
+  it("defaults to label encoding", () => {
+    const csv = "x\na\nb";
+    const result = flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["x"],
+    });
+    expect(result.method).toBe("label");
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() => flowEncodeCategorical({
+      csv_content: csv,
+      columns: ["missing"],
+      method: "label",
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 54: flow_cumulative
+// ============================================================================
+
+describe("flowCumulative", () => {
+  it("computes cumulative sum", () => {
+    const csv = "day,sales\n1,10\n2,20\n3,30";
+    const result = flowCumulative({
+      csv_content: csv,
+      value_column: "sales",
+      functions: ["sum"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("sales_cumsum");
+    // Row 1: 10, Row 2: 30, Row 3: 60
+    expect(lines[1]).toContain("10");
+    expect(lines[2]).toContain("30");
+    expect(lines[3]).toContain("60");
+  });
+
+  it("computes cumulative min and max", () => {
+    const csv = "t,v\n1,5\n2,3\n3,8\n4,1";
+    const result = flowCumulative({
+      csv_content: csv,
+      value_column: "v",
+      functions: ["min", "max"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("v_cummin");
+    expect(header).toContain("v_cummax");
+    const lines = result.csv.trim().split("\n");
+    // Row 4: cummin=1, cummax=8
+    expect(lines[4]).toContain("1");
+    expect(lines[4]).toContain("8");
+  });
+
+  it("computes cumulative count", () => {
+    const csv = "x,y\na,1\nb,2\nc,3";
+    const result = flowCumulative({
+      csv_content: csv,
+      value_column: "y",
+      functions: ["count"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("y_cumcount");
+    // Row 3: count=3
+    expect(lines[3]).toContain("3");
+  });
+
+  it("computes multiple cumulative functions", () => {
+    const csv = "t,v\n1,10\n2,20\n3,30";
+    const result = flowCumulative({
+      csv_content: csv,
+      value_column: "v",
+      functions: ["sum", "min", "max", "count"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("v_cumsum");
+    expect(header).toContain("v_cummin");
+    expect(header).toContain("v_cummax");
+    expect(header).toContain("v_cumcount");
+  });
+
+  it("preserves all original columns", () => {
+    const csv = "a,b,c\n1,10,x\n2,20,y";
+    const result = flowCumulative({
+      csv_content: csv,
+      value_column: "b",
+      functions: ["sum"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a");
+    expect(header).toContain("b");
+    expect(header).toContain("c");
+  });
+
+  it("returns summary", () => {
+    const csv = "t,v\n1,10\n2,20";
+    const result = flowCumulative({
+      csv_content: csv,
+      value_column: "v",
+      functions: ["sum"],
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.row_count).toBe(2);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a\n1";
+    expect(() => flowCumulative({
+      csv_content: csv,
+      value_column: "missing",
+      functions: ["sum"],
     })).toThrow();
   });
 });

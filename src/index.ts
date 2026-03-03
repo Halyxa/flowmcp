@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2476,6 +2476,76 @@ Output: Original CSV with appended window function columns, row_count, window_si
           required: ["csv_content", "value_column", "window_size", "functions"],
         },
       },
+      // Tool 53: flow_encode_categorical
+      {
+        name: "flow_encode_categorical",
+        description: `Convert categorical text columns to numeric values using label encoding (alphabetical codes) or one-hot encoding (binary columns per category). Prepares categorical data for machine learning, statistical analysis, or numeric-only visualization templates.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "encode", "convert categories to numbers", "label encode", or "one-hot encode"
+- User needs to prepare text data for ML or statistical tools
+- User wants numeric representation of categorical columns
+- User asks to "dummy code" or "indicator variables" for categories
+
+Input: CSV data, columns to encode, method (label or onehot, default: label).
+Output: CSV with encoded columns, row_count, method, columns_encoded, mappings, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with categorical columns to encode",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Column names to encode",
+            },
+            method: {
+              type: "string",
+              enum: ["label", "onehot"],
+              description: "Encoding method: label (numeric codes) or onehot (binary columns). Default: label",
+            },
+          },
+          required: ["csv_content", "columns"],
+        },
+      },
+      // Tool 54: flow_cumulative
+      {
+        name: "flow_cumulative",
+        description: `Compute running cumulative aggregations (sum, min, max, count) over a numeric column. Transforms point-in-time measurements into cumulative series — essential for tracking totals over time, all-time records, or running counts.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "cumulative sum", "running total", "cumulative count", or "all-time high/low"
+- User wants to see "total to date" or "accumulated" values
+- User needs "cumulative distribution" or growth curves
+- User asks for "running count" or "year-to-date totals"
+
+Input: CSV data, value_column, and functions (sum/min/max/count).
+Output: Original CSV with appended cumulative columns, row_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data (rows should be in desired order, e.g., chronological)",
+            },
+            value_column: {
+              type: "string",
+              description: "Numeric column to compute cumulative values for",
+            },
+            functions: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["sum", "min", "max", "count"],
+              },
+              description: "Cumulative functions to compute",
+            },
+          },
+          required: ["csv_content", "value_column", "functions"],
+        },
+      },
     ],
   };
 });
@@ -3028,6 +3098,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_window_functions": {
       try {
         const result = flowWindowFunctions(args as unknown as WindowFunctionsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_encode_categorical": {
+      try {
+        const result = flowEncodeCategorical(args as unknown as EncodeCategoricalInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_cumulative": {
+      try {
+        const result = flowCumulative(args as unknown as CumulativeInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6029,7 +6117,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 52, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 54, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

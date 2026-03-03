@@ -3244,3 +3244,250 @@ export function flowWindowFunctions(input: WindowFunctionsInput): WindowFunction
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 53: flow_encode_categorical — LABEL OR ONE-HOT ENCODING
+// ============================================================================
+
+export interface EncodeCategoricalInput {
+  csv_content: string;
+  columns: string[];
+  method?: "label" | "onehot";
+}
+
+export interface EncodeCategoricalResult {
+  csv: string;
+  row_count: number;
+  method: string;
+  columns_encoded: string[];
+  mappings: Record<string, Record<string, number>>;
+  summary: string;
+}
+
+export function flowEncodeCategorical(input: EncodeCategoricalInput): EncodeCategoricalResult {
+  const { csv_content, columns, method = "label" } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+
+  // Validate columns exist
+  for (const col of columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+  const mappings: Record<string, Record<string, number>> = {};
+
+  if (method === "label") {
+    // For each column, get sorted unique values and assign numeric codes
+    const colIndices = columns.map(c => headers.indexOf(c));
+    const colMaps: Map<string, number>[] = [];
+
+    for (let ci = 0; ci < columns.length; ci++) {
+      const colName = columns[ci];
+      const idx = colIndices[ci];
+      const uniqueVals = [...new Set(rows.map(r => r[idx] || ""))].sort();
+      const mapping: Record<string, number> = {};
+      const codeMap = new Map<string, number>();
+      uniqueVals.forEach((v, i) => {
+        mapping[v] = i;
+        codeMap.set(v, i);
+      });
+      mappings[colName] = mapping;
+      colMaps.push(codeMap);
+    }
+
+    // Build output: original columns + encoded columns appended after each
+    const outHeaders = [...headers];
+    for (const col of columns) {
+      const insertIdx = outHeaders.indexOf(col) + 1;
+      outHeaders.splice(insertIdx, 0, `${col}_encoded`);
+    }
+
+    const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+    const outRows: string[] = [];
+
+    for (const row of rows) {
+      const outRow: string[] = [];
+      let colOffset = 0;
+      for (let i = 0; i < headers.length; i++) {
+        outRow.push(row[i] || "");
+        const colIdx = columns.indexOf(headers[i]);
+        if (colIdx >= 0) {
+          const code = colMaps[colIdx].get(row[i] || "") ?? 0;
+          outRow.push(String(code));
+          colOffset++;
+        }
+      }
+      outRows.push(outRow.map(v => csvEscapeField(v)).join(","));
+    }
+
+    const summary = `Label-encoded ${columns.length} column(s): ${columns.join(", ")} (${rows.length} rows).`;
+
+    return {
+      csv: [outHeaderLine, ...outRows].join("\n"),
+      row_count: rows.length,
+      method,
+      columns_encoded: columns,
+      mappings,
+      summary,
+    };
+  } else {
+    // One-hot encoding
+    const colIndices = columns.map(c => headers.indexOf(c));
+
+    // Collect unique values per column (sorted)
+    const colUniqueVals: string[][] = [];
+    for (let ci = 0; ci < columns.length; ci++) {
+      const idx = colIndices[ci];
+      const uniqueVals = [...new Set(rows.map(r => r[idx] || ""))].sort();
+      colUniqueVals.push(uniqueVals);
+      const mapping: Record<string, number> = {};
+      uniqueVals.forEach((v, i) => { mapping[v] = i; });
+      mappings[columns[ci]] = mapping;
+    }
+
+    // Build output headers: original (minus encoded columns) + one-hot columns
+    const outHeaders = headers.filter(h => !columns.includes(h));
+    for (let ci = 0; ci < columns.length; ci++) {
+      for (const val of colUniqueVals[ci]) {
+        outHeaders.push(`${columns[ci]}_${val}`);
+      }
+    }
+
+    const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+    const outRows: string[] = [];
+
+    for (const row of rows) {
+      const outRow: string[] = [];
+      // Non-encoded columns
+      for (let i = 0; i < headers.length; i++) {
+        if (!columns.includes(headers[i])) {
+          outRow.push(row[i] || "");
+        }
+      }
+      // One-hot columns
+      for (let ci = 0; ci < columns.length; ci++) {
+        const val = row[colIndices[ci]] || "";
+        for (const uv of colUniqueVals[ci]) {
+          outRow.push(val === uv ? "1" : "0");
+        }
+      }
+      outRows.push(outRow.map(v => csvEscapeField(v)).join(","));
+    }
+
+    const summary = `One-hot encoded ${columns.length} column(s): ${columns.join(", ")} (${rows.length} rows, ${outHeaders.length - headers.length + columns.length} new columns).`;
+
+    return {
+      csv: [outHeaderLine, ...outRows].join("\n"),
+      row_count: rows.length,
+      method,
+      columns_encoded: columns,
+      mappings,
+      summary,
+    };
+  }
+}
+
+// ============================================================================
+// TOOL 54: flow_cumulative — RUNNING CUMULATIVE AGGREGATIONS
+// ============================================================================
+
+export interface CumulativeInput {
+  csv_content: string;
+  value_column: string;
+  functions: ("sum" | "min" | "max" | "count")[];
+}
+
+export interface CumulativeResult {
+  csv: string;
+  row_count: number;
+  value_column: string;
+  functions_applied: string[];
+  summary: string;
+}
+
+export function flowCumulative(input: CumulativeInput): CumulativeResult {
+  const { csv_content, value_column, functions } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const valIdx = headers.indexOf(value_column);
+  if (valIdx === -1) throw new Error(`Value column "${value_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Extract numeric values
+  const values = rows.map(r => {
+    const v = Number(r[valIdx]);
+    return isNaN(v) ? null : v;
+  });
+
+  // Compute cumulative functions
+  const newColumns: Map<string, string[]> = new Map();
+
+  for (const fn of functions) {
+    const colName = `${value_column}_cum${fn}`;
+    const computed: string[] = [];
+
+    let cumSum = 0;
+    let cumMin = Infinity;
+    let cumMax = -Infinity;
+    let cumCount = 0;
+
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i];
+      if (v !== null) {
+        cumSum += v;
+        cumMin = Math.min(cumMin, v);
+        cumMax = Math.max(cumMax, v);
+        cumCount++;
+      }
+
+      switch (fn) {
+        case "sum":
+          computed.push(String(cumSum));
+          break;
+        case "min":
+          computed.push(cumCount > 0 ? String(cumMin) : "");
+          break;
+        case "max":
+          computed.push(cumCount > 0 ? String(cumMax) : "");
+          break;
+        case "count":
+          computed.push(String(cumCount));
+          break;
+      }
+    }
+
+    newColumns.set(colName, computed);
+  }
+
+  // Build output CSV
+  const newColNames = [...newColumns.keys()];
+  const outHeaders = [...headers, ...newColNames];
+  const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+
+  const outRows: string[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const originalCells = rows[i].map(v => csvEscapeField(v));
+    const newCells = newColNames.map(cn => csvEscapeField(newColumns.get(cn)![i]));
+    outRows.push([...originalCells, ...newCells].join(","));
+  }
+
+  const summary = `Applied cumulative ${functions.join(", ")} to "${value_column}" (${rows.length} rows).`;
+
+  return {
+    csv: [outHeaderLine, ...outRows].join("\n"),
+    row_count: rows.length,
+    value_column,
+    functions_applied: [...functions],
+    summary,
+  };
+}
