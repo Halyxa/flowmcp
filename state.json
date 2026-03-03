@@ -1,0 +1,89 @@
+{
+  "status": "active",
+  "last_action": "stress-test-floor-update",
+  "timestamp": "2026-03-03T10:15:00Z",
+  "being": "flowmcp",
+  "session": "stress-test-session",
+  "tools_count": 25,
+  "tests_count": 430,
+  "test_breakdown": {
+    "unit": 135,
+    "integration": 27,
+    "benchmark": 7,
+    "perf_profile": 30,
+    "search": 23,
+    "v2": 36,
+    "v3": 33,
+    "smoke": 15,
+    "edge_cases_v2": 110,
+    "perf_profile_v2": 29
+  },
+  "confidence": 5,
+  "blocked": [
+    "npm-publish-token",
+    "epyc-transport"
+  ],
+  "compaction_count": 8,
+  "phase1_completed": {
+    "sapir_whorf_tool_descriptions": "all 18 tools rewritten with active investigation verbs",
+    "api_drift_fixes": "9 failures fixed \u2014 api.flow.gl migrated to core.flow.gl/flow-api/",
+    "claude_md_spines": "10 spines upgraded to IF/THEN/BECAUSE format",
+    "graph_ingestion": "119 research docs structural-indexed into provisor_memory",
+    "github_published": "https://github.com/Halyxa/flowmcp"
+  },
+  "phase2_completed": {
+    "skills_recovered": "16 Voyager skills restored to /hive/flowmcp/skills/",
+    "thinking_methods": "OODA+L, TOTE, SRRQSI++, Omniscalar, Brier scoring \u2014 integrated into spines",
+    "competitive_research": "OpenClaw, Devin, OpenHands, Cursor, Aider analyzed",
+    "ooda_l_integrated": "SPINE-05/07/08/09 upgraded with OODA+L",
+    "event_sourcing": "events.jsonl (11 events), predictions.jsonl (Brier 0.0013)",
+    "session_hooks": "pre-compact.sh + stop.sh registered in .claude/settings.json",
+    "ci_loop_closure": "SPINE-03 rewritten as full CI pipeline (build+test+smoke+ci)",
+    "memory_files": "7 topic files in memory/ (thinking-methods, self-model, competitive-intel, apex-research-protocol, flow-market-intel, optimizer-zoo, MEMORY.md)",
+    "description_evolution": "79 gold queries, 18-tool gene pool (6912 variants), fitness evaluator (baseline 50.4% F1)",
+    "tools_19_25_spec": "7 new tools designed at research/tools-19-25-spec.md",
+    "optimizer_zoo_spec": "Optuna/DEAP/CMA-ES adaptation at research/optuna-genetic-adaptation.md",
+    "flow_market_intel": "$221B market, Magic Leap partnership, Virtualitics competitor"
+  },
+  "phase2_lost_to_compaction": [
+    "apex-flow-research agent (web research via apex protocol)",
+    "omniscalar-flow-billion agent (SRRQSI++ 48+ strategy)"
+  ],
+  "phase3_completed": {
+    "tools_19_25": "All 7 new tools implemented and merged \u2014 25 tools total",
+    "ax_hive_architecture": "4 deliverables: architecture doc, shared skill, self-apply script, memory file",
+    "teacher_model_upgraded": "Ax teacher model Sonnet \u2192 Opus per halyx directive"
+  },
+  "next_actions": [
+    "Update CLAUDE.md tools table (18\u219225)",
+    "Git commit all new tools",
+    "Run Ax optimization (scripts/ax-optimize-descriptions.ts)",
+    "npm publish + MCP Registry (blocked on auth token)"
+  ],
+  "key_files": {
+    "tools_spec": "research/tools-19-25-spec.md",
+    "optimizer_spec": "research/optuna-genetic-adaptation.md",
+    "gold_queries": "test/gold-queries.json",
+    "gene_pool": "data/description-genes.json",
+    "fitness_evaluator": "scripts/evaluate-descriptions.mjs",
+    "events": "events.jsonl",
+    "predictions": "predictions.jsonl",
+    "ax_architecture": "research/ax-hive-architecture.md",
+    "ax_shared_skill": "/hive/shared/skills/ax-optimize.md",
+    "ax_self_apply": "scripts/ax-optimize-descriptions.ts",
+    "ax_memory": "memory/ax-integration.md",
+    "tools_search": "src/tools-search.ts",
+    "tools_v2": "src/tools-v2.ts",
+    "tools_v3": "src/tools-v3.ts"
+  },
+  "conversations": {
+    "current_session": "/hive/flowmcp/.claude-jason/projects/-hive-flowmcp/b384f54e-d304-4460-a47c-c2d81fb56354.jsonl",
+    "all_sessions_dir": "/hive/flowmcp/.claude-jason/projects/-hive-flowmcp/"
+  },
+  "session_ended": "2026-03-03T09:38:06Z",
+  "last_session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
+  "session_summary": "stress-test-session, 430 tests, 25 tools, 8 compactions",
+  "session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
+  "context_tokens_at_flush": 2808677,
+  "tests_count_at_flush": "430"
+}
