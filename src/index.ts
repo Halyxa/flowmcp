@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1871,6 +1871,75 @@ Output: Transposed CSV with row_count, column_count, and summary.`,
           required: ["csv_content"],
         },
       },
+      // Tool 37: flow_sample_data
+      {
+        name: "flow_sample_data",
+        description: `Draw a representative sample from a large CSV dataset using smart sampling methods: random, first-N, every-Nth, or stratified by category. Reduces dataset size while preserving data distribution characteristics for faster visualization and analysis.
+
+INVOKE THIS TOOL WHEN:
+- User has a large dataset and needs a smaller representative subset
+- User asks to "sample", "downsample", "reduce rows", or "take a subset"
+- User wants stratified sampling to preserve category proportions
+- User needs to preview or prototype a visualization with fewer data points
+- Dataset is too large for effective 3D visualization (>50k points)
+
+Input: CSV data, number of rows (n), sampling method (random|first|every_nth|stratified), optional stratify_column.
+Output: Sampled CSV with sampled_rows, total_rows, method, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to sample from",
+            },
+            n: {
+              type: "number",
+              description: "Number of rows to sample",
+            },
+            method: {
+              type: "string",
+              enum: ["random", "first", "every_nth", "stratified"],
+              description: "Sampling method: random (uniform), first (top-N), every_nth (systematic), stratified (proportional by category)",
+            },
+            stratify_column: {
+              type: "string",
+              description: "Column to stratify by (required for stratified method)",
+            },
+          },
+          required: ["csv_content", "n", "method"],
+        },
+      },
+
+      // Tool 38: flow_column_stats
+      {
+        name: "flow_column_stats",
+        description: `Compute comprehensive descriptive statistics for numeric columns in a CSV dataset: count, mean, median, standard deviation, min, max, quartiles (Q1/Q3), range, and missing value count. Auto-detects numeric columns or accepts a specific column list. Essential for understanding data distributions before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "statistics", "summary stats", "describe", or "distribution" of their data
+- User wants to understand the range, spread, or central tendency of numeric columns
+- User needs to identify outliers or data quality issues before visualization
+- User asks "what does my data look like?" or "show me the numbers"
+- Pre-visualization data profiling to choose appropriate scales and axes
+
+Input: CSV data and optional column list (auto-detects numeric columns if omitted).
+Output: Per-column stats (count, mean, median, std, min, max, q1, q3, range, missing) as CSV and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to analyze",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Specific columns to compute stats for (optional — auto-detects numeric columns if omitted)",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
     ],
   };
 });
@@ -2279,6 +2348,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_transpose_data": {
       try {
         const result = flowTransposeData(args as unknown as TransposeDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_sample_data": {
+      try {
+        const result = flowSampleData(args as unknown as SampleDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_column_stats": {
+      try {
+        const result = flowColumnStats(args as unknown as ColumnStatsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5280,7 +5367,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 36, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 38, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

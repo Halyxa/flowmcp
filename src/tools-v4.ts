@@ -1646,3 +1646,213 @@ export function flowTransposeData(input: TransposeDataInput): TransposeDataResul
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 37: flow_sample_data — SMART SAMPLING FOR LARGE DATASETS
+// ============================================================================
+
+export interface SampleDataInput {
+  csv_content: string;
+  /** Number of rows to sample */
+  n: number;
+  /** Sampling method */
+  method: "random" | "first" | "every_nth" | "stratified";
+  /** Column to stratify by (required for stratified method) */
+  stratify_column?: string;
+}
+
+export interface SampleDataResult {
+  csv: string;
+  sampled_rows: number;
+  total_rows: number;
+  method: string;
+  summary: string;
+}
+
+export function flowSampleData(input: SampleDataInput): SampleDataResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  const n = Math.min(input.n, rows.length);
+
+  let sampled: string[][];
+
+  switch (input.method) {
+    case "first":
+      sampled = rows.slice(0, n);
+      break;
+
+    case "every_nth": {
+      const step = Math.max(1, Math.floor(rows.length / n));
+      sampled = [];
+      for (let i = 0; i < rows.length && sampled.length < n; i += step) {
+        sampled.push(rows[i]);
+      }
+      break;
+    }
+
+    case "stratified": {
+      const stratCol = input.stratify_column;
+      if (!stratCol || !headers.includes(stratCol)) {
+        throw new Error(`Stratify column "${stratCol}" not found. Available: ${headers.join(", ")}`);
+      }
+      const colIdx = headers.indexOf(stratCol);
+      const groups = new Map<string, string[][]>();
+      for (const row of rows) {
+        const key = row[colIdx];
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(row);
+      }
+      // Proportional sampling per group
+      sampled = [];
+      const groupCount = groups.size;
+      for (const [, groupRows] of groups) {
+        const groupN = Math.max(1, Math.round((groupRows.length / rows.length) * n));
+        // Random sample within group
+        const shuffled = [...groupRows].sort(() => Math.random() - 0.5);
+        sampled.push(...shuffled.slice(0, groupN));
+      }
+      if (sampled.length > n) sampled = sampled.slice(0, n);
+      break;
+    }
+
+    case "random":
+    default: {
+      const shuffled = [...rows].sort(() => Math.random() - 0.5);
+      sampled = shuffled.slice(0, n);
+      break;
+    }
+  }
+
+  const outLines = [headers.join(","), ...sampled.map(r => r.map(v => csvEscapeField(v)).join(","))];
+
+  const summary = `Sampled ${sampled.length} of ${rows.length} rows using ${input.method} method` +
+    (input.method === "stratified" ? ` (stratified by "${input.stratify_column}")` : "") + ".";
+
+  return {
+    csv: outLines.join("\n"),
+    sampled_rows: sampled.length,
+    total_rows: rows.length,
+    method: input.method,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 38: flow_column_stats — DESCRIPTIVE STATISTICS PER COLUMN
+// ============================================================================
+
+export interface ColumnStatsInput {
+  csv_content: string;
+  /** Columns to compute stats for (optional — auto-detects numeric columns) */
+  columns?: string[];
+}
+
+export interface ColumnStat {
+  column: string;
+  count: number;
+  mean: number;
+  median: number;
+  std: number;
+  min: number;
+  max: number;
+  q1?: number;
+  q3?: number;
+  range: number;
+  missing: number;
+}
+
+export interface ColumnStatsResult {
+  csv: string;
+  stats: ColumnStat[];
+  summary: string;
+}
+
+function quantile(sorted: number[], q: number): number {
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (base + 1 < sorted.length) {
+    return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+  }
+  return sorted[base];
+}
+
+export function flowColumnStats(input: ColumnStatsInput): ColumnStatsResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  let columns = input.columns;
+  if (!columns || columns.length === 0) {
+    columns = identifyNumericColumns(headers, rows);
+  }
+
+  for (const col of columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const stats: ColumnStat[] = [];
+
+  for (const col of columns) {
+    const colIdx = headers.indexOf(col);
+    const values: number[] = [];
+    let missing = 0;
+
+    for (const row of rows) {
+      const v = Number(row[colIdx]);
+      if (isNaN(v) || row[colIdx] === "" || row[colIdx] === undefined) {
+        missing++;
+      } else {
+        values.push(v);
+      }
+    }
+
+    const sorted = [...values].sort((a, b) => a - b);
+    const count = values.length;
+    const sum = values.reduce((s, v) => s + v, 0);
+    const mean = count > 0 ? Math.round((sum / count) * 10000) / 10000 : 0;
+    const variance = count > 1 ? values.reduce((s, v) => s + (v - mean) ** 2, 0) / (count - 1) : 0;
+    const std = Math.round(Math.sqrt(variance) * 10000) / 10000;
+    const min = count > 0 ? sorted[0] : 0;
+    const max = count > 0 ? sorted[count - 1] : 0;
+    const median = count > 0 ? Math.round(quantile(sorted, 0.5) * 10000) / 10000 : 0;
+    const q1 = count > 0 ? Math.round(quantile(sorted, 0.25) * 10000) / 10000 : 0;
+    const q3 = count > 0 ? Math.round(quantile(sorted, 0.75) * 10000) / 10000 : 0;
+
+    stats.push({
+      column: col,
+      count,
+      mean,
+      median,
+      std,
+      min,
+      max,
+      q1,
+      q3,
+      range: Math.round((max - min) * 10000) / 10000,
+      missing,
+    });
+  }
+
+  // Build CSV output
+  const csvHeaders = ["column", "count", "mean", "median", "std", "min", "max", "q1", "q3", "range", "missing"];
+  const csvLines = [csvHeaders.join(",")];
+  for (const s of stats) {
+    csvLines.push([
+      csvEscapeField(s.column), String(s.count), String(s.mean), String(s.median),
+      String(s.std), String(s.min), String(s.max), String(s.q1), String(s.q3),
+      String(s.range), String(s.missing),
+    ].join(","));
+  }
+
+  const summary = `Computed statistics for ${stats.length} column(s) across ${rows.length} rows. ` +
+    stats.map(s => `${s.column}: mean=${s.mean}, std=${s.std}, range=[${s.min}, ${s.max}]`).join("; ") + ".";
+
+  return {
+    csv: csvLines.join("\n"),
+    stats,
+    summary,
+  };
+}
