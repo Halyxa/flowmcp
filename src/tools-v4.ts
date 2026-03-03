@@ -3776,3 +3776,146 @@ export function flowLagLead(input: LagLeadInput): LagLeadResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 59: flow_group_aggregate — SQL-STYLE GROUP BY + AGGREGATE
+// ============================================================================
+
+export interface GroupAggregateInput {
+  csv_content: string;
+  group_by: string;
+  value_column: string;
+  aggregation: "sum" | "mean" | "count" | "min" | "max";
+}
+
+export interface GroupAggregateResult {
+  csv: string;
+  group_count: number;
+  group_by: string;
+  value_column: string;
+  aggregation: string;
+  summary: string;
+}
+
+export function flowGroupAggregate(input: GroupAggregateInput): GroupAggregateResult {
+  const { csv_content, group_by, value_column, aggregation } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const groupIdx = headers.indexOf(group_by);
+  if (groupIdx === -1) throw new Error(`Group column "${group_by}" not found. Available: ${headers.join(", ")}`);
+
+  const valIdx = headers.indexOf(value_column);
+  if (valIdx === -1) throw new Error(`Value column "${value_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Group values
+  const groups = new Map<string, number[]>();
+  for (const row of rows) {
+    const key = row[groupIdx] || "";
+    if (!groups.has(key)) groups.set(key, []);
+    if (aggregation === "count") {
+      groups.get(key)!.push(1);
+    } else {
+      const v = Number(row[valIdx]);
+      if (!isNaN(v)) groups.get(key)!.push(v);
+    }
+  }
+
+  // Aggregate
+  const outColName = `${value_column}_${aggregation}`;
+  const outHeader = [group_by, outColName].map(h => csvEscapeField(h)).join(",");
+  const sortedKeys = [...groups.keys()].sort();
+  const outRows: string[] = [];
+
+  for (const key of sortedKeys) {
+    const vals = groups.get(key)!;
+    let result: number;
+    switch (aggregation) {
+      case "count": result = vals.length; break;
+      case "sum": result = vals.reduce((a, b) => a + b, 0); break;
+      case "mean": result = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0; break;
+      case "min": result = vals.length > 0 ? Math.min(...vals) : 0; break;
+      case "max": result = vals.length > 0 ? Math.max(...vals) : 0; break;
+    }
+    outRows.push([csvEscapeField(key), csvEscapeField(String(result))].join(","));
+  }
+
+  const summary = `Grouped by "${group_by}", ${aggregation} of "${value_column}": ${sortedKeys.length} groups.`;
+
+  return {
+    csv: [outHeader, ...outRows].join("\n"),
+    group_count: sortedKeys.length,
+    group_by,
+    value_column,
+    aggregation,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 60: flow_row_number — SEQUENTIAL ROW NUMBERING
+// ============================================================================
+
+export interface RowNumberInput {
+  csv_content: string;
+  column_name?: string;
+  group_by?: string;
+}
+
+export interface RowNumberResult {
+  csv: string;
+  row_count: number;
+  column_name: string;
+  summary: string;
+}
+
+export function flowRowNumber(input: RowNumberInput): RowNumberResult {
+  const { csv_content, column_name = "row_number", group_by } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  let rowNumbers: number[];
+
+  if (group_by) {
+    const groupIdx = headers.indexOf(group_by);
+    if (groupIdx === -1) throw new Error(`Group column "${group_by}" not found. Available: ${headers.join(", ")}`);
+
+    // Number within groups
+    const groupCounters = new Map<string, number>();
+    rowNumbers = [];
+    for (const row of rows) {
+      const key = row[groupIdx] || "";
+      const current = (groupCounters.get(key) || 0) + 1;
+      groupCounters.set(key, current);
+      rowNumbers.push(current);
+    }
+  } else {
+    // Simple sequential numbering
+    rowNumbers = rows.map((_, i) => i + 1);
+  }
+
+  // Build output
+  const outHeaders = [...headers, column_name];
+  const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+  const outRows = rows.map((row, i) => {
+    return [...row.map(v => csvEscapeField(v)), String(rowNumbers[i])].join(",");
+  });
+
+  const groupSuffix = group_by ? ` within groups by "${group_by}"` : "";
+  const summary = `Added row numbers${groupSuffix} (${rows.length} rows).`;
+
+  return {
+    csv: [outHeaderLine, ...outRows].join("\n"),
+    row_count: rows.length,
+    column_name,
+    summary,
+  };
+}

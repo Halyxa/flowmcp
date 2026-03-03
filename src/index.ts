@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2663,6 +2663,75 @@ Output: Original CSV with appended lag/lead column, row_count, shift details, an
           required: ["csv_content", "value_column", "shift"],
         },
       },
+      // Tool 59: flow_group_aggregate
+      {
+        name: "flow_group_aggregate",
+        description: `Group rows by a column and aggregate values using sum, mean, count, min, or max — SQL-style GROUP BY. Collapses multiple rows per group into a single summary row. Essential for computing totals, averages, or counts per category.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "group by", "aggregate", "total per", "average per", or "count per"
+- User wants "sales by region", "average score by department", or "count by category"
+- User needs to collapse detail rows into summary statistics
+- User asks for SQL-like GROUP BY operations
+
+Input: CSV data, group_by column, value_column, aggregation (sum/mean/count/min/max).
+Output: Aggregated CSV with group_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to aggregate",
+            },
+            group_by: {
+              type: "string",
+              description: "Column to group by",
+            },
+            value_column: {
+              type: "string",
+              description: "Column to aggregate",
+            },
+            aggregation: {
+              type: "string",
+              enum: ["sum", "mean", "count", "min", "max"],
+              description: "Aggregation function to apply per group",
+            },
+          },
+          required: ["csv_content", "group_by", "value_column", "aggregation"],
+        },
+      },
+      // Tool 60: flow_row_number
+      {
+        name: "flow_row_number",
+        description: `Add sequential row numbers to a CSV dataset. Optionally numbers within groups (like SQL ROW_NUMBER() OVER PARTITION BY). Useful for ranking, creating IDs, or numbering records within categories.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "add row numbers", "number the rows", "add an ID column", or "rank within groups"
+- User needs sequential identifiers for their data
+- User wants to number items within each category separately
+- User asks for "row index" or "sequence number"
+
+Input: CSV data, optional column_name (default: 'row_number'), optional group_by for per-group numbering.
+Output: CSV with appended row number column, row_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to add row numbers to",
+            },
+            column_name: {
+              type: "string",
+              description: "Name for the row number column (default: 'row_number')",
+            },
+            group_by: {
+              type: "string",
+              description: "Optional column to restart numbering per group",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
     ],
   };
 });
@@ -3269,6 +3338,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_lag_lead": {
       try {
         const result = flowLagLead(args as unknown as LagLeadInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_group_aggregate": {
+      try {
+        const result = flowGroupAggregate(args as unknown as GroupAggregateInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_row_number": {
+      try {
+        const result = flowRowNumber(args as unknown as RowNumberInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6270,7 +6357,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 58, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 60, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

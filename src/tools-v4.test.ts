@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -3450,5 +3450,159 @@ describe("flowLagLead", () => {
       value_column: "missing",
       shift: -1,
     })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 59: flow_group_aggregate
+// ============================================================================
+
+describe("flowGroupAggregate", () => {
+  it("groups by column and sums values", () => {
+    const csv = "dept,salary\nEng,100\nEng,200\nSales,150\nSales,50";
+    const result = flowGroupAggregate({
+      csv_content: csv,
+      group_by: "dept",
+      value_column: "salary",
+      aggregation: "sum",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("dept,salary_sum");
+    expect(result.group_count).toBe(2);
+  });
+
+  it("computes mean per group", () => {
+    const csv = "cat,val\nA,10\nA,20\nB,30";
+    const result = flowGroupAggregate({
+      csv_content: csv,
+      group_by: "cat",
+      value_column: "val",
+      aggregation: "mean",
+    });
+    const lines = result.csv.trim().split("\n");
+    // A mean = 15
+    const aLine = lines.find(l => l.startsWith("A"));
+    expect(aLine).toContain("15");
+  });
+
+  it("counts per group", () => {
+    const csv = "color\nred\nblue\nred\nred\nblue";
+    const result = flowGroupAggregate({
+      csv_content: csv,
+      group_by: "color",
+      value_column: "color",
+      aggregation: "count",
+    });
+    expect(result.group_count).toBe(2);
+  });
+
+  it("computes min and max per group", () => {
+    const csv = "g,v\nA,5\nA,15\nA,10\nB,20\nB,1";
+    const resultMin = flowGroupAggregate({
+      csv_content: csv,
+      group_by: "g",
+      value_column: "v",
+      aggregation: "min",
+    });
+    const resultMax = flowGroupAggregate({
+      csv_content: csv,
+      group_by: "g",
+      value_column: "v",
+      aggregation: "max",
+    });
+    const minLines = resultMin.csv.trim().split("\n");
+    const maxLines = resultMax.csv.trim().split("\n");
+    const aMinLine = minLines.find(l => l.startsWith("A"));
+    const aMaxLine = maxLines.find(l => l.startsWith("A"));
+    expect(aMinLine).toContain("5");
+    expect(aMaxLine).toContain("15");
+  });
+
+  it("returns summary with group count", () => {
+    const csv = "x,y\na,1\nb,2\na,3";
+    const result = flowGroupAggregate({
+      csv_content: csv,
+      group_by: "x",
+      value_column: "y",
+      aggregation: "sum",
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.group_count).toBe(2);
+  });
+
+  it("throws on missing group column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowGroupAggregate({
+      csv_content: csv,
+      group_by: "missing",
+      value_column: "b",
+      aggregation: "sum",
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 60: flow_row_number
+// ============================================================================
+
+describe("flowRowNumber", () => {
+  it("adds sequential row numbers", () => {
+    const csv = "name\nAlice\nBob\nCarol";
+    const result = flowRowNumber({
+      csv_content: csv,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("row_number");
+    expect(lines[1]).toContain("1");
+    expect(lines[2]).toContain("2");
+    expect(lines[3]).toContain("3");
+    expect(result.row_count).toBe(3);
+  });
+
+  it("uses custom column name", () => {
+    const csv = "val\n10\n20";
+    const result = flowRowNumber({
+      csv_content: csv,
+      column_name: "rank",
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("rank");
+  });
+
+  it("numbers within groups when group_by specified", () => {
+    const csv = "dept,name\nEng,Alice\nEng,Bob\nSales,Carol\nSales,Dave\nEng,Eve";
+    const result = flowRowNumber({
+      csv_content: csv,
+      group_by: "dept",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Eng: Alice=1, Bob=2, Eve=3
+    // Sales: Carol=1, Dave=2
+    expect(result.row_count).toBe(5);
+    // Check that some rows have 1 (group restart)
+    const rowNums = lines.slice(1).map(l => {
+      const parts = l.split(",");
+      return parts[parts.length - 1];
+    });
+    expect(rowNums.filter(r => r === "1").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("preserves all original columns", () => {
+    const csv = "a,b,c\n1,2,3";
+    const result = flowRowNumber({
+      csv_content: csv,
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a");
+    expect(header).toContain("b");
+    expect(header).toContain("c");
+  });
+
+  it("returns summary", () => {
+    const csv = "v\n1\n2";
+    const result = flowRowNumber({
+      csv_content: csv,
+    });
+    expect(result.summary).toBeTruthy();
   });
 });
