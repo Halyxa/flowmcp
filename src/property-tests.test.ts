@@ -12,6 +12,7 @@ import {
   flowMergeDatasets,
 } from "./tools-v2.js";
 import { flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets } from "./tools-v4.js";
 
 // ============================================================================
 // Helpers: CSV generators for fast-check (v4 API)
@@ -1027,6 +1028,244 @@ describe("Property: Network graph node count", () => {
           for (const [s, t] of edges) { uniqueNodes.add(s.trim()); uniqueNodes.add(t.trim()); }
 
           expect(outputNodeCount).toBe(uniqueNodes.size);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+});
+
+// ============================================================================
+// 19. Correlation matrix properties
+// ============================================================================
+
+describe("Property: Correlation matrix", () => {
+  it("diagonal is always 1.0 for any numeric data", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 3, max: 30 }),
+        fc.integer({ min: 2, max: 5 }),
+        (nRows, nCols) => {
+          const headers = Array.from({ length: nCols }, (_, i) => `col_${i}`);
+          const rows = Array.from({ length: nRows }, () =>
+            Array.from({ length: nCols }, () => (Math.random() * 100 - 50).toFixed(2))
+          );
+          const csv = buildCSV(headers, rows);
+          const result = flowCorrelationMatrix({ csv_content: csv });
+          for (let i = 0; i < result.matrix.length; i++) {
+            expect(result.matrix[i][i]).toBeCloseTo(1.0, 3);
+          }
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("matrix is symmetric for any input", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 3, max: 20 }),
+        (nRows) => {
+          const csv = "a,b,c\n" + Array.from({ length: nRows }, () =>
+            `${(Math.random() * 100).toFixed(2)},${(Math.random() * 100).toFixed(2)},${(Math.random() * 100).toFixed(2)}`
+          ).join("\n");
+          const result = flowCorrelationMatrix({ csv_content: csv });
+          const n = result.matrix.length;
+          for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+              expect(result.matrix[i][j]).toBeCloseTo(result.matrix[j][i], 3);
+            }
+          }
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("all values between -1 and 1 for random data", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 5, max: 30 }),
+        (nRows) => {
+          const csv = "x,y\n" + Array.from({ length: nRows }, () =>
+            `${(Math.random() * 200 - 100).toFixed(2)},${(Math.random() * 200 - 100).toFixed(2)}`
+          ).join("\n");
+          const result = flowCorrelationMatrix({ csv_content: csv });
+          for (const row of result.matrix) {
+            for (const val of row) {
+              expect(val).toBeGreaterThanOrEqual(-1.001);
+              expect(val).toBeLessThanOrEqual(1.001);
+            }
+          }
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+});
+
+// ============================================================================
+// 20. Clustering properties
+// ============================================================================
+
+describe("Property: Clustering", () => {
+  it("every point gets assigned a cluster in range [0, k)", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 5, max: 30 }),
+        fc.integer({ min: 2, max: 4 }),
+        (nRows, k) => {
+          const csv = "x,y\n" + Array.from({ length: nRows }, () =>
+            `${(Math.random() * 100).toFixed(2)},${(Math.random() * 100).toFixed(2)}`
+          ).join("\n");
+          const result = flowClusterData({ csv_content: csv, k, columns: ["x", "y"] });
+          expect(result.k).toBe(k);
+          expect(result.rows).toBe(nRows);
+          // Check all clusters are in range
+          const lines = result.csv.split("\n");
+          const header = lines[0].split(",");
+          const clusterIdx = header.indexOf("_cluster");
+          expect(clusterIdx).toBeGreaterThan(-1);
+          for (const line of lines.slice(1)) {
+            if (!line.trim()) continue;
+            const cluster = Number(line.split(",")[clusterIdx]);
+            expect(cluster).toBeGreaterThanOrEqual(0);
+            expect(cluster).toBeLessThan(k);
+          }
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("centroid sizes sum to total rows", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 5, max: 30 }),
+        (nRows) => {
+          const csv = "x,y\n" + Array.from({ length: nRows }, () =>
+            `${(Math.random() * 100).toFixed(2)},${(Math.random() * 100).toFixed(2)}`
+          ).join("\n");
+          const result = flowClusterData({ csv_content: csv, k: 3, columns: ["x", "y"] });
+          const totalSize = result.centroids.reduce((s, c) => s + c.size, 0);
+          expect(totalSize).toBe(result.rows);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+});
+
+// ============================================================================
+// 21. Hierarchy properties
+// ============================================================================
+
+describe("Property: Hierarchical data", () => {
+  it("total nodes >= number of unique values at each level + 1 root", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 3, max: 20 }),
+        (nRows) => {
+          const regions = ["North", "South", "East", "West"];
+          const cities = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"];
+          const rows = Array.from({ length: nRows }, (_, i) => [
+            regions[i % regions.length],
+            cities[i % cities.length],
+            String(i * 10),
+          ]);
+          const csv = buildCSV(["region", "city", "value"], rows);
+          const result = flowHierarchicalData({
+            csv_content: csv,
+            hierarchy_columns: ["region", "city"],
+            value_column: "value",
+          });
+          // At minimum: 1 root + some unique regions + some unique region/city combos
+          expect(result.total_nodes).toBeGreaterThanOrEqual(2);
+          expect(result.depth).toBe(3); // root → region → city
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it("output CSV always has id, connections, label, level columns", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 10 }),
+        (nRows) => {
+          const csv = "group,item\n" + Array.from({ length: nRows }, (_, i) =>
+            `G${i % 3},Item${i}`
+          ).join("\n");
+          const result = flowHierarchicalData({
+            csv_content: csv,
+            hierarchy_columns: ["group", "item"],
+          });
+          const headers = parseCSVLine(result.csv.split("\n")[0]);
+          expect(headers).toContain("id");
+          expect(headers).toContain("connections");
+          expect(headers).toContain("label");
+          expect(headers).toContain("level");
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+});
+
+// ============================================================================
+// 22. Compare datasets properties
+// ============================================================================
+
+describe("Property: Compare datasets", () => {
+  it("added + removed + changed + unchanged = total unique keys", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 15 }),
+        fc.integer({ min: 2, max: 15 }),
+        (nA, nB) => {
+          const csvA = "id,val\n" + Array.from({ length: nA }, (_, i) => `k${i},${i}`).join("\n");
+          const csvB = "id,val\n" + Array.from({ length: nB }, (_, i) => `k${i + Math.floor(nA / 2)},${i * 10}`).join("\n");
+          const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+          const total = result.added_rows + result.removed_rows + result.changed_rows + result.unchanged_rows;
+          // Total should equal number of unique keys across both datasets
+          const keysA = new Set(Array.from({ length: nA }, (_, i) => `k${i}`));
+          const keysB = new Set(Array.from({ length: nB }, (_, i) => `k${i + Math.floor(nA / 2)}`));
+          const allKeys = new Set([...keysA, ...keysB]);
+          expect(total).toBe(allKeys.size);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("comparing identical datasets has zero added/removed/changed", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 15 }),
+        (n) => {
+          const csv = "id,value\n" + Array.from({ length: n }, (_, i) => `k${i},${i}`).join("\n");
+          const result = flowCompareDatasets({ csv_a: csv, csv_b: csv, key_column: "id" });
+          expect(result.added_rows).toBe(0);
+          expect(result.removed_rows).toBe(0);
+          expect(result.changed_rows).toBe(0);
+          expect(result.unchanged_rows).toBe(n);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("output CSV has _diff_status column for any input", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 10 }),
+        fc.integer({ min: 2, max: 10 }),
+        (nA, nB) => {
+          const csvA = "id,val\n" + Array.from({ length: nA }, (_, i) => `a${i},${i}`).join("\n");
+          const csvB = "id,val\n" + Array.from({ length: nB }, (_, i) => `b${i},${i}`).join("\n");
+          const result = flowCompareDatasets({ csv_a: csvA, csv_b: csvB, key_column: "id" });
+          const headers = parseCSVLine(result.csv.split("\n")[0]);
+          expect(headers).toContain("_diff_status");
         }
       ),
       { numRuns: 500 }
