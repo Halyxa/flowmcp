@@ -48,9 +48,9 @@ describe("MCP Protocol Integration", () => {
   // Tool Discovery
   // ====================================================================
 
-  it("lists all 32 tools", async () => {
+  it("lists all 34 tools", async () => {
     const result = await client.listTools();
-    expect(result.tools.length).toBe(32);
+    expect(result.tools.length).toBe(34);
   });
 
   it("includes all expected tool names", async () => {
@@ -90,6 +90,8 @@ describe("MCP Protocol Integration", () => {
       "flow_compare_datasets",
       "flow_pivot_table",
       "flow_regression_analysis",
+      "flow_normalize_data",
+      "flow_deduplicate_rows",
     ];
 
     for (const name of expected) {

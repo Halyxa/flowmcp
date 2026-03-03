@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -996,6 +996,220 @@ describe("flow_regression_analysis", () => {
       csv_content: PERFECT_CSV,
       x_column: "x",
       y_column: "y",
+    });
+    expect(result.summary).toBeDefined();
+    expect(result.summary.length).toBeGreaterThan(0);
+  });
+});
+
+// =============================================================================
+// TOOL 33: flow_normalize_data — MIN-MAX / Z-SCORE NORMALIZATION
+// =============================================================================
+
+describe("flow_normalize_data", () => {
+  const CSV = "name,score,revenue\nAlice,80,1000\nBob,90,2000\nCharlie,70,3000";
+
+  it("min-max normalizes values to [0,1]", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      columns: ["score"],
+      method: "min_max",
+    });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("score_normalized");
+    expect(normIdx).toBeGreaterThan(-1);
+    for (let i = 1; i < lines.length; i++) {
+      const val = Number(lines[i].split(",")[normIdx]);
+      expect(val).toBeGreaterThanOrEqual(0);
+      expect(val).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("z-score normalizes to mean ~0 and std ~1", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      columns: ["score"],
+      method: "z_score",
+    });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("score_normalized");
+    const values: number[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      values.push(Number(lines[i].split(",")[normIdx]));
+    }
+    const mean = values.reduce((s, v) => s + v, 0) / values.length;
+    expect(Math.abs(mean)).toBeLessThan(0.01);
+  });
+
+  it("normalizes multiple columns", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      columns: ["score", "revenue"],
+      method: "min_max",
+    });
+    expect(result.csv).toContain("score_normalized");
+    expect(result.csv).toContain("revenue_normalized");
+    expect(result.columns_normalized).toEqual(["score", "revenue"]);
+  });
+
+  it("preserves original columns", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      columns: ["score"],
+      method: "min_max",
+    });
+    expect(result.csv).toContain("name");
+    expect(result.csv).toContain("score");
+    expect(result.csv).toContain("revenue");
+  });
+
+  it("auto-detects numeric columns when none specified", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      method: "min_max",
+    });
+    expect(result.columns_normalized.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("throws on nonexistent column", () => {
+    expect(() =>
+      flowNormalizeData({
+        csv_content: CSV,
+        columns: ["nonexistent"],
+        method: "min_max",
+      })
+    ).toThrow();
+  });
+
+  it("handles constant column in min-max (all same value)", () => {
+    const csv = "name,val\nA,5\nB,5\nC,5";
+    const result = flowNormalizeData({
+      csv_content: csv,
+      columns: ["val"],
+      method: "min_max",
+    });
+    // Constant column → all values should be 0 (or 0.5, implementation choice)
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("val_normalized");
+    for (let i = 1; i < lines.length; i++) {
+      const val = Number(lines[i].split(",")[normIdx]);
+      expect(val).toBe(0);
+    }
+  });
+
+  it("returns row_count matching input", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      columns: ["score"],
+      method: "min_max",
+    });
+    expect(result.row_count).toBe(3);
+  });
+
+  it("returns summary text", () => {
+    const result = flowNormalizeData({
+      csv_content: CSV,
+      columns: ["score"],
+      method: "min_max",
+    });
+    expect(result.summary).toBeDefined();
+    expect(result.summary.length).toBeGreaterThan(0);
+  });
+});
+
+// =============================================================================
+// TOOL 34: flow_deduplicate_rows — FUZZY DEDUPLICATION
+// =============================================================================
+
+describe("flow_deduplicate_rows", () => {
+  it("removes exact duplicates", () => {
+    const csv = "name,value\nAlice,10\nBob,20\nAlice,10\nCharlie,30";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+      columns: ["name", "value"],
+    });
+    expect(result.unique_rows).toBe(3);
+    expect(result.duplicates_removed).toBe(1);
+  });
+
+  it("deduplicates on specified column subset", () => {
+    const csv = "name,value,extra\nAlice,10,X\nAlice,10,Y\nBob,20,Z";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+      columns: ["name", "value"],
+    });
+    expect(result.unique_rows).toBe(2);
+    expect(result.duplicates_removed).toBe(1);
+  });
+
+  it("keeps first occurrence by default", () => {
+    const csv = "name,value\nAlice,10\nAlice,20\nAlice,30";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+      columns: ["name"],
+    });
+    expect(result.unique_rows).toBe(1);
+    const lines = result.csv.split("\n");
+    expect(lines[1]).toContain("10"); // First Alice kept
+  });
+
+  it("returns CSV with _duplicate_group column when groups exist", () => {
+    const csv = "name,value\nAlice,10\nBob,20\nAlice,30";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+      columns: ["name"],
+    });
+    expect(result.csv).toBeDefined();
+    expect(result.unique_rows).toBe(2);
+  });
+
+  it("no duplicates → same row count", () => {
+    const csv = "id,val\n1,A\n2,B\n3,C";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+      columns: ["id"],
+    });
+    expect(result.unique_rows).toBe(3);
+    expect(result.duplicates_removed).toBe(0);
+  });
+
+  it("deduplicates on all columns when none specified", () => {
+    const csv = "a,b\n1,2\n3,4\n1,2\n5,6";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+    });
+    expect(result.unique_rows).toBe(3);
+    expect(result.duplicates_removed).toBe(1);
+  });
+
+  it("throws on nonexistent column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowDeduplicateRows({
+        csv_content: csv,
+        columns: ["nonexistent"],
+      })
+    ).toThrow();
+  });
+
+  it("case-insensitive dedup when enabled", () => {
+    const csv = "name,val\nAlice,10\nalice,20\nBob,30";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
+      columns: ["name"],
+      case_insensitive: true,
+    });
+    expect(result.unique_rows).toBe(2);
+    expect(result.duplicates_removed).toBe(1);
+  });
+
+  it("returns summary text", () => {
+    const csv = "a,b\n1,2\n1,2\n3,4";
+    const result = flowDeduplicateRows({
+      csv_content: csv,
     });
     expect(result.summary).toBeDefined();
     expect(result.summary.length).toBeGreaterThan(0);

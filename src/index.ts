@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1736,6 +1736,77 @@ Output: CSV with _predicted and _residual columns, plus slope, intercept, R², p
           required: ["csv_content", "x_column", "y_column"],
         },
       },
+
+      // Tool 33: flow_normalize_data
+      {
+        name: "flow_normalize_data",
+        description: `Normalize numeric columns using min-max scaling [0,1] or z-score standardization (mean=0, std=1). Adds _normalized suffix columns while preserving originals. Essential for making multi-dimensional data comparable in 3D visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "normalize", "scale", "standardize", or "rescale" their data
+- User has columns with different units or magnitudes that need to be comparable
+- User wants to prepare data for clustering, correlation, or multi-variable 3D visualization
+- User asks to "make columns comparable", "put on same scale", or "equalize ranges"
+- User has values like revenue (millions) and percentages (0-100) that need alignment
+
+Input: CSV data, optional column names, normalization method (min_max or z_score).
+Output: CSV with original columns plus _normalized columns appended.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to normalize",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to normalize (optional — auto-detects numeric columns)",
+            },
+            method: {
+              type: "string",
+              enum: ["min_max", "z_score"],
+              description: "Normalization method: min_max scales to [0,1], z_score centers around mean=0",
+            },
+          },
+          required: ["csv_content", "method"],
+        },
+      },
+
+      // Tool 34: flow_deduplicate_rows
+      {
+        name: "flow_deduplicate_rows",
+        description: `Remove duplicate rows from CSV data based on specified columns. Keeps the first occurrence of each unique combination. Supports case-insensitive matching for string columns. Essential for cleaning messy data before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "deduplicate", "remove duplicates", "find duplicates", or "clean up duplicates"
+- User has data with repeated entries and wants unique rows only
+- User asks to "remove repeated rows", "keep unique entries", or "eliminate redundant data"
+- User notices duplicate points in their 3D visualization
+- User has merged datasets that may contain overlapping records
+
+Input: CSV data, optional column names to check, optional case-insensitive flag.
+Output: Deduplicated CSV with duplicate count and summary statistics.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to deduplicate",
+            },
+            columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to check for duplicates (optional — uses all columns)",
+            },
+            case_insensitive: {
+              type: "boolean",
+              description: "Case-insensitive comparison for string columns (default: false)",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
     ],
   };
 });
@@ -2108,6 +2179,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_regression_analysis": {
       try {
         const result = flowRegressionAnalysis(args as unknown as RegressionAnalysisInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_normalize_data": {
+      try {
+        const result = flowNormalizeData(args as unknown as NormalizeDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_deduplicate_rows": {
+      try {
+        const result = flowDeduplicateRows(args as unknown as DeduplicateRowsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5109,7 +5198,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 32, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 34, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

@@ -1339,3 +1339,167 @@ export function flowRegressionAnalysis(input: RegressionAnalysisInput): Regressi
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 33: flow_normalize_data — SCALE NUMERIC COLUMNS FOR VISUALIZATION
+// ============================================================================
+
+export interface NormalizeDataInput {
+  csv_content: string;
+  /** Columns to normalize (optional — auto-detects numeric columns if omitted) */
+  columns?: string[];
+  /** Normalization method: min_max scales to [0,1], z_score centers around mean=0 */
+  method: "min_max" | "z_score";
+}
+
+export interface NormalizeDataResult {
+  csv: string;
+  row_count: number;
+  columns_normalized: string[];
+  method: string;
+  summary: string;
+}
+
+export function flowNormalizeData(input: NormalizeDataInput): NormalizeDataResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  // Determine columns to normalize
+  let columns = input.columns;
+  if (!columns || columns.length === 0) {
+    columns = identifyNumericColumns(headers, rows);
+  }
+
+  // Validate columns exist
+  for (const col of columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  // Compute stats per column
+  const colStats = new Map<string, { values: number[]; mean: number; std: number; min: number; max: number }>();
+  for (const col of columns) {
+    const idx = headers.indexOf(col);
+    const values: number[] = [];
+    for (const row of rows) {
+      const v = Number(row[idx]);
+      if (!isNaN(v)) values.push(v);
+    }
+    const mean = values.length > 0 ? values.reduce((s, v) => s + v, 0) / values.length : 0;
+    const variance = values.length > 1 ? values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length : 0;
+    const std = Math.sqrt(variance);
+    const min = values.length > 0 ? Math.min(...values) : 0;
+    const max = values.length > 0 ? Math.max(...values) : 0;
+    colStats.set(col, { values, mean, std, min, max });
+  }
+
+  // Build output CSV with _normalized columns
+  const newHeaders = [...headers, ...columns.map(c => `${c}_normalized`)];
+  const outLines = [newHeaders.join(",")];
+
+  for (const row of rows) {
+    const normalizedValues: string[] = [];
+    for (const col of columns) {
+      const idx = headers.indexOf(col);
+      const v = Number(row[idx]);
+      const stats = colStats.get(col)!;
+
+      if (isNaN(v)) {
+        normalizedValues.push("");
+        continue;
+      }
+
+      let normalized: number;
+      if (input.method === "min_max") {
+        const range = stats.max - stats.min;
+        normalized = range > 0 ? (v - stats.min) / range : 0;
+      } else {
+        normalized = stats.std > 0 ? (v - stats.mean) / stats.std : 0;
+      }
+      normalizedValues.push(String(Math.round(normalized * 10000) / 10000));
+    }
+    outLines.push([...row.map(v => csvEscapeField(v)), ...normalizedValues].join(","));
+  }
+
+  const summary = `Normalized ${columns.length} column(s) using ${input.method === "min_max" ? "min-max [0,1]" : "z-score (mean=0, std=1)"} method across ${rows.length} rows. ` +
+    `Columns: ${columns.join(", ")}.`;
+
+  return {
+    csv: outLines.join("\n"),
+    row_count: rows.length,
+    columns_normalized: columns,
+    method: input.method,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 34: flow_deduplicate_rows — REMOVE DUPLICATE ROWS FOR CLEAN VISUALIZATION
+// ============================================================================
+
+export interface DeduplicateRowsInput {
+  csv_content: string;
+  /** Columns to check for duplicates (optional — uses all columns if omitted) */
+  columns?: string[];
+  /** Case-insensitive comparison for string columns */
+  case_insensitive?: boolean;
+}
+
+export interface DeduplicateRowsResult {
+  csv: string;
+  unique_rows: number;
+  duplicates_removed: number;
+  total_rows: number;
+  summary: string;
+}
+
+export function flowDeduplicateRows(input: DeduplicateRowsInput): DeduplicateRowsResult {
+  const parsed = parseCsvToRows(input.csv_content);
+  const { headers, rows } = parsed;
+
+  // Determine which columns to check
+  let columns = input.columns;
+  if (!columns || columns.length === 0) {
+    columns = [...headers];
+  }
+
+  // Validate columns exist
+  for (const col of columns) {
+    if (!headers.includes(col)) {
+      throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
+    }
+  }
+
+  const colIndices = columns.map(c => headers.indexOf(c));
+  const seen = new Set<string>();
+  const uniqueRows: string[][] = [];
+  let removed = 0;
+
+  for (const row of rows) {
+    let key = colIndices.map(i => row[i] ?? "").join("\x00");
+    if (input.case_insensitive) {
+      key = key.toLowerCase();
+    }
+
+    if (seen.has(key)) {
+      removed++;
+    } else {
+      seen.add(key);
+      uniqueRows.push(row);
+    }
+  }
+
+  const outLines = [headers.join(","), ...uniqueRows.map(r => r.map(v => csvEscapeField(v)).join(","))];
+
+  const summary = `Deduplicated ${rows.length} rows → ${uniqueRows.length} unique rows (${removed} duplicates removed). ` +
+    `Checked columns: ${columns.join(", ")}${input.case_insensitive ? " (case-insensitive)" : ""}.`;
+
+  return {
+    csv: outLines.join("\n"),
+    unique_rows: uniqueRows.length,
+    duplicates_removed: removed,
+    total_rows: rows.length,
+    summary,
+  };
+}
