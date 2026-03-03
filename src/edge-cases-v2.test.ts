@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
 import {
   flowSemanticSearch,
   scoreMatch,
@@ -1577,5 +1577,110 @@ describe("flowRegressionAnalysis — edge cases", () => {
     const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
     expect(result.summary).toContain("very strong");
     expect(result.summary).toContain("positive");
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_normalize_data (Tool 33)
+// ============================================================================
+
+describe("flowNormalizeData — edge cases", () => {
+  it("single row min-max produces 0", () => {
+    const csv = "val\n42";
+    const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "min_max" });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("val_normalized");
+    // Single value, range = 0, should produce 0
+    expect(Number(lines[1].split(",")[normIdx])).toBe(0);
+  });
+
+  it("single row z-score produces 0", () => {
+    const csv = "val\n42";
+    const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "z_score" });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("val_normalized");
+    expect(Number(lines[1].split(",")[normIdx])).toBe(0);
+  });
+
+  it("negative values normalize correctly", () => {
+    const csv = "val\n-10\n0\n10";
+    const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "min_max" });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("val_normalized");
+    expect(Number(lines[1].split(",")[normIdx])).toBeCloseTo(0, 4); // -10 → 0
+    expect(Number(lines[2].split(",")[normIdx])).toBeCloseTo(0.5, 4); // 0 → 0.5
+    expect(Number(lines[3].split(",")[normIdx])).toBeCloseTo(1, 4); // 10 → 1
+  });
+
+  it("handles missing values gracefully", () => {
+    const csv = "name,val\nA,10\nB,\nC,30";
+    const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "min_max" });
+    const lines = result.csv.split("\n");
+    expect(lines.length).toBe(4); // header + 3 rows, no crash
+  });
+
+  it("summary mentions method", () => {
+    const csv = "val\n1\n2\n3";
+    const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "z_score" });
+    expect(result.summary).toContain("z-score");
+    expect(result.method).toBe("z_score");
+  });
+
+  it("many columns normalized at once", () => {
+    const csv = "a,b,c,d\n1,2,3,4\n5,6,7,8\n9,10,11,12";
+    const result = flowNormalizeData({ csv_content: csv, method: "min_max" });
+    expect(result.columns_normalized.length).toBe(4);
+    expect(result.csv).toContain("a_normalized");
+    expect(result.csv).toContain("d_normalized");
+  });
+});
+
+// ============================================================================
+// EDGE CASES: flow_deduplicate_rows (Tool 34)
+// ============================================================================
+
+describe("flowDeduplicateRows — edge cases", () => {
+  it("single row returns unchanged", () => {
+    const csv = "a,b\n1,2";
+    const result = flowDeduplicateRows({ csv_content: csv });
+    expect(result.unique_rows).toBe(1);
+    expect(result.duplicates_removed).toBe(0);
+  });
+
+  it("all rows identical returns single row", () => {
+    const csv = "a,b\n1,2\n1,2\n1,2\n1,2";
+    const result = flowDeduplicateRows({ csv_content: csv });
+    expect(result.unique_rows).toBe(1);
+    expect(result.duplicates_removed).toBe(3);
+  });
+
+  it("numeric string differences are treated as different", () => {
+    const csv = "name\n100\n100.0\n100.00";
+    const result = flowDeduplicateRows({ csv_content: csv, columns: ["name"] });
+    // String comparison: these are different strings
+    expect(result.unique_rows).toBe(3);
+  });
+
+  it("empty values handled correctly", () => {
+    const csv = "a,b\n1,\n1,\n2,3";
+    const result = flowDeduplicateRows({ csv_content: csv });
+    expect(result.unique_rows).toBe(2);
+    expect(result.duplicates_removed).toBe(1);
+  });
+
+  it("case-insensitive flag works with mixed case", () => {
+    const csv = "name\nALICE\nalice\nAlice\nBob";
+    const result = flowDeduplicateRows({ csv_content: csv, columns: ["name"], case_insensitive: true });
+    expect(result.unique_rows).toBe(2); // ALICE + Bob
+    expect(result.duplicates_removed).toBe(2);
+  });
+
+  it("summary mentions column names", () => {
+    const csv = "id,val\n1,a\n2,b";
+    const result = flowDeduplicateRows({ csv_content: csv, columns: ["id"] });
+    expect(result.summary).toContain("id");
   });
 });

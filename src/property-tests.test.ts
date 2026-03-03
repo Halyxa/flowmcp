@@ -12,7 +12,7 @@ import {
   flowMergeDatasets,
 } from "./tools-v2.js";
 import { flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows } from "./tools-v4.js";
 
 // ============================================================================
 // Helpers: CSV generators for fast-check (v4 API)
@@ -1426,6 +1426,118 @@ describe("flow_regression_analysis properties", () => {
           const csv = "x,y\n" + Array.from({ length: n }, (_, i) => `${i},${i * 2}`).join("\n");
           const result = flowRegressionAnalysis({ csv_content: csv, x_column: "x", y_column: "y" });
           expect(result.n_points).toBe(n);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+});
+
+// =============================================================================
+// Section 25: flow_normalize_data — property tests
+// =============================================================================
+
+describe("flow_normalize_data properties", () => {
+  it("min-max values are always in [0,1]", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -1000, max: 1000 }), { minLength: 2, maxLength: 30 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "min_max" });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const normIdx = headers.indexOf("val_normalized");
+          for (let i = 1; i < lines.length; i++) {
+            const v = Number(lines[i].split(",")[normIdx]);
+            expect(v).toBeGreaterThanOrEqual(0);
+            expect(v).toBeLessThanOrEqual(1);
+          }
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("z-score mean is approximately zero", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: -100, max: 100 }), { minLength: 3, maxLength: 20 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "z_score" });
+          const lines = result.csv.split("\n");
+          const headers = lines[0].split(",");
+          const normIdx = headers.indexOf("val_normalized");
+          const normalized: number[] = [];
+          for (let i = 1; i < lines.length; i++) {
+            normalized.push(Number(lines[i].split(",")[normIdx]));
+          }
+          const mean = normalized.reduce((s, v) => s + v, 0) / normalized.length;
+          expect(Math.abs(mean)).toBeLessThan(0.1);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("row count is preserved after normalization", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 30 }),
+        (n) => {
+          const csv = "val\n" + Array.from({ length: n }, (_, i) => `${i}`).join("\n");
+          const result = flowNormalizeData({ csv_content: csv, columns: ["val"], method: "min_max" });
+          expect(result.row_count).toBe(n);
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+});
+
+// =============================================================================
+// Section 26: flow_deduplicate_rows — property tests
+// =============================================================================
+
+describe("flow_deduplicate_rows properties", () => {
+  it("unique_rows + duplicates_removed = total_rows", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 1, max: 5 }), { minLength: 2, maxLength: 20 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowDeduplicateRows({ csv_content: csv, columns: ["val"] });
+          expect(result.unique_rows + result.duplicates_removed).toBe(result.total_rows);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("unique_rows <= total_rows", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 1, max: 3 }), { minLength: 1, maxLength: 20 }),
+        (values) => {
+          const csv = "val\n" + values.join("\n");
+          const result = flowDeduplicateRows({ csv_content: csv, columns: ["val"] });
+          expect(result.unique_rows).toBeLessThanOrEqual(result.total_rows);
+        }
+      ),
+      { numRuns: 500 }
+    );
+  });
+
+  it("all-unique input has zero duplicates_removed", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 2, max: 20 }),
+        (n) => {
+          const csv = "val\n" + Array.from({ length: n }, (_, i) => `${i}`).join("\n");
+          const result = flowDeduplicateRows({ csv_content: csv, columns: ["val"] });
+          expect(result.duplicates_removed).toBe(0);
+          expect(result.unique_rows).toBe(n);
         }
       ),
       { numRuns: 200 }
