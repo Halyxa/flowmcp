@@ -2,7 +2,7 @@
 
 The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **30 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**535 tests. Zero competitors in 3D data visualization MCP.**
+**570 tests. Zero competitors in 3D data visualization MCP.**
 
 ## What It Does
 
@@ -192,7 +192,7 @@ Run the pipeline demo: `node demos/pipeline-demo.mjs`
 ## Testing
 
 ```bash
-npm test           # 520 tests (unit + integration + benchmark + perf + property + edge + v4)
+npm test           # 555 tests (unit + integration + benchmark + perf + property + edge + v4)
 npm run smoke-test # 15 standalone MCP checks
 npm run ci         # Full pipeline: build + test + smoke
 ```
@@ -207,10 +207,10 @@ npm run ci         # Full pipeline: build + test + smoke
 | Tools v2 tests | 36 |
 | Tools v3 tests | 33 |
 | Tools v4 tests | 52 |
-| Edge case tests | 110 |
-| Property tests | 23 |
+| Edge case tests | 135 |
+| Property tests | 48 |
 | Smoke tests | 15 |
-| **Total** | **535** |
+| **Total** | **570** |
 
 ## Tool Description Optimization
 
