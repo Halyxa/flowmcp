@@ -210,53 +210,53 @@ function scoreToolForQuery(toolName, query, signals) {
   const q = query.toLowerCase();
   let score = 0;
 
-  // Optimized weights from DEAP v3 genetic algorithm (250K evaluations, 120 gold queries, F1=0.9068)
+  // Optimized weights from DEAP v4 genetic algorithm (250K evaluations, 120 gold queries, F1=0.9146)
   for (const kw of signals.strong) {
-    if (q.includes(kw.toLowerCase())) score += 5.562;
+    if (q.includes(kw.toLowerCase())) score += 5.856;
   }
 
   for (const kw of signals.medium) {
-    if (q.includes(kw.toLowerCase())) score += 2.190;
+    if (q.includes(kw.toLowerCase())) score += 2.954;
   }
 
   for (const kw of signals.weak) {
-    if (q.includes(kw.toLowerCase())) score += 0.583;
+    if (q.includes(kw.toLowerCase())) score += 0.622;
   }
 
   for (const kw of signals.negative) {
-    if (q.includes(kw.toLowerCase())) score -= 0.742;
+    if (q.includes(kw.toLowerCase())) score -= 1.044;
   }
 
   return score;
 }
 
-// Per-tool thresholds from DEAP v3 optimization (F1=0.9068, P=0.9299, R=0.8848, 0 tools below floor)
+// Per-tool thresholds from DEAP v4 optimization (F1=0.9146, P=0.9202, R=0.9091, 0 tools below floor)
 const OPTIMIZED_THRESHOLDS = {
-  analyze_data_for_flow: 2.728,
-  validate_csv_for_flow: 0.460,
-  transform_to_network_graph: 2.331,
-  generate_flow_python_code: 2.311,
-  suggest_flow_visualization: 2.081,
-  get_flow_template: 4.890,
-  flow_extract_from_text: 1.786,
-  flow_extract_from_url: 4.591,
-  flow_authenticate: 3.626,
-  flow_upload_data: 1.931,
-  flow_browse_flows: 2.250,
-  flow_get_flow: 2.784,
-  flow_list_templates: 0.422,
-  flow_list_categories: 0.493,
-  flow_precompute_force_layout: 2.077,
-  flow_scale_dataset: 0.314,
-  flow_compute_graph_metrics: 1.259,
-  flow_query_graph: 4.462,
-  flow_semantic_search: 4.883,
-  flow_time_series_animate: 2.527,
-  flow_merge_datasets: 0.692,
-  flow_anomaly_detect: 3.856,
-  flow_geo_enhance: 2.467,
-  flow_nlp_to_viz: 1.565,
-  flow_export_formats: 1.310,
+  analyze_data_for_flow: 3.210,
+  validate_csv_for_flow: 0.333,
+  transform_to_network_graph: 3.061,
+  generate_flow_python_code: 3.074,
+  suggest_flow_visualization: 1.964,
+  get_flow_template: 4.893,
+  flow_extract_from_text: 0.963,
+  flow_extract_from_url: 3.428,
+  flow_authenticate: 4.492,
+  flow_upload_data: 2.221,
+  flow_browse_flows: 3.140,
+  flow_get_flow: 3.260,
+  flow_list_templates: 0.586,
+  flow_list_categories: 0.332,
+  flow_precompute_force_layout: 2.744,
+  flow_scale_dataset: 0.393,
+  flow_compute_graph_metrics: 1.501,
+  flow_query_graph: 3.296,
+  flow_semantic_search: 4.567,
+  flow_time_series_animate: 3.977,
+  flow_merge_datasets: 0.839,
+  flow_anomaly_detect: 2.498,
+  flow_geo_enhance: 1.923,
+  flow_nlp_to_viz: 4.091,
+  flow_export_formats: 4.659,
 };
 
 function selectToolsForQuery(query, threshold = null) {

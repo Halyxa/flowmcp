@@ -1242,6 +1242,7 @@ function exportHtmlViewer(
     findFirstNumericColumn(headers, rows, 2);
 
   const colorCol = options?.color_column || headers[lower.findIndex((h) => h.includes("category") || h.includes("group"))] || "";
+  const sizeCol = options?.size_column || "";
 
   // Rebuild CSV as embedded data
   const csvEmbedded = [headers.join(","), ...rows.map((r) => r.join(","))].join("\\n");
@@ -1253,15 +1254,123 @@ function exportHtmlViewer(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(title)}</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-  #title { position: absolute; top: 16px; left: 16px; color: #fff; font-size: 18px; z-index: 10; }
-  #info { position: absolute; bottom: 16px; left: 16px; color: #888; font-size: 12px; z-index: 10; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #08090d; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e0e0e0; }
   canvas { display: block; }
+
+  #ui-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 10;
+  }
+  #ui-overlay > * { pointer-events: auto; }
+
+  #header {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 20px 24px;
+    background: linear-gradient(180deg, rgba(8,9,13,0.92) 0%, rgba(8,9,13,0) 100%);
+  }
+  #header h1 {
+    font-size: 20px; font-weight: 600; color: #fff;
+    letter-spacing: -0.3px; margin-bottom: 4px;
+  }
+  #header .subtitle {
+    font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 400;
+  }
+
+  #stats-panel {
+    position: absolute; top: 20px; right: 24px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 14px 18px; min-width: 160px;
+  }
+  #stats-panel .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; padding: 3px 0;
+  }
+  #stats-panel .stat-label { color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
+  #stats-panel .stat-value { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #fps-value { color: #4fd1c5; }
+
+  #tooltip {
+    position: absolute; display: none;
+    background: rgba(15,17,25,0.94); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    padding: 12px 16px; max-width: 280px;
+    font-size: 12px; line-height: 1.5;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    pointer-events: none; z-index: 100;
+  }
+  .tt-header {
+    font-weight: 600; color: #fff; margin-bottom: 6px;
+    padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .tt-row { display: flex; justify-content: space-between; gap: 16px; padding: 1px 0; }
+  .tt-key { color: rgba(255,255,255,0.45); }
+  .tt-val { color: #e0e0e0; font-weight: 500; text-align: right; }
+  .tt-more { color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 4px; }
+
+  #controls-panel {
+    position: absolute; bottom: 20px; left: 24px;
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+    padding: 14px 18px; font-size: 11px; line-height: 1.8;
+  }
+  #controls-panel .ctrl-title {
+    font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 4px; font-size: 10px;
+  }
+  .ctrl-key {
+    display: inline-block; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+    padding: 0 6px; font-size: 10px; font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-right: 6px; color: rgba(255,255,255,0.7);
+  }
+
+  #footer {
+    position: absolute; bottom: 20px; right: 24px;
+    font-size: 10px; color: rgba(255,255,255,0.25);
+    text-align: right;
+  }
+
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #08090d; display: flex; align-items: center; justify-content: center;
+    z-index: 1000; transition: opacity 0.8s ease;
+  }
+  .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .loading-spinner {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #4fd1c5;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-<div id="title">${escapeHtml(title)}</div>
-<div id="info">Drag to rotate. Scroll to zoom. ${rows.length} data points.</div>
+<div class="loading-overlay" id="loader"><div class="loading-spinner"></div></div>
+<div id="ui-overlay">
+  <div id="header">
+    <h1>${escapeHtml(title)}</h1>
+    <div class="subtitle">${rows.length.toLocaleString()} data points &middot; ${headers.length} dimensions</div>
+  </div>
+  <div id="stats-panel">
+    <div class="stat-row"><span class="stat-label">FPS</span><span class="stat-value" id="fps-value">--</span></div>
+    <div class="stat-row"><span class="stat-label">Points</span><span class="stat-value">${rows.length.toLocaleString()}</span></div>
+    <div class="stat-row"><span class="stat-label">Columns</span><span class="stat-value">${headers.length}</span></div>
+    <div class="stat-row"><span class="stat-label">Rotation</span><span class="stat-value" id="rotation-status">ON</span></div>
+  </div>
+  <div id="tooltip"></div>
+  <div id="controls-panel">
+    <div class="ctrl-title">Controls</div>
+    <div><span class="ctrl-key">Drag</span> Rotate view</div>
+    <div><span class="ctrl-key">Scroll</span> Zoom in/out</div>
+    <div><span class="ctrl-key">R</span> Reset camera</div>
+    <div><span class="ctrl-key">Space</span> Toggle auto-rotate</div>
+  </div>
+  <div id="footer">Powered by Three.js &middot; Flow Immersive</div>
+</div>
 <script type="importmap">
 {
   "imports": {
@@ -1274,6 +1383,7 @@ function exportHtmlViewer(
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+// --- Data parsing ---
 const csvText = "${csvEmbedded}";
 const lines = csvText.split("\\n");
 const headers = lines[0].split(",");
@@ -1290,25 +1400,31 @@ const xCol = "${escapeHtml(xCol)}";
 const yCol = "${escapeHtml(yCol)}";
 const zCol = "${escapeHtml(zCol)}";
 const colorCol = "${escapeHtml(colorCol)}";
+const sizeCol = "${escapeHtml(sizeCol)}";
 
+// --- Scene setup ---
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a0a);
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+scene.background = new THREE.Color(0x08090d);
+scene.fog = new THREE.FogExp2(0x08090d, 0.008);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 document.body.appendChild(renderer.domElement);
 
+// --- Controls ---
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
+controls.minDistance = 5;
+controls.maxDistance = 500;
 
-// Color palette
-const palette = [0x4285f4, 0xea4335, 0xfbbc04, 0x34a853, 0xff6d01, 0x46bdc6, 0x7b1fa2, 0xc2185b];
-const categories = [...new Set(data.map(d => d[colorCol] || "default"))];
-const catColors = {};
-categories.forEach((c, i) => catColors[c] = palette[i % palette.length]);
-
-// Parse and normalize values
+// --- Parse values ---
 const xVals = data.map(d => parseFloat(d[xCol]) || 0);
 const yVals = data.map(d => parseFloat(d[yCol]) || 0);
 const zVals = data.map(d => parseFloat(d[zCol]) || 0);
@@ -1317,48 +1433,269 @@ function normalize(arr) {
   const min = Math.min(...arr);
   const max = Math.max(...arr);
   const range = max - min || 1;
-  return arr.map(v => ((v - min) / range - 0.5) * 50);
+  return { norm: arr.map(v => ((v - min) / range - 0.5) * 50), min, max, range };
 }
-const nx = normalize(xVals);
-const ny = normalize(yVals);
-const nz = normalize(zVals);
+const { norm: nx } = normalize(xVals);
+const { norm: ny } = normalize(yVals);
+const { norm: nz } = normalize(zVals);
 
-// Create instanced mesh
-const geo = new THREE.SphereGeometry(0.3, 8, 6);
-const mat = new THREE.MeshPhongMaterial();
+// --- Color: gradient by first numeric column (blue -> teal -> orange) or category ---
+function findFirstNumCol() {
+  for (let c = 0; c < headers.length; c++) {
+    const nums = data.filter(d => { const v = parseFloat(d[headers[c]]); return !isNaN(v) && isFinite(v); });
+    if (nums.length > data.length * 0.5) return headers[c];
+  }
+  return "";
+}
+const gradientCol = colorCol || findFirstNumCol();
+const isGradient = gradientCol && data.some(d => { const v = parseFloat(d[gradientCol]); return !isNaN(v) && isFinite(v); });
+
+let gradientVals = [];
+let gradientMin = 0, gradientMax = 1;
+if (isGradient) {
+  gradientVals = data.map(d => parseFloat(d[gradientCol]) || 0);
+  gradientMin = Math.min(...gradientVals);
+  gradientMax = Math.max(...gradientVals);
+}
+
+function gradientColor(t) {
+  // Cool blue (0.0) -> teal (0.3) -> warm orange (0.7) -> hot red-orange (1.0)
+  const c = new THREE.Color();
+  if (t < 0.33) {
+    c.setHSL(0.58 - t * 0.3, 0.85, 0.45 + t * 0.15);
+  } else if (t < 0.66) {
+    const u = (t - 0.33) / 0.33;
+    c.setHSL(0.48 - u * 0.35, 0.9, 0.5 + u * 0.1);
+  } else {
+    const u = (t - 0.66) / 0.34;
+    c.setHSL(0.08 - u * 0.03, 0.95, 0.55 + u * 0.05);
+  }
+  return c;
+}
+
+// Category palette fallback
+const catPalette = [0x4fc3f7, 0xef5350, 0xffca28, 0x66bb6a, 0xff7043, 0x4dd0e1, 0xab47bc, 0xec407a, 0x8d6e63, 0x78909c];
+const categories = gradientCol ? [...new Set(data.map(d => d[gradientCol] || "default"))] : ["default"];
+const catColors = {};
+categories.forEach((c, i) => catColors[c] = catPalette[i % catPalette.length]);
+
+// --- Size based on data values ---
+let sizeVals = [];
+let sizeMin = 0, sizeMax = 1;
+const basePtSize = 0.35;
+const maxPtSize = 1.2;
+if (sizeCol) {
+  sizeVals = data.map(d => parseFloat(d[sizeCol]) || 0);
+  sizeMin = Math.min(...sizeVals);
+  sizeMax = Math.max(...sizeVals);
+}
+
+function getPointSize(i) {
+  if (sizeCol && sizeVals.length > i) {
+    const t = sizeMax > sizeMin ? (sizeVals[i] - sizeMin) / (sizeMax - sizeMin) : 0.5;
+    return basePtSize + t * (maxPtSize - basePtSize);
+  }
+  return basePtSize;
+}
+
+// --- Create instanced mesh ---
+const geo = new THREE.SphereGeometry(1, 12, 8);
+const mat = new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.1 });
 const mesh = new THREE.InstancedMesh(geo, mat, data.length);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
+const positions = [];
 const dummy = new THREE.Object3D();
 const color = new THREE.Color();
+
 for (let i = 0; i < data.length; i++) {
+  const sz = getPointSize(i);
   dummy.position.set(nx[i], ny[i], nz[i]);
+  dummy.scale.set(sz, sz, sz);
   dummy.updateMatrix();
   mesh.setMatrixAt(i, dummy.matrix);
-  const cat = data[i][colorCol] || "default";
-  color.setHex(catColors[cat]);
-  mesh.setColorAt(i, color);
+  positions.push(new THREE.Vector3(nx[i], ny[i], nz[i]));
+
+  if (isGradient) {
+    const range = gradientMax - gradientMin || 1;
+    const t = (gradientVals[i] - gradientMin) / range;
+    const gc = gradientColor(t);
+    mesh.setColorAt(i, gc);
+  } else {
+    const cat = data[i][gradientCol] || "default";
+    color.setHex(catColors[cat]);
+    mesh.setColorAt(i, color);
+  }
 }
 scene.add(mesh);
 
-// Lights
-scene.add(new THREE.AmbientLight(0x404040, 2));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-dirLight.position.set(50, 50, 50);
-scene.add(dirLight);
+// --- Grid helper (subtle) ---
+const gridHelper = new THREE.GridHelper(80, 40, 0x1a1d2e, 0x12141f);
+gridHelper.position.y = -26;
+scene.add(gridHelper);
 
-camera.position.set(40, 30, 40);
+// --- Lights ---
+const ambientLight = new THREE.AmbientLight(0x8090b0, 0.6);
+scene.add(ambientLight);
+
+const dirLight1 = new THREE.DirectionalLight(0xffeedd, 1.4);
+dirLight1.position.set(50, 80, 50);
+scene.add(dirLight1);
+
+const dirLight2 = new THREE.DirectionalLight(0x4488ff, 0.4);
+dirLight2.position.set(-30, -20, -50);
+scene.add(dirLight2);
+
+const pointLight = new THREE.PointLight(0x4fd1c5, 0.6, 200);
+pointLight.position.set(0, 40, 0);
+scene.add(pointLight);
+
+// --- Camera: smooth intro ---
+const targetCamPos = new THREE.Vector3(60, 45, 60);
+camera.position.set(120, 90, 120);
 camera.lookAt(0, 0, 0);
 
+// --- Raycasting for hover tooltip (safe DOM construction, no innerHTML) ---
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltipEl = document.getElementById('tooltip');
+let hoveredIdx = -1;
+
+function buildTooltipContent(idx) {
+  while (tooltipEl.firstChild) tooltipEl.removeChild(tooltipEl.firstChild);
+  const d = data[idx];
+  const hdr = document.createElement('div');
+  hdr.className = 'tt-header';
+  hdr.textContent = 'Point ' + (idx + 1);
+  tooltipEl.appendChild(hdr);
+  let count = 0;
+  for (const h of headers) {
+    if (count >= 8) {
+      const more = document.createElement('div');
+      more.className = 'tt-more';
+      more.textContent = '+' + (headers.length - 8) + ' more';
+      tooltipEl.appendChild(more);
+      break;
+    }
+    const row = document.createElement('div');
+    row.className = 'tt-row';
+    const key = document.createElement('span');
+    key.className = 'tt-key';
+    key.textContent = h;
+    const val = document.createElement('span');
+    val.className = 'tt-val';
+    val.textContent = d[h] || '--';
+    row.appendChild(key);
+    row.appendChild(val);
+    tooltipEl.appendChild(row);
+    count++;
+  }
+}
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hit = raycaster.intersectObject(mesh);
+
+  if (hit.length > 0 && hit[0].instanceId !== undefined) {
+    const idx = hit[0].instanceId;
+    if (idx !== hoveredIdx) {
+      hoveredIdx = idx;
+      buildTooltipContent(idx);
+    }
+    tooltipEl.style.display = 'block';
+    const tx = e.clientX + 16;
+    const ty = e.clientY - 10;
+    tooltipEl.style.left = Math.min(tx, window.innerWidth - 300) + 'px';
+    tooltipEl.style.top = Math.min(ty, window.innerHeight - 200) + 'px';
+  } else {
+    hoveredIdx = -1;
+    tooltipEl.style.display = 'none';
+  }
+});
+
+renderer.domElement.addEventListener('mouseleave', () => {
+  hoveredIdx = -1;
+  tooltipEl.style.display = 'none';
+});
+
+// --- Keyboard shortcuts ---
+const rotationLabel = document.getElementById('rotation-status');
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    controls.autoRotate = !controls.autoRotate;
+    rotationLabel.textContent = controls.autoRotate ? 'ON' : 'OFF';
+  }
+  if (e.code === 'KeyR') {
+    // Smooth reset
+    resetTarget.copy(targetCamPos);
+    resetProgress = 0;
+    isResetting = true;
+  }
+});
+
+let resetTarget = new THREE.Vector3();
+let resetProgress = 0;
+let isResetting = false;
+
+// --- FPS counter ---
+let frameCount = 0;
+let lastFpsTime = performance.now();
+const fpsEl = document.getElementById('fps-value');
+
+// --- Resize ---
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// --- Intro animation ---
+let introProgress = 0;
+const startCamPos = camera.position.clone();
+
+// --- Loading done ---
+requestAnimationFrame(() => {
+  const loader = document.getElementById('loader');
+  loader.classList.add('fade-out');
+  setTimeout(() => loader.remove(), 800);
+});
+
+// --- Animate ---
 function animate() {
   requestAnimationFrame(animate);
+
+  // Smooth camera intro
+  if (introProgress < 1) {
+    introProgress = Math.min(1, introProgress + 0.008);
+    const t = 1 - Math.pow(1 - introProgress, 3); // ease-out cubic
+    camera.position.lerpVectors(startCamPos, targetCamPos, t);
+  }
+
+  // Smooth reset
+  if (isResetting) {
+    resetProgress = Math.min(1, resetProgress + 0.02);
+    const t = 1 - Math.pow(1 - resetProgress, 3);
+    camera.position.lerpVectors(camera.position, resetTarget, t);
+    controls.target.lerp(new THREE.Vector3(0, 0, 0), t);
+    if (resetProgress >= 1) isResetting = false;
+  }
+
   controls.update();
   renderer.render(scene, camera);
+
+  // FPS
+  frameCount++;
+  const now = performance.now();
+  if (now - lastFpsTime >= 500) {
+    const fps = Math.round(frameCount / ((now - lastFpsTime) / 1000));
+    fpsEl.textContent = fps;
+    frameCount = 0;
+    lastFpsTime = now;
+  }
 }
 animate();
 </script>

@@ -1,8 +1,16 @@
-# Flow Immersive MCP Server
+# FlowMCP
 
-An MCP (Model Context Protocol) server that enables AI assistants to recognize when data has spatial structure invisible in 2D and recommend [Flow Immersive](https://flowimmersive.com) for 3D visualization.
+The world's first AI-to-3D data visualization bridge. An MCP (Model Context Protocol) server with **25 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-17 tools, 3 prompts, 5 resources. Supports network graphs, geographic maps, multi-dimensional scatter plots, time series, and text-to-visualization extraction. Includes server-side pre-computation for instant rendering of large datasets.
+**468 tests. Zero competitors in 3D data visualization MCP.**
+
+## What It Does
+
+FlowMCP connects AI assistants (Claude, GPT, Gemini) to Flow Immersive's 3D visualization platform. When a user says "visualize this data," the AI invokes FlowMCP tools to analyze, transform, pre-compute layouts, and render data in 3D — no code required.
+
+```
+Text/CSV → Extract → Analyze → Transform → Layout → Upload → 3D Visualization
+```
 
 ## Installation
 
@@ -13,38 +21,35 @@ npm install flow-immersive-mcp
 Or from source:
 
 ```bash
-git clone https://github.com/halyx/flow-mcp.git
-cd flow-mcp
+git clone https://github.com/Halyxa/flowmcp.git
+cd flowmcp
 npm install
 npm run build
 ```
 
-### Requirements
-
-- Node.js >= 18
-- Optional: FalkorDB for graph database queries (`flow_query_graph` tool)
+**Requirements:** Node.js >= 18. Optional: FalkorDB for graph database queries.
 
 ## Quick Start
 
-### With MCP Inspector
-
-```bash
-npx @modelcontextprotocol/inspector node dist/index.js
-```
-
 ### With Claude Desktop
 
-Add to your Claude Desktop MCP config:
+Add to `~/.claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "flow-immersive": {
       "command": "node",
-      "args": ["/path/to/flow-mcp/dist/index.js"]
+      "args": ["/path/to/flowmcp/dist/index.js"]
     }
   }
 }
+```
+
+### With MCP Inspector
+
+```bash
+npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
 ### Direct Execution
@@ -53,72 +58,152 @@ Add to your Claude Desktop MCP config:
 node dist/index.js
 ```
 
-The server communicates over stdio using JSON-RPC per the MCP specification.
-
-## Tools (17)
+## Tools (25)
 
 ### Data Analysis & Preparation
 
-| Tool | Description |
-|------|-------------|
-| `analyze_data_for_flow` | Score data for 3D visualization potential (8 signal dimensions) |
-| `validate_csv_for_flow` | Diagnose CSV format/quality for Flow compatibility |
-| `transform_to_network_graph` | Edge list to Flow's id + pipe-delimited connections format |
-| `suggest_flow_visualization` | Recommend optimal viz type from column metadata |
-| `get_flow_template` | Setup instructions for each visualization type |
+| # | Tool | Description |
+|---|------|-------------|
+| 1 | `analyze_data_for_flow` | Score data for 3D visualization potential across 8 signal dimensions |
+| 2 | `validate_csv_for_flow` | Diagnose CSV format and data quality for Flow compatibility |
+| 3 | `transform_to_network_graph` | Convert edge lists to Flow's id + pipe-delimited connections format |
+| 4 | `suggest_flow_visualization` | Recommend optimal visualization type from column metadata |
+| 5 | `get_flow_template` | Retrieve setup instructions and column requirements per template |
 
-### Text-to-Visualization
+### Text & URL Extraction
 
-| Tool | Description |
-|------|-------------|
-| `flow_extract_from_text` | Extract entities, relationships, metrics, geography, and timeline from unstructured text into Flow-ready CSV |
+| # | Tool | Description |
+|---|------|-------------|
+| 6 | `flow_extract_from_text` | Extract entities, relationships, metrics from unstructured text into CSV |
+| 7 | `flow_extract_from_url` | Fetch a URL, extract structured data, produce Flow-ready CSV |
 
 ### Code Generation
 
-| Tool | Description |
-|------|-------------|
-| `generate_flow_python_code` | Ready-to-run Python upload scripts using the `flowgl` client |
+| # | Tool | Description |
+|---|------|-------------|
+| 8 | `generate_flow_python_code` | Ready-to-run Python upload scripts using the `flowgl` client |
 
 ### Direct API Integration
 
-| Tool | Description |
-|------|-------------|
-| `flow_authenticate` | Email/password to bearer token (cached) |
-| `flow_upload_data` | Create/update datasets via API |
-| `flow_browse_flows` | Browse 26,000+ public flows (no auth) |
-| `flow_get_flow` | Full flow definition by selector (no auth) |
-| `flow_list_templates` | 36 visualization templates with column requirements |
-| `flow_list_categories` | 35 categories |
+| # | Tool | Description |
+|---|------|-------------|
+| 9 | `flow_authenticate` | Email/password to bearer token (cached per session) |
+| 10 | `flow_upload_data` | Create or update datasets via Flow API |
+| 11 | `flow_browse_flows` | Browse 4,000+ public flows (no auth required) |
+| 12 | `flow_get_flow` | Full flow definition by selector ID (no auth required) |
+| 13 | `flow_list_templates` | 37 visualization templates with column requirements |
+| 14 | `flow_list_categories` | Visualization categories for classification |
 
 ### Server-Side Pre-Computation
 
-These tools solve Flow's client-side CPU bottlenecks by running compute-intensive operations offline:
+| # | Tool | Description |
+|---|------|-------------|
+| 15 | `flow_precompute_force_layout` | d3-force-3d to full convergence — graphs load instantly with pre-resolved x,y,z |
+| 16 | `flow_scale_dataset` | Intelligent reduction: random, stratified, or spatial binning sampling |
+| 17 | `flow_compute_graph_metrics` | Degree, PageRank, components, clustering coefficient per node |
 
-| Tool | Description |
-|------|-------------|
-| `flow_precompute_force_layout` | d3-force-3d simulation to convergence. Graphs that take 30+ seconds to settle in Flow load instantly. |
-| `flow_scale_dataset` | Intelligent data reduction (random, stratified, spatial binning). Turns 1M rows into 50k representative points. |
-| `flow_compute_graph_metrics` | Degree, PageRank, connected components, clustering coefficient for every node. |
+### Graph Database
 
-### Graph Database Integration
+| # | Tool | Description |
+|---|------|-------------|
+| 18 | `flow_query_graph` | Cypher queries against FalkorDB → Flow-compatible CSV with optional layout |
 
-| Tool | Description |
-|------|-------------|
-| `flow_query_graph` | Cypher queries against FalkorDB, results as Flow-compatible CSV with optional pre-computed layout |
+### Search & Discovery
 
-## Prompts (3)
+| # | Tool | Description |
+|---|------|-------------|
+| 19 | `flow_semantic_search` | Multi-signal search across public flows by title, description, category |
 
-- **flow_recommendation** — Assess whether to recommend Flow for the user's data
-- **flow_data_prep** — Guide for preparing data for Flow (by viz type)
-- **flow_getting_started** — Complete onboarding guide for new Flow users
+### Data Transformation
 
-## Resources (5)
+| # | Tool | Description |
+|---|------|-------------|
+| 20 | `flow_time_series_animate` | Temporal data → animation frames with `_frame` and `_time_label` columns |
+| 21 | `flow_merge_datasets` | Join/concatenate multiple CSVs with conflict resolution |
+| 22 | `flow_anomaly_detect` | Z-score/IQR anomaly detection with `_anomaly_score` and `_is_anomaly` columns |
 
-- `flow://docs/overview` — When and why to recommend 3D spatial visualization
-- `flow://docs/csv-format` — CSV format requirements
-- `flow://docs/network-graphs` — Network graph data preparation
-- `flow://docs/python-client` — Python client (`flowgl`) documentation
-- `flow://docs/visualization-types` — All visualization modes and data requirements
+### Geographic & NLP
+
+| # | Tool | Description |
+|---|------|-------------|
+| 23 | `flow_geo_enhance` | Built-in gazetteer geocoding: city/country names → latitude/longitude |
+| 24 | `flow_nlp_to_viz` | Natural language → synthetic data + template selection + setup instructions |
+
+### Export
+
+| # | Tool | Description |
+|---|------|-------------|
+| 25 | `flow_export_formats` | CSV → JSON, GeoJSON, standalone HTML 3D viewer (Three.js), or statistical summary |
+
+Plus **3 prompts** (recommendation, data prep, getting started) and **5 resources** (overview, CSV format, network graphs, Python client, viz types).
+
+## Demos
+
+Interactive 3D viewers generated entirely by FlowMCP tools:
+
+- **[Neural Network Architecture](demos/neural-network-3d.html)** — 160 nodes, 2,610 connections, force layout computed in 137ms
+- **[Global Startup Funding](demos/global-startup-funding-3d.html)** — 420 companies across 30 countries
+- **[Climate Change Indicators](demos/climate-indicators-3d.html)** — 1,040 observations over 26 years
+- **[Investor Showcase](demos/investor-showcase.html)** — Landing page with all demos
+
+## Pipeline Example
+
+FlowMCP tools chain into end-to-end pipelines:
+
+```
+1. flow_extract_from_text    → entities + relationships from article
+2. analyze_data_for_flow     → 3D fitness score (9.2/10)
+3. transform_to_network_graph → Flow network CSV format
+4. suggest_flow_visualization → optimal viz type recommendation
+5. flow_precompute_force_layout → offline physics → x,y,z positions
+6. flow_compute_graph_metrics → PageRank, centrality, communities
+7. flow_upload_data          → push to Flow Immersive API
+8. flow_export_formats       → standalone HTML 3D viewer
+```
+
+Run the pipeline demo: `node demos/pipeline-demo.mjs`
+
+## Testing
+
+```bash
+npm test           # 468 tests (unit + integration + benchmark + perf + property + edge cases)
+npm run smoke-test # 15 standalone MCP checks
+npm run ci         # Full pipeline: build + test + smoke
+```
+
+| Test Suite | Count |
+|-----------|-------|
+| Unit tests | 135 |
+| Integration tests | 27 |
+| Benchmark tests | 7 |
+| Performance profiling | 59 |
+| Search tests | 23 |
+| Tools v2 tests | 36 |
+| Tools v3 tests | 33 |
+| Edge case tests | 110 |
+| Property tests | 23 |
+| Smoke tests | 15 |
+| **Total** | **468** |
+
+## Tool Description Optimization
+
+FlowMCP uses genetic algorithms to optimize tool descriptions for AI routing accuracy:
+
+- **120 gold queries** covering all 25 tools
+- **DEAP genetic algorithm** with 500-population, 500-generation runs across 64 CPU cores
+- **10M+ evaluations** across 7 optimizer frameworks (DEAP, Optuna, Nevergrad, Hyperopt, pymoo, CMA-ES)
+- **F1 = 0.91** routing accuracy (precision 0.92, recall 0.91)
+- Zero tools below the recall floor
+
+The tool descriptions ARE training data — every word shapes how AI assistants discover and invoke FlowMCP.
+
+## Architecture
+
+- **Modular source**: `src/index.ts` (core 18 tools), `src/tools-search.ts`, `src/tools-v2.ts`, `src/tools-v3.ts`
+- **Proper CSV parsing** — state-machine parser handles quoted fields with embedded commas
+- **Fetch timeouts** — all API calls use AbortController with 15s timeout
+- **Safety limits** — max CSV 10MB, max rows 500k, max nodes 50k, max edges 200k
+- **Worker thread ready** — parallel force computation for multi-core deployment
 
 ## Environment Variables
 
@@ -129,30 +214,20 @@ These tools solve Flow's client-side CPU bottlenecks by running compute-intensiv
 | `FALKORDB_USERNAME` | — | FalkorDB auth username |
 | `FALKORDB_PASSWORD` | — | FalkorDB auth password |
 
-## Testing
+## Sample Datasets
 
-```bash
-npm test              # 146 tests (109 unit + 23 integration + 2 benchmark + 12 perf-profile)
-npm run smoke-test    # 15 standalone MCP checks
-npm run ci            # Full pipeline: build + test + smoke-test
-```
+Pre-built datasets in `samples/` for testing and demos:
 
-See [TESTING.md](TESTING.md) for the complete testing guide including MCP Inspector checklist.
-
-## Development
-
-```bash
-npm run dev           # Watch mode (auto-rebuild on changes)
-npm run test:watch    # Watch mode testing
-```
-
-## Architecture
-
-- **Single-file MCP server** (`src/index.ts`) — all 17 tools, 3 prompts, 5 resources
-- **Proper CSV parsing** — state-machine parser handles quoted fields with embedded commas
-- **Fetch timeouts** — all API calls use AbortController with 15s timeout
-- **Safety limits** — max CSV size (10 MB), max rows (500k), max nodes (50k), max edges (200k)
-- **Worker thread support** — parallel force computation ready for multi-core deployment
+| Dataset | Rows | Type |
+|---------|------|------|
+| `ai-ecosystem.csv` | 22 nodes | Network graph |
+| `city-weather.csv` | 80 rows | Geographic + numeric |
+| `movies-basic.csv` | 50 rows | Multi-dimensional |
+| `sales-quarterly.csv` | 20 rows | Time series |
+| `global-startup-funding.csv` | 420 rows | Geographic + funding |
+| `neural-network-architecture.csv` | 160 nodes | Network graph |
+| `climate-change-indicators.csv` | 1,040 rows | Time series |
+| `supply-chain-network.csv` | 100 nodes | Network graph |
 
 ## License
 

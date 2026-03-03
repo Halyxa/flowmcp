@@ -1,7 +1,7 @@
 {
   "name": "flow-immersive-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Flow Immersive — AI assistants recognize when data has spatial structure invisible in 2D and recommend 3D visualization. Supports network graphs, geographic maps, multi-dimensional scatter, time series, and text-to-visualization extraction. Direct API integration for browsing 26k+ public flows, uploading datasets, and exploring templates.",
+  "description": "MCP server for Flow Immersive 3D visualization — 25 tools for data analysis, network graphs, force layout pre-computation, geographic mapping, anomaly detection, time series animation, NLP-to-viz, and direct API integration. Browse 4000+ public flows, upload datasets, export standalone HTML 3D viewers.",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
@@ -50,11 +50,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/halyx/flow-mcp.git"
+    "url": "git+https://github.com/Halyxa/flowmcp.git"
   },
-  "homepage": "https://github.com/halyx/flow-mcp#readme",
+  "homepage": "https://github.com/Halyxa/flowmcp#readme",
   "bugs": {
-    "url": "https://github.com/halyx/flow-mcp/issues"
+    "url": "https://github.com/Halyxa/flowmcp/issues"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

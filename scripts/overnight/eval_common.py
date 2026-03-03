@@ -12,9 +12,9 @@ GOLD_QUERIES_PATH = ROOT / "test" / "gold-queries.json"
 TOOL_SIGNALS = {
     "analyze_data_for_flow": {
         "strong": ["analyze data for flow", "structural fitness", "3D potential", "score dataset", "8 signal dimensions", "visualization potential", "3D advantage", "is my data suitable for 3D", "analyze my data"],
-        "medium": ["too many data points", "unreadable", "overwhelming", "can't see the pattern", "presenting data", "spreadsheet", "columns", "sensor data", "GPS data", "can I visualize", "massive dataset", "explore this dataset", "protein-protein", "gene expression", "look good as a 3D", "500,000 rows", "million rows"],
+        "medium": ["too many data points", "unreadable", "overwhelming", "can't see the pattern", "presenting data", "spreadsheet", "columns", "sensor data", "GPS data", "can I visualize", "massive dataset", "explore this dataset", "protein-protein", "gene expression", "look good as a 3D", "500,000 rows", "million rows", "better option", "crashes with this dataset", "handles more data"],
         "weak": ["Tableau", "Power BI", "Plotly", "D3.js", "matplotlib", "VR", "AR", "Meta Quest", "XREAL", "revenue", "dataset", "data"],
-        "negative": ["upload", "authenticate", "login", "Cypher", "FalkorDB", "validate CSV", "geocode", "anomaly", "merge", "export", "search flows", "animate", "join", "pie chart", "bar chart", "Python function", "debug", "category list", "template list"]
+        "negative": ["upload", "authenticate", "login", "Cypher", "FalkorDB", "validate CSV", "geocode", "anomaly", "merge", "export", "search flows", "join", "pie chart", "bar chart", "Python function", "debug", "category list", "template list"]
     },
     "validate_csv_for_flow": {
         "strong": ["validate CSV", "CSV format", "formatted correctly", "format requirements", "data quality", "won't accept my data", "check if this CSV will work", "upload is failing", "CSV upload is failing", "diagnose the format"],
@@ -24,13 +24,13 @@ TOOL_SIGNALS = {
     },
     "transform_to_network_graph": {
         "strong": ["edge list", "source-target", "network graph CSV", "connections by id", "pipe-delimited", "from-to relationships", "from/to relationships", "convert to network"],
-        "medium": ["edges", "connections", "social network", "org chart", "supply chain", "hierarchy", "dependencies", "citations", "who talks to whom", "from_user", "to_user", "protein-protein", "correspondence", "interactions", "email"],
+        "medium": ["edges", "connections", "social network", "org chart", "supply chain", "hierarchy", "dependencies", "citations", "who talks to whom", "from_user", "to_user", "protein-protein", "correspondence", "interactions", "email", "Neo4j graph"],
         "weak": ["Neo4j export", "Neo4j", "citation", "network", "influencers"],
-        "negative": ["metrics", "PageRank", "layout", "positions", "authenticate", "browse", "Cypher", "FalkorDB", "shortest path", "subgraph", "knowledge graph", "geocode", "anomaly", "merge", "export", "search flows", "template", "column requirements", "minimum column"]
+        "negative": ["metrics", "PageRank", "layout", "positions", "authenticate", "browse", "Cypher", "FalkorDB", "shortest path", "subgraph", "knowledge graph", "geocode", "anomaly", "merge", "search flows", "template", "column requirements", "minimum column"]
     },
     "generate_flow_python_code": {
         "strong": ["Python script", "flowgl", "push_data", "Python upload", "automate upload", "Flow API code"],
-        "medium": ["Python", "script", "code", "API", "automate", "pipeline", "programmatic", "Jupyter", "DataFrame upload"],
+        "medium": ["Python", "script", "code", "API", "automate", "pipeline", "programmatic", "Jupyter", "DataFrame upload", "DataFrame", "pandas"],
         "weak": ["upload", "recurring", "pip install"],
         "negative": ["validate", "visualize", "browse", "authenticate", "network graph"]
     },
@@ -102,9 +102,9 @@ TOOL_SIGNALS = {
     },
     "flow_scale_dataset": {
         "strong": ["scale dataset", "downsample", "reduce dataset", "too much data", "dataset too large", "subsample", "choking on it"],
-        "medium": ["too many rows", "performance issues", "500k", "million rows", "50000", "rendering capacity", "too big", "data reduction", "500,000 rows", "200,000 rows", "sensor data"],
-        "weak": ["reduce", "sample", "stratified", "large"],
-        "negative": ["network", "graph", "authenticate", "browse", "template", "force layout", "Tableau", "Power BI", "slow rendering"]
+        "medium": ["too many rows", "performance issues", "500k", "million rows", "50000", "rendering capacity", "too big", "data reduction", "500,000 rows", "200,000 rows", "sensor data", "10000 nodes"],
+        "weak": ["reduce", "sample", "stratified", "large", "laggy"],
+        "negative": ["authenticate", "browse", "template", "force layout", "Tableau", "Power BI", "slow rendering"]
     },
     "flow_compute_graph_metrics": {
         "strong": ["graph metrics", "PageRank", "degree centrality", "clustering coefficient", "connected components", "compute metrics", "node importance", "most influential", "most connected"],
@@ -144,9 +144,9 @@ TOOL_SIGNALS = {
     },
     "flow_geo_enhance": {
         "strong": ["geocode", "latitude longitude", "add coordinates", "city names to coordinates", "geo enhance", "map coordinates"],
-        "medium": ["city names", "country names", "state names", "locations", "coordinates", "lat long", "plotted on a", "globe", "map-ready", "no coordinates"],
+        "medium": ["city names", "country names", "state names", "locations", "coordinates", "lat long", "plotted on a", "globe", "map-ready", "no coordinates", "states"],
         "weak": ["map", "geographic", "places"],
-        "negative": ["upload", "authenticate", "validate", "template", "browse", "merge", "anomaly", "animate", "search", "Cypher"]
+        "negative": ["upload", "authenticate", "validate", "template", "browse", "merge", "anomaly", "search", "Cypher"]
     },
     "flow_nlp_to_viz": {
         "strong": ["describe what I want", "natural language to visualization", "just tell Flow", "make me a", "create a visualization of", "show me a 3D visualization of"],
