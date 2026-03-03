@@ -1,5 +1,5 @@
 {
-  "status": "active",
+  "status": "idle",
   "last_action": "session-8-60-tool-milestone",
   "timestamp": "2026-03-03T17:55:00Z",
   "being": "flowmcp",
@@ -15,11 +15,17 @@
     "2362188 Tools 53-54: encode_categorical + cumulative, 842 tests",
     "1458a93 Tools 55-56: percentile_rank + coalesce_columns, 854 tests",
     "0c2cce8 Tools 57-58: describe_dataset + lag_lead, 867 tests",
-    "af39e8f Tools 59-60: group_aggregate + row_number — 60-TOOL MILESTONE, 878 tests"
+    "af39e8f Tools 59-60: group_aggregate + row_number \u2014 60-TOOL MILESTONE, 878 tests"
   ],
   "next_actions": [
     "Commit 60-tool milestone docs",
     "Continue building tools 61+ (autonomous mode)",
     "npm publish + MCP Registry (blocked on auth token from halyx)"
-  ]
+  ],
+  "session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
+  "context_tokens_at_flush": 17044074,
+  "compaction_count": 1,
+  "session_ended": "2026-03-03T18:53:27Z",
+  "last_session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
+  "session_summary": "session-8-60-tool-milestone, 878 tests, 60 tools, 1 compactions"
 }

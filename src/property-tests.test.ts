@@ -12,7 +12,7 @@ import {
   flowMergeDatasets,
 } from "./tools-v2.js";
 import { flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats } from "./tools-v4.js";
 
 // ============================================================================
 // Helpers: CSV generators for fast-check (v4 API)
@@ -1611,131 +1611,9 @@ describe("flow_bin_data properties", () => {
 // =============================================================================
 // Section 28: flow_transpose_data — property tests
 // =============================================================================
-
-describe("flow_transpose_data properties", () => {
-  it("transpose of N rows × M cols gives M-1 rows × N+1 cols", () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 5 }),
-        fc.integer({ min: 1, max: 8 }),
-        (nRows, nCols) => {
-          const headers = ["label", ...Array.from({ length: nCols }, (_, i) => `c${i}`)];
-          const rows = Array.from({ length: nRows }, (_, r) =>
-            `r${r},` + Array.from({ length: nCols }, (_, c) => `${r * 10 + c}`).join(",")
-          );
-          const csv = headers.join(",") + "\n" + rows.join("\n");
-          const result = flowTransposeData({ csv_content: csv, header_column: "label" });
-          expect(result.row_count).toBe(nCols);
-          expect(result.column_count).toBe(nRows + 1); // +1 for "metric" column
-        }
-      ),
-      { numRuns: 200 }
-    );
-  });
-
-  it("double transpose preserves values", () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 4 }),
-        (n) => {
-          const csv = "label," + Array.from({ length: n }, (_, i) => `c${i}`).join(",") + "\n" +
-            Array.from({ length: n }, (_, r) =>
-              `r${r},` + Array.from({ length: n }, (_, c) => `${r * 10 + c}`).join(",")
-            ).join("\n");
-          const first = flowTransposeData({ csv_content: csv, header_column: "label" });
-          const second = flowTransposeData({ csv_content: first.csv, header_column: "metric" });
-          // After double transpose, should get back N rows
-          expect(second.row_count).toBe(n);
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
-});
-
 // ============================================================================
 // Section 29: flow_sample_data property tests
 // ============================================================================
-
-describe("flow_sample_data properties", () => {
-  it("sampled rows <= min(n, total)", () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 20 }),
-        fc.integer({ min: 1, max: 30 }),
-        (nRows, n) => {
-          const csv = "val\n" + Array.from({ length: nRows }, (_, i) => `${i}`).join("\n");
-          const result = flowSampleData({ csv_content: csv, n, method: "random" });
-          expect(result.sampled_rows).toBeLessThanOrEqual(Math.min(n, nRows));
-          expect(result.sampled_rows).toBeGreaterThan(0);
-        }
-      ),
-      { numRuns: 200 }
-    );
-  });
-
-  it("first-N preserves order", () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 3, max: 15 }),
-        (nRows) => {
-          const csv = "val\n" + Array.from({ length: nRows }, (_, i) => `${i}`).join("\n");
-          const n = Math.min(3, nRows);
-          const result = flowSampleData({ csv_content: csv, n, method: "first" });
-          const lines = result.csv.trim().split("\n");
-          for (let i = 1; i <= n; i++) {
-            expect(lines[i]).toBe(`${i - 1}`);
-          }
-        }
-      ),
-      { numRuns: 200 }
-    );
-  });
-
-  it("every_nth produces bounded samples", () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 5, max: 20 }),
-        (nRows) => {
-          const csv = "idx\n" + Array.from({ length: nRows }, (_, i) => `${i}`).join("\n");
-          const n = Math.max(2, Math.floor(nRows / 3));
-          const result = flowSampleData({ csv_content: csv, n, method: "every_nth" });
-          expect(result.sampled_rows).toBeLessThanOrEqual(n);
-          expect(result.total_rows).toBe(nRows);
-        }
-      ),
-      { numRuns: 200 }
-    );
-  });
-
-  it("stratified samples from multiple categories", () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 2, max: 4 }),
-        fc.integer({ min: 3, max: 6 }),
-        (nCategories, perCat) => {
-          const rows: string[] = [];
-          for (let c = 0; c < nCategories; c++) {
-            for (let r = 0; r < perCat; r++) {
-              rows.push(`cat${c},${c * 100 + r}`);
-            }
-          }
-          const csv = "group,val\n" + rows.join("\n");
-          const total = nCategories * perCat;
-          // Use n large enough that each category gets at least 1 row (n >= total * 0.8)
-          const n = Math.max(nCategories * 2, Math.ceil(total * 0.8));
-          const result = flowSampleData({ csv_content: csv, n, method: "stratified", stratify_column: "group" });
-          const lines = result.csv.trim().split("\n").slice(1);
-          const cats = new Set(lines.map(l => l.split(",")[0]));
-          // With enough budget per category, all should be represented
-          expect(cats.size).toBe(nCategories);
-        }
-      ),
-      { numRuns: 200 }
-    );
-  });
-});
-
 // ============================================================================
 // Section 30: flow_column_stats property tests
 // ============================================================================

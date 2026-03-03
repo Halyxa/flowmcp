@@ -13,4 +13,10 @@ CLAUDE.md
 DONE.md
 TRANSPORT.md
 .claude/
+.claude-jason/
 .mcp.json
+data/
+__pycache__/
+*.pyc
+session-checkpoint.md
+*.log

@@ -8,14 +8,11 @@
  * This is the REAL test — unit tests call exported functions,
  * but this test speaks the actual MCP JSON-RPC protocol over stdio.
  */
-
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-
 let client: Client;
 let transport: StdioClientTransport;
-
 // Helper to extract text from MCP tool result
 function getResultText(result: any): string {
   return result.content[0].text;
@@ -23,7 +20,6 @@ function getResultText(result: any): string {
 function getResultJson(result: any): any {
   return JSON.parse(getResultText(result));
 }
-
 describe("MCP Protocol Integration", () => {
   beforeAll(async () => {
     transport = new StdioClientTransport({
@@ -31,32 +27,25 @@ describe("MCP Protocol Integration", () => {
       args: ["dist/index.js"],
       stderr: "pipe",
     });
-
     client = new Client(
       { name: "flow-mcp-test-client", version: "1.0.0" },
       { capabilities: {} }
     );
-
     await client.connect(transport);
   }, 15000);
-
   afterAll(async () => {
     await client.close();
   });
-
   // ====================================================================
   // Tool Discovery
   // ====================================================================
-
   it("lists all 36 tools", async () => {
     const result = await client.listTools();
-    expect(result.tools.length).toBe(82);
+    expect(result.tools.length).toBe(59);
   });
-
   it("includes all expected tool names", async () => {
     const result = await client.listTools();
     const names = result.tools.map((t) => t.name);
-
     const expected = [
       "analyze_data_for_flow",
       "validate_csv_for_flow",
@@ -93,60 +82,35 @@ describe("MCP Protocol Integration", () => {
       "flow_normalize_data",
       "flow_deduplicate_rows",
       "flow_bin_data",
-      "flow_transpose_data",
-      "flow_sample_data",
       "flow_column_stats",
       "flow_computed_columns",
       "flow_parse_dates",
-      "flow_string_transform",
       "flow_validate_rules",
       "flow_fill_missing",
-      "flow_rename_columns",
       "flow_filter_rows",
-      "flow_split_dataset",
-      "flow_select_columns",
-      "flow_sort_rows",
       "flow_unpivot",
       "flow_join_datasets",
       "flow_cross_tabulate",
       "flow_window_functions",
       "flow_encode_categorical",
       "flow_cumulative",
-      "flow_percentile_rank",
-      "flow_coalesce_columns",
       "flow_describe_dataset",
       "flow_lag_lead",
-      "flow_group_aggregate",
-      "flow_row_number",
-      "flow_type_cast",
       "flow_concat_rows",
-      "flow_value_counts",
-      "flow_date_diff",
       "flow_outlier_fence",
-      "flow_moving_average",
-      "flow_entropy",
       "flow_standardize",
-      "flow_ratio_columns",
       "flow_discretize",
-      "flow_abs_values",
-      "flow_round_values",
-      "flow_clamp_values",
       "flow_string_split",
       "flow_pca_reduce",
       "flow_distance_matrix",
       "flow_interpolate_missing",
       "flow_rank_values",
-      "flow_running_total",
-      "flow_zscore",
-      "flow_melt",
       "flow_string_extract",
     ];
-
     for (const name of expected) {
       expect(names).toContain(name);
     }
   });
-
   it("every tool has a description and inputSchema", async () => {
     const result = await client.listTools();
     for (const tool of result.tools) {
@@ -155,29 +119,23 @@ describe("MCP Protocol Integration", () => {
       expect(tool.inputSchema).toBeDefined();
     }
   });
-
   // ====================================================================
   // Prompt Discovery
   // ====================================================================
-
   it("lists 3 prompts", async () => {
     const result = await client.listPrompts();
     expect(result.prompts.length).toBe(3);
   });
-
   // ====================================================================
   // Resource Discovery
   // ====================================================================
-
   it("lists 5 resources", async () => {
     const result = await client.listResources();
     expect(result.resources.length).toBe(5);
   });
-
   // ====================================================================
   // Tool Execution — Data Analysis & Preparation
   // ====================================================================
-
   it("analyze_data_for_flow responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "analyze_data_for_flow",
@@ -188,12 +146,10 @@ describe("MCP Protocol Integration", () => {
         use_case: "visualize for stakeholder presentation",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.recommendation).toBeDefined();
     expect(parsed.score).toBeDefined();
   });
-
   it("validate_csv_for_flow responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "validate_csv_for_flow",
@@ -201,12 +157,10 @@ describe("MCP Protocol Integration", () => {
         csv_content: "name,value,category\nAlice,100,A\nBob,200,B\nCarol,300,A",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.valid).toBe(true);
     expect(parsed.rowCount).toBe(3); // rowCount, not rows
   });
-
   it("transform_to_network_graph responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "transform_to_network_graph",
@@ -216,11 +170,9 @@ describe("MCP Protocol Integration", () => {
         target_column: "target",
       },
     });
-
     const text = getResultText(result);
     expect(text).toContain("id,connections by id");
   });
-
   it("suggest_flow_visualization responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "suggest_flow_visualization",
@@ -234,12 +186,10 @@ describe("MCP Protocol Integration", () => {
         row_count: 200,
       },
     });
-
     const parsed = getResultJson(result);
     // Check for recommendations array
     expect(parsed.recommendations || parsed.recommended_type).toBeDefined();
   });
-
   it("get_flow_template responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "get_flow_template",
@@ -247,17 +197,14 @@ describe("MCP Protocol Integration", () => {
         template_name: "network_force",
       },
     });
-
     const parsed = getResultJson(result);
     // Template returns the template object with name, description, setupSteps
     expect(parsed.name).toBeDefined();
     expect(parsed.setupSteps).toBeDefined();
   });
-
   // ====================================================================
   // Tool Execution — Text-to-Visualization
   // ====================================================================
-
   it("flow_extract_from_text responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "flow_extract_from_text",
@@ -266,12 +213,10 @@ describe("MCP Protocol Integration", () => {
         output_mode: "network",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.mode).toBe("network");
     expect(parsed.csv_output).toBeDefined();
   });
-
   it("flow_extract_from_text extracts emails from full text", async () => {
     // Skill: structured-entity-extraction — emails contain periods that break
     // sentence splitting, so they must be extracted from the full text
@@ -282,14 +227,12 @@ describe("MCP Protocol Integration", () => {
         output_mode: "network",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.extraction_summary.entity_types.emails).toBeGreaterThanOrEqual(2);
     expect(parsed.extraction_summary.top_entities.some(
       (e: any) => e.types.includes("email")
     )).toBe(true);
   });
-
   it("flow_extract_from_text extracts URLs from full text", async () => {
     // Skill: structured-entity-extraction — URLs contain periods that break
     // sentence splitting, so they must be extracted from the full text
@@ -300,14 +243,12 @@ describe("MCP Protocol Integration", () => {
         output_mode: "network",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.extraction_summary.entity_types.urls).toBeGreaterThanOrEqual(2);
     expect(parsed.extraction_summary.top_entities.some(
       (e: any) => e.types.includes("url")
     )).toBe(true);
   });
-
   it("flow_extract_from_text extracts hashtags and mentions", async () => {
     const result = await client.callTool({
       name: "flow_extract_from_text",
@@ -316,12 +257,10 @@ describe("MCP Protocol Integration", () => {
         output_mode: "network",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.extraction_summary.entity_types.hashtags).toBeGreaterThanOrEqual(2);
     expect(parsed.extraction_summary.entity_types.mentions).toBeGreaterThanOrEqual(2);
   });
-
   it("flow_extract_from_text includes confidence scores and entity_types breakdown", async () => {
     const result = await client.callTool({
       name: "flow_extract_from_text",
@@ -330,10 +269,8 @@ describe("MCP Protocol Integration", () => {
         output_mode: "network",
       },
     });
-
     const parsed = getResultJson(result);
     const summary = parsed.extraction_summary;
-
     // entity_types breakdown should exist with all categories
     expect(summary.entity_types).toBeDefined();
     expect(typeof summary.entity_types.proper_nouns).toBe("number");
@@ -342,13 +279,11 @@ describe("MCP Protocol Integration", () => {
     expect(typeof summary.entity_types.urls).toBe("number");
     expect(typeof summary.entity_types.hashtags).toBe("number");
     expect(typeof summary.entity_types.mentions).toBe("number");
-
     // This text has at least one of each structured type
     expect(summary.entity_types.emails).toBeGreaterThanOrEqual(1);
     expect(summary.entity_types.urls).toBeGreaterThanOrEqual(1);
     expect(summary.entity_types.hashtags).toBeGreaterThanOrEqual(1);
     expect(summary.entity_types.mentions).toBeGreaterThanOrEqual(1);
-
     // Top entities should have confidence scores
     for (const entity of summary.top_entities) {
       expect(entity.confidence).toBeGreaterThanOrEqual(0);
@@ -356,16 +291,13 @@ describe("MCP Protocol Integration", () => {
       expect(entity.types).toBeDefined();
       expect(Array.isArray(entity.types)).toBe(true);
     }
-
     // CSV output should be valid and flow-ready
     expect(parsed.flow_ready).toBe(true);
     expect(parsed.csv_output.length).toBeGreaterThan(0);
   });
-
   // ====================================================================
   // Tool Execution — Code Generation
   // ====================================================================
-
   it("generate_flow_python_code responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "generate_flow_python_code",
@@ -375,15 +307,12 @@ describe("MCP Protocol Integration", () => {
         columns: ["name", "value"],
       },
     });
-
     const text = getResultText(result);
     expect(text).toContain("flowgl");
   });
-
   // ====================================================================
   // Tool Execution — Server-Side Pre-Computation
   // ====================================================================
-
   it("flow_precompute_force_layout responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "flow_precompute_force_layout",
@@ -401,20 +330,17 @@ describe("MCP Protocol Integration", () => {
         iterations: 100,
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.csv).toContain("id,x,y,z");
     expect(parsed.stats.nodes).toBe(3);
     expect(parsed.stats.edges).toBe(3);
     expect(parsed.flow_instructions).toBeDefined();
   });
-
   it("flow_scale_dataset responds via MCP protocol", async () => {
     const lines = ["id,value,category"];
     for (let i = 0; i < 200; i++) {
       lines.push(`row${i},${i},cat${i % 3}`);
     }
-
     const result = await client.callTool({
       name: "flow_scale_dataset",
       arguments: {
@@ -424,12 +350,10 @@ describe("MCP Protocol Integration", () => {
         preserve_columns: ["category"],
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.stats.reduced_rows).toBeLessThanOrEqual(50);
     expect(parsed.stats.strategy).toBe("stratified");
   });
-
   it("flow_compute_graph_metrics responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "flow_compute_graph_metrics",
@@ -443,13 +367,11 @@ describe("MCP Protocol Integration", () => {
         metrics: ["degree", "pagerank", "component", "clustering"],
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.csv).toContain("degree");
     expect(parsed.csv).toContain("pagerank");
     expect(parsed.stats.nodes).toBe(3);
   });
-
   it("flow_query_graph handles query (connection error or results)", async () => {
     const result = await client.callTool({
       name: "flow_query_graph",
@@ -458,7 +380,6 @@ describe("MCP Protocol Integration", () => {
         graph_name: "test",
       },
     });
-
     const parsed = getResultJson(result);
     // If FalkorDB is running, we get results (possibly empty); if not, we get a connection error
     if (parsed.error) {
@@ -468,11 +389,9 @@ describe("MCP Protocol Integration", () => {
       expect(parsed).toBeDefined();
     }
   });
-
   // ====================================================================
   // Tool Execution — URL-to-Flow Extraction
   // ====================================================================
-
   it("flow_extract_from_url returns error for invalid URL via MCP", async () => {
     const result = await client.callTool({
       name: "flow_extract_from_url",
@@ -480,12 +399,10 @@ describe("MCP Protocol Integration", () => {
         url: "not-a-valid-url",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.error).toContain("Invalid URL");
     expect(parsed.flow_ready).toBe(false);
   });
-
   it("flow_extract_from_url returns error for empty URL via MCP", async () => {
     const result = await client.callTool({
       name: "flow_extract_from_url",
@@ -493,12 +410,10 @@ describe("MCP Protocol Integration", () => {
         url: "",
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.error).toBeDefined();
     expect(parsed.flow_ready).toBe(false);
   });
-
   it("flow_extract_from_url accepts extraction_focus parameter", async () => {
     const result = await client.callTool({
       name: "flow_extract_from_url",
@@ -507,17 +422,14 @@ describe("MCP Protocol Integration", () => {
         extraction_focus: "metrics",
       },
     });
-
     const parsed = getResultJson(result);
     // Should fail to fetch but not crash on extraction_focus parameter
     expect(parsed.error).toBeDefined();
     expect(parsed.flow_ready).toBe(false);
   }, 30000);
-
   // ====================================================================
   // Tool Execution — Live API (no auth needed)
   // ====================================================================
-
   it("flow_browse_flows responds via MCP protocol (live API)", async () => {
     const result = await client.callTool({
       name: "flow_browse_flows",
@@ -525,38 +437,31 @@ describe("MCP Protocol Integration", () => {
         discoverable: true,
       },
     });
-
     const parsed = getResultJson(result);
     expect(parsed.total).toBeGreaterThan(0);
     expect(parsed.flows.length).toBeGreaterThan(0);
   }, 15000);
-
   it("flow_list_templates responds via MCP protocol (live API)", async () => {
     const result = await client.callTool({
       name: "flow_list_templates",
       arguments: {},
     });
-
     const parsed = getResultJson(result);
     // Templates wrapped in { templates, count }
     expect(parsed.templates).toBeDefined();
     expect(parsed.count).toBeGreaterThan(0);
   }, 15000);
-
   it("flow_list_categories responds via MCP protocol (live API)", async () => {
     const result = await client.callTool({
       name: "flow_list_categories",
       arguments: {},
     });
-
     const parsed = getResultJson(result);
     expect(parsed.categories.length).toBeGreaterThan(0);
   }, 15000);
-
   // ====================================================================
   // Tool Execution — Semantic Search
   // ====================================================================
-
   it("flow_semantic_search responds via MCP protocol", async () => {
     const result = await client.callTool({
       name: "flow_semantic_search",
@@ -565,7 +470,6 @@ describe("MCP Protocol Integration", () => {
         max_results: 5,
       },
     });
-
     const parsed = getResultJson(result);
     // Either returns results from live catalog or an error if network fails
     if (parsed.error) {

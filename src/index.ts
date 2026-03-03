@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows, flowValueCounts, flowDateDiff, flowOutlierFence, flowMovingAverage, flowEntropy, flowStandardize, flowRatioColumns, flowDiscretize, flowAbsValues, flowRoundValues, flowClampValues, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowRunningTotal, flowZscore, flowMelt, flowStringExtract } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput, ValueCountsInput, DateDiffInput, OutlierFenceInput, MovingAverageInput, EntropyInput, StandardizeInput, RatioColumnsInput, DiscretizeInput, AbsValuesInput, RoundValuesInput, ClampValuesInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, RunningTotalInput, ZscoreInput, MeltInput, StringExtractInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats, flowComputedColumns, flowParseDates, flowValidateRules, flowFillMissing, flowFilterRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowDescribeDataset, flowLagLead, flowConcatRows, flowOutlierFence, flowStandardize, flowDiscretize, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowStringExtract } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, StandardizeInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1843,73 +1843,7 @@ Output: Binned CSV with bin_label, bin_min, bin_max, count, and frequency column
       },
 
       // Tool 36: flow_transpose_data
-      {
-        name: "flow_transpose_data",
-        description: `Transpose a CSV dataset — swap rows and columns. One column becomes the new column headers, remaining columns become rows. Essential for reshaping data when the natural visualization axis is different from the data layout.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "transpose", "pivot", "rotate", "flip rows and columns", or "reshape" their data
-- User has metrics as columns but wants them as rows (or vice versa)
-- User has time periods as columns and wants to compare metrics across time
-- User asks to "make rows into columns" or "convert wide format to long"
-- Data is in wide format but visualization tool needs it in a different orientation
-
-Input: CSV data and optional header column name.
-Output: Transposed CSV with row_count, column_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to transpose",
-            },
-            header_column: {
-              type: "string",
-              description: "Column to use as new column headers (optional — defaults to first column)",
-            },
-          },
-          required: ["csv_content"],
-        },
-      },
       // Tool 37: flow_sample_data
-      {
-        name: "flow_sample_data",
-        description: `Draw a representative sample from a large CSV dataset using smart sampling methods: random, first-N, every-Nth, or stratified by category. Reduces dataset size while preserving data distribution characteristics for faster visualization and analysis.
-
-INVOKE THIS TOOL WHEN:
-- User has a large dataset and needs a smaller representative subset
-- User asks to "sample", "downsample", "reduce rows", or "take a subset"
-- User wants stratified sampling to preserve category proportions
-- User needs to preview or prototype a visualization with fewer data points
-- Dataset is too large for effective 3D visualization (>50k points)
-
-Input: CSV data, number of rows (n), sampling method (random|first|every_nth|stratified), optional stratify_column.
-Output: Sampled CSV with sampled_rows, total_rows, method, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to sample from",
-            },
-            n: {
-              type: "number",
-              description: "Number of rows to sample",
-            },
-            method: {
-              type: "string",
-              enum: ["random", "first", "every_nth", "stratified"],
-              description: "Sampling method: random (uniform), first (top-N), every_nth (systematic), stratified (proportional by category)",
-            },
-            stratify_column: {
-              type: "string",
-              description: "Column to stratify by (required for stratified method)",
-            },
-          },
-          required: ["csv_content", "n", "method"],
-        },
-      },
-
       // Tool 38: flow_column_stats
       {
         name: "flow_column_stats",
@@ -2018,49 +1952,6 @@ Output: CSV with new date component columns appended, parsed_count, and summary.
       },
 
       // Tool 41: flow_string_transform
-      {
-        name: "flow_string_transform",
-        description: `Transform text values in CSV columns: uppercase, lowercase, trim whitespace, title case, or find-and-replace. Essential for cleaning inconsistent text data before visualization — standardize categories, fix formatting, normalize labels.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "clean", "fix", "standardize", or "transform" text data
-- User wants to convert case (uppercase/lowercase/title case)
-- User needs to remove leading/trailing whitespace from values
-- User asks to "replace", "find and replace", or "substitute" text in columns
-- Category labels are inconsistent and need normalization before grouping
-
-Input: CSV data, column list, transform type, optional find/replace_with strings.
-Output: Transformed CSV with row_count, columns_transformed, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to transform",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Column names to apply the transform to",
-            },
-            transform: {
-              type: "string",
-              enum: ["uppercase", "lowercase", "trim", "title_case", "replace"],
-              description: "Transform to apply: uppercase, lowercase, trim, title_case, or replace",
-            },
-            find: {
-              type: "string",
-              description: "String to find (required for replace transform)",
-            },
-            replace_with: {
-              type: "string",
-              description: "Replacement string (required for replace transform, empty string to delete)",
-            },
-          },
-          required: ["csv_content", "columns", "transform"],
-        },
-      },
-
       // Tool 42: flow_validate_rules
       {
         name: "flow_validate_rules",
@@ -2144,41 +2035,6 @@ Output: Cleaned CSV with filled_count, row_count, and summary.`,
       },
 
       // Tool 44: flow_rename_columns
-      {
-        name: "flow_rename_columns",
-        description: `Rename and/or reorder columns in a CSV dataset. Rename columns to meaningful labels, reorder columns to match visualization requirements, or both in one operation. Data rows are preserved and reordered to match new column positions.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "rename", "relabel", or "change column names"
-- User asks to "reorder", "rearrange", or "sort columns"
-- Column names are cryptic (col1, col2) and need meaningful labels
-- Visualization tool expects columns in a specific order
-- User wants to reorganize columns before export or upload
-
-Input: CSV data, optional renames map (old→new), optional column order list.
-Output: Renamed/reordered CSV with columns_renamed, columns_reordered, final_columns, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to rename/reorder columns in",
-            },
-            renames: {
-              type: "object",
-              additionalProperties: { type: "string" },
-              description: "Map of old column name → new column name",
-            },
-            order: {
-              type: "array",
-              items: { type: "string" },
-              description: "Desired column order (use new names if renames are also applied)",
-            },
-          },
-          required: ["csv_content"],
-        },
-      },
-
       // Tool 45: flow_filter_rows
       {
         name: "flow_filter_rows",
@@ -2219,103 +2075,8 @@ Output: Filtered CSV with total_rows, matched_rows, removed_rows, and summary.`,
       },
 
       // Tool 46: flow_split_dataset
-      {
-        name: "flow_split_dataset",
-        description: `Split a CSV dataset into multiple subsets based on unique values in a column. Each unique value becomes a separate CSV with all rows matching that value. Essential for creating comparison visualizations or processing groups independently.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "split", "group", "separate", or "break apart" data by a category
-- User wants separate CSVs per category for individual visualization
-- User needs to compare groups side-by-side in 3D
-- User asks to "split by region" or "separate by type"
-- Data has categorical groups that should be visualized independently
-
-Input: CSV data and column name to split on.
-Output: Array of splits, each with value, csv, and row_count, plus total_groups and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to split",
-            },
-            split_column: {
-              type: "string",
-              description: "Column whose unique values determine the splits",
-            },
-          },
-          required: ["csv_content", "split_column"],
-        },
-      },
-
       // Tool 47: flow_select_columns
-      {
-        name: "flow_select_columns",
-        description: `Select or exclude specific columns from a CSV dataset. In include mode, keeps only specified columns in the order you specify. In exclude mode, removes specified columns and keeps the rest. Essential for reducing data to only the dimensions needed for visualization.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "select columns", "keep only", "pick columns", or "drop columns"
-- User wants to remove unnecessary columns before visualization
-- User needs to reduce a wide dataset to specific dimensions
-- User asks to "project" or "slice" their data by columns
-
-Input: CSV data, column list, and mode (include/exclude).
-Output: Filtered CSV with selected_count, row_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to select columns from",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Column names to include or exclude",
-            },
-            mode: {
-              type: "string",
-              enum: ["include", "exclude"],
-              description: "include: keep only specified columns; exclude: remove specified columns (default: include)",
-            },
-          },
-          required: ["csv_content", "columns"],
-        },
-      },
-
       // Tool 48: flow_sort_rows
-      {
-        name: "flow_sort_rows",
-        description: `Sort CSV rows by a column in ascending or descending order. Automatically detects numeric vs. text columns and sorts accordingly. Essential for ranking data, finding top/bottom values, or ordering time series before visualization.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "sort", "order", "rank", or "arrange" data by a column
-- User wants "top N" or "bottom N" values (sort + sample)
-- User needs chronological ordering for time series
-- User asks to "sort by score" or "order by date"
-
-Input: CSV data, column to sort by, and order (asc/desc, default: asc).
-Output: Sorted CSV with row_count, sort_column, sort_order, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to sort",
-            },
-            sort_by: {
-              type: "string",
-              description: "Column name to sort by",
-            },
-            order: {
-              type: "string",
-              enum: ["asc", "desc"],
-              description: "Sort order: ascending or descending (default: asc)",
-            },
-          },
-          required: ["csv_content", "sort_by"],
-        },
-      },
       // Tool 49: flow_unpivot
       {
         name: "flow_unpivot",
@@ -2547,66 +2308,7 @@ Output: Original CSV with appended cumulative columns, row_count, and summary.`,
         },
       },
       // Tool 55: flow_percentile_rank
-      {
-        name: "flow_percentile_rank",
-        description: `Compute percentile rank for each row in a numeric column. Shows what percentage of values fall at or below each value — essential for relative positioning, grading curves, and identifying top/bottom performers in a dataset.
-
-INVOKE THIS TOOL WHEN:
-- User asks for "percentile", "percentile rank", "relative position", or "ranking"
-- User wants to know "what percentile is this value in"
-- User needs to grade or rank data relative to peers
-- User asks "top 10%", "bottom quartile", or "how does X compare to the rest"
-
-Input: CSV data and value_column to rank.
-Output: Original CSV with appended percentile column (0-100), row_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric column to rank",
-            },
-            value_column: {
-              type: "string",
-              description: "Numeric column to compute percentile ranks for",
-            },
-          },
-          required: ["csv_content", "value_column"],
-        },
-      },
       // Tool 56: flow_coalesce_columns
-      {
-        name: "flow_coalesce_columns",
-        description: `Combine multiple columns by taking the first non-empty value per row. Merges partially-filled columns into a single consolidated column — essential for cleaning messy data with redundant or split information across columns.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "merge columns", "coalesce", "combine", or "consolidate" partially-filled columns
-- User has multiple columns with overlapping data (e.g., email1, email2, email3)
-- User wants to fill gaps using fallback columns
-- User asks for "first non-null" or "first available value" across columns
-
-Input: CSV data, columns (ordered by priority), and output_column name.
-Output: Original CSV with appended coalesced column, row_count, filled_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with partially-filled columns to coalesce",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Columns to coalesce, in priority order (first non-empty wins)",
-            },
-            output_column: {
-              type: "string",
-              description: "Name for the new coalesced output column",
-            },
-          },
-          required: ["csv_content", "columns", "output_column"],
-        },
-      },
       // Tool 57: flow_describe_dataset
       {
         name: "flow_describe_dataset",
@@ -2664,106 +2366,7 @@ Output: Original CSV with appended lag/lead column, row_count, shift details, an
         },
       },
       // Tool 59: flow_group_aggregate
-      {
-        name: "flow_group_aggregate",
-        description: `Group rows by a column and aggregate values using sum, mean, count, min, or max — SQL-style GROUP BY. Collapses multiple rows per group into a single summary row. Essential for computing totals, averages, or counts per category.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "group by", "aggregate", "total per", "average per", or "count per"
-- User wants "sales by region", "average score by department", or "count by category"
-- User needs to collapse detail rows into summary statistics
-- User asks for SQL-like GROUP BY operations
-
-Input: CSV data, group_by column, value_column, aggregation (sum/mean/count/min/max).
-Output: Aggregated CSV with group_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to aggregate",
-            },
-            group_by: {
-              type: "string",
-              description: "Column to group by",
-            },
-            value_column: {
-              type: "string",
-              description: "Column to aggregate",
-            },
-            aggregation: {
-              type: "string",
-              enum: ["sum", "mean", "count", "min", "max"],
-              description: "Aggregation function to apply per group",
-            },
-          },
-          required: ["csv_content", "group_by", "value_column", "aggregation"],
-        },
-      },
       // Tool 60: flow_row_number
-      {
-        name: "flow_row_number",
-        description: `Add sequential row numbers to a CSV dataset. Optionally numbers within groups (like SQL ROW_NUMBER() OVER PARTITION BY). Useful for ranking, creating IDs, or numbering records within categories.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "add row numbers", "number the rows", "add an ID column", or "rank within groups"
-- User needs sequential identifiers for their data
-- User wants to number items within each category separately
-- User asks for "row index" or "sequence number"
-
-Input: CSV data, optional column_name (default: 'row_number'), optional group_by for per-group numbering.
-Output: CSV with appended row number column, row_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to add row numbers to",
-            },
-            column_name: {
-              type: "string",
-              description: "Name for the row number column (default: 'row_number')",
-            },
-            group_by: {
-              type: "string",
-              description: "Optional column to restart numbering per group",
-            },
-          },
-          required: ["csv_content"],
-        },
-      },
-      {
-        name: "flow_type_cast",
-        description: `Convert a CSV column's data type to number, string, or boolean. Handles type coercion with graceful failure for unconvertible values. Boolean recognizes true/false, yes/no, 1/0, on/off.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "convert column type", "cast to number", "make this column numeric", or "convert to boolean"
-- User has string numbers that need to be actual numbers for math operations
-- User wants to normalize true/false values from mixed formats (yes/no, 1/0, true/false)
-- User asks to "change data type" or "fix column types"
-
-Input: CSV data, column name, target_type (number/string/boolean).
-Output: CSV with converted column, converted_count, failed_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with column to cast",
-            },
-            column: {
-              type: "string",
-              description: "Column name to convert",
-            },
-            target_type: {
-              type: "string",
-              enum: ["number", "string", "boolean"],
-              description: "Target data type",
-            },
-          },
-          required: ["csv_content", "column", "target_type"],
-        },
-      },
       {
         name: "flow_concat_rows",
         description: `Vertically stack two CSV datasets into one. Handles mismatched columns by creating the union of all columns and filling blanks for missing values. Optionally adds a _source column to identify origin dataset.
@@ -2796,77 +2399,6 @@ Output: Combined CSV with union of all columns, row_count, column_count, and sum
         },
       },
       {
-        name: "flow_value_counts",
-        description: `Count occurrences of each unique value in a CSV column. Returns value, count, and percentage sorted by frequency descending. Like pandas value_counts() — essential for data exploration and categorical analysis.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "count values", "frequency count", "how many of each", or "value distribution"
-- User wants to see the most common values in a column
-- User asks for "top N values", "most frequent", or "category counts"
-- User needs a frequency table or distribution summary
-
-Input: CSV data, column name, optional top_n limit.
-Output: CSV with value/count/percentage columns, unique_count, total_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to analyze",
-            },
-            column: {
-              type: "string",
-              description: "Column to count values in",
-            },
-            top_n: {
-              type: "number",
-              description: "Return only top N most frequent values",
-            },
-          },
-          required: ["csv_content", "column"],
-        },
-      },
-      {
-        name: "flow_date_diff",
-        description: `Calculate the difference between two date columns in days, months, or years. Adds a new column with the computed difference. Handles invalid dates gracefully with failure counting.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "calculate duration", "days between", "time difference", or "date diff"
-- User has start/end dates and wants to know the elapsed time
-- User asks for "age calculation", "tenure", or "how long between" dates
-- User needs to compute intervals from date pairs
-
-Input: CSV data, start_column, end_column, unit (days/months/years), optional output_column name.
-Output: CSV with appended difference column, computed_count, failed_count, and summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with date columns",
-            },
-            start_column: {
-              type: "string",
-              description: "Column with start dates",
-            },
-            end_column: {
-              type: "string",
-              description: "Column with end dates",
-            },
-            unit: {
-              type: "string",
-              enum: ["days", "months", "years"],
-              description: "Unit for the difference calculation",
-            },
-            output_column: {
-              type: "string",
-              description: "Name for output column (default: _date_diff)",
-            },
-          },
-          required: ["csv_content", "start_column", "end_column", "unit"],
-        },
-      },
-      {
         name: "flow_outlier_fence",
         description: `Detect outliers using Tukey's fences (IQR method). Adds _is_outlier boolean and _fence_distance columns. Reports Q1, Q3, IQR, and fence boundaries. Configurable multiplier (1.5 = standard, 3.0 = extreme outliers only).
 
@@ -2892,69 +2424,6 @@ Output: CSV with _is_outlier and _fence_distance columns, outlier_count, fence b
             multiplier: {
               type: "number",
               description: "IQR multiplier for fences (default: 1.5, use 3.0 for extreme only)",
-            },
-          },
-          required: ["csv_content", "column"],
-        },
-      },
-      {
-        name: "flow_moving_average",
-        description: `Calculate simple (SMA) or exponential (EMA) moving average for time series smoothing. Adds a new column with the smoothed values. SMA uses trailing window; EMA uses exponential weighting for more recent-value emphasis.
-
-INVOKE THIS TOOL WHEN:
-- User asks for "moving average", "smooth the data", "trend line", or "rolling average"
-- User wants to reduce noise in time series data
-- User asks for "SMA", "EMA", "exponential smoothing", or "trend smoothing"
-- User needs to identify underlying trends by removing short-term fluctuations
-
-Input: CSV data, numeric column, window size, method (simple/exponential).
-Output: CSV with appended moving average column (_sma or _ema suffix), row_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV time series data",
-            },
-            column: {
-              type: "string",
-              description: "Numeric column to smooth",
-            },
-            window: {
-              type: "number",
-              description: "Window size for the moving average",
-            },
-            method: {
-              type: "string",
-              enum: ["simple", "exponential"],
-              description: "SMA (simple) or EMA (exponential)",
-            },
-          },
-          required: ["csv_content", "column", "window", "method"],
-        },
-      },
-      {
-        name: "flow_entropy",
-        description: `Calculate Shannon entropy (information content) for a categorical column. Returns entropy in bits, max possible entropy, and normalized entropy (0-1). Measures diversity and unpredictability of values — useful for feature selection and data quality assessment.
-
-INVOKE THIS TOOL WHEN:
-- User asks for "entropy", "information content", "column diversity", or "feature importance"
-- User wants to measure how much information a column carries
-- User asks which columns have the most variability or predictive power
-- User needs to compare columns by their information content
-
-Input: CSV data, column name.
-Output: entropy (bits), max_entropy, normalized_entropy (0-1), unique_count, total_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to analyze",
-            },
-            column: {
-              type: "string",
-              description: "Column to calculate entropy for",
             },
           },
           required: ["csv_content", "column"],
@@ -2991,41 +2460,6 @@ Output: CSV with appended standardized columns, columns_standardized count, summ
             },
           },
           required: ["csv_content", "columns", "method"],
-        },
-      },
-      {
-        name: "flow_ratio_columns",
-        description: `Calculate the ratio between two numeric columns (numerator / denominator). Handles zero-denominator gracefully. Common for business metrics like revenue per employee, cost per unit, or conversion rates.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "calculate ratio", "divide columns", "rate per", or "proportion between"
-- User needs business metrics like "revenue per employee" or "cost per unit"
-- User asks for "conversion rate", "efficiency ratio", or "per capita" calculations
-- User wants to create a derived metric from two existing columns
-
-Input: CSV data, numerator column, denominator column, optional output_column name.
-Output: CSV with appended ratio column, computed_count, zero_denominator_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric columns",
-            },
-            numerator: {
-              type: "string",
-              description: "Column to use as numerator",
-            },
-            denominator: {
-              type: "string",
-              description: "Column to use as denominator",
-            },
-            output_column: {
-              type: "string",
-              description: "Custom output column name (default: {numerator}_per_{denominator})",
-            },
-          },
-          required: ["csv_content", "numerator", "denominator"],
         },
       },
       {
@@ -3067,101 +2501,6 @@ Output: CSV with appended _bin column, row_count, bin_count, summary.`,
             },
           },
           required: ["csv_content", "column", "method"],
-        },
-      },
-      {
-        name: "flow_abs_values",
-        description: `Convert negative values to absolute (positive) values in numeric columns. Non-numeric values are preserved unchanged. Useful before distance calculations, aggregations, or when sign doesn't matter.
-
-INVOKE THIS TOOL WHEN:
-- User asks for "absolute values", "remove negatives", "make positive", or "abs()"
-- User needs to prepare data for distance or magnitude calculations
-- User wants to ignore sign for aggregation or visualization
-- User asks to "convert negatives" or "flip negative to positive"
-
-Input: CSV data, column names to convert.
-Output: CSV with absolute values in specified columns, converted_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric columns",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Columns to take absolute values of",
-            },
-          },
-          required: ["csv_content", "columns"],
-        },
-      },
-      {
-        name: "flow_round_values",
-        description: `Round numeric values in columns to a specified number of decimal places. Use decimals=0 for integers. Non-numeric values are preserved unchanged. Essential for data presentation and reducing floating-point noise.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "round values", "truncate decimals", "clean up numbers", or "reduce precision"
-- User wants integers (decimals=0) or specific decimal places
-- User needs to present clean numbers for reports or visualization
-- User asks to "format numbers" or "reduce decimal places"
-
-Input: CSV data, column names, decimals (number of decimal places).
-Output: CSV with rounded values, row_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric columns",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Columns to round",
-            },
-            decimals: {
-              type: "number",
-              description: "Number of decimal places (0 for integers)",
-            },
-          },
-          required: ["csv_content", "columns", "decimals"],
-        },
-      },
-      {
-        name: "flow_clamp_values",
-        description: `Clamp (winsorize) numeric values in a column to a min/max range. Values below min are set to min, values above max are set to max. Limits outlier impact without removing rows.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "clamp values", "cap values", "limit range", "winsorize", or "clip values"
-- User wants to bound data to a reasonable range without deleting rows
-- User asks to "set minimum/maximum threshold" or "constrain values"
-- User needs to prepare data for visualization with bounded scales
-
-Input: CSV data, column, optional min and/or max bounds.
-Output: CSV with clamped values, clamped_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric column",
-            },
-            column: {
-              type: "string",
-              description: "Column to clamp",
-            },
-            min: {
-              type: "number",
-              description: "Minimum allowed value",
-            },
-            max: {
-              type: "number",
-              description: "Maximum allowed value",
-            },
-          },
-          required: ["csv_content", "column"],
         },
       },
       {
@@ -3335,106 +2674,6 @@ Output: CSV with rank column, row_count, summary.`,
             },
           },
           required: ["csv_content", "column", "method"],
-        },
-      },
-      {
-        name: "flow_running_total",
-        description: `Compute a running (cumulative) total for a numeric column. Each row shows the sum of all values up to and including that row. Non-numeric values are skipped without breaking the accumulation. Essential for time-series analysis and growth visualization.
-
-INVOKE THIS TOOL WHEN:
-- User asks for "running total", "cumulative sum", "running sum", or "cumsum"
-- User wants to see accumulated values over time
-- User asks to "show growth over time", "accumulate values", or "progressive total"
-- User needs cumulative metrics for financial, sales, or count data
-
-Input: CSV data, column for running total.
-Output: CSV with running total column, row_count, final_total, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric column",
-            },
-            column: {
-              type: "string",
-              description: "Column to compute running total for",
-            },
-            output_column: {
-              type: "string",
-              description: "Name for the running total column (default: {column}_running_total)",
-            },
-          },
-          required: ["csv_content", "column"],
-        },
-      },
-      {
-        name: "flow_zscore",
-        description: `Compute z-scores (standard scores) for numeric columns. Each value is transformed to (value - mean) / std_dev, showing how many standard deviations from the mean. Zero variance columns get z-score of 0. Essential for comparing values across different scales in multi-dimensional visualization.
-
-INVOKE THIS TOOL WHEN:
-- User asks for "z-scores", "standard scores", "standardize values", or "normalize to standard deviations"
-- User wants to compare values from columns with different scales
-- User asks to "measure how far from average", "identify extreme values", or "standardize for comparison"
-- User needs to prepare data for multi-axis 3D visualization where scales differ
-
-Input: CSV data, columns to z-score.
-Output: CSV with z-score columns appended, row_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with numeric columns",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Columns to compute z-scores for",
-            },
-          },
-          required: ["csv_content", "columns"],
-        },
-      },
-      {
-        name: "flow_melt",
-        description: `Transform wide-format CSV into long (tidy) format by unpivoting value columns into variable/value rows. Each combination of id columns × value columns produces one output row. The inverse of pivot. Essential for converting spreadsheet-style data into analysis-ready format.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "melt", "unpivot wide to long", "tidy the data", or "convert wide format to long"
-- User has columns like Q1/Q2/Q3 or 2020/2021/2022 that should become rows
-- User asks to "stack columns", "reshape wide to long", or "normalize table structure"
-- User needs long format for time-series visualization or grouped analysis
-
-Input: CSV data, id_columns (kept), value_columns (melted), optional variable/value names.
-Output: Long-format CSV, row_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "Wide-format CSV data",
-            },
-            id_columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Columns to keep as identifiers (not melted)",
-            },
-            value_columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Columns to melt into rows",
-            },
-            variable_name: {
-              type: "string",
-              description: "Name for the variable column (default: 'variable')",
-            },
-            value_name: {
-              type: "string",
-              description: "Name for the value column (default: 'value')",
-            },
-          },
-          required: ["csv_content", "id_columns", "value_columns"],
         },
       },
       {
@@ -3877,24 +3116,6 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_transpose_data": {
-      try {
-        const result = flowTransposeData(args as unknown as TransposeDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_sample_data": {
-      try {
-        const result = flowSampleData(args as unknown as SampleDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_column_stats": {
       try {
         const result = flowColumnStats(args as unknown as ColumnStatsInput);
@@ -3922,15 +3143,6 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_string_transform": {
-      try {
-        const result = flowStringTransform(args as unknown as StringTransformInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_validate_rules": {
       try {
         const result = flowValidateRules(args as unknown as ValidateRulesInput);
@@ -3949,45 +3161,9 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_rename_columns": {
-      try {
-        const result = flowRenameColumns(args as unknown as RenameColumnsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_filter_rows": {
       try {
         const result = flowFilterRows(args as unknown as FilterRowsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_split_dataset": {
-      try {
-        const result = flowSplitDataset(args as unknown as SplitDatasetInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_select_columns": {
-      try {
-        const result = flowSelectColumns(args as unknown as SelectColumnsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_sort_rows": {
-      try {
-        const result = flowSortRows(args as unknown as SortRowsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -4048,24 +3224,6 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_percentile_rank": {
-      try {
-        const result = flowPercentileRank(args as unknown as PercentileRankInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_coalesce_columns": {
-      try {
-        const result = flowCoalesceColumns(args as unknown as CoalesceColumnsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_describe_dataset": {
       try {
         const result = flowDescribeDataset(args as unknown as DescribeDatasetInput);
@@ -4084,54 +3242,9 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_group_aggregate": {
-      try {
-        const result = flowGroupAggregate(args as unknown as GroupAggregateInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_row_number": {
-      try {
-        const result = flowRowNumber(args as unknown as RowNumberInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_type_cast": {
-      try {
-        const result = flowTypeCast(args as unknown as TypeCastInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_concat_rows": {
       try {
         const result = flowConcatRows(args as unknown as ConcatRowsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_value_counts": {
-      try {
-        const result = flowValueCounts(args as unknown as ValueCountsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_date_diff": {
-      try {
-        const result = flowDateDiff(args as unknown as DateDiffInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -4147,24 +3260,6 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_moving_average": {
-      try {
-        const result = flowMovingAverage(args as unknown as MovingAverageInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_entropy": {
-      try {
-        const result = flowEntropy(args as unknown as EntropyInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_standardize": {
       try {
         const result = flowStandardize(args as unknown as StandardizeInput);
@@ -4174,45 +3269,9 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_ratio_columns": {
-      try {
-        const result = flowRatioColumns(args as unknown as RatioColumnsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_discretize": {
       try {
         const result = flowDiscretize(args as unknown as DiscretizeInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_abs_values": {
-      try {
-        const result = flowAbsValues(args as unknown as AbsValuesInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_round_values": {
-      try {
-        const result = flowRoundValues(args as unknown as RoundValuesInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_clamp_values": {
-      try {
-        const result = flowClampValues(args as unknown as ClampValuesInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -4258,33 +3317,6 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_rank_values": {
       try {
         const result = flowRankValues(args as unknown as RankValuesInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_running_total": {
-      try {
-        const result = flowRunningTotal(args as unknown as RunningTotalInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_zscore": {
-      try {
-        const result = flowZscore(args as unknown as ZscoreInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
-    case "flow_melt": {
-      try {
-        const result = flowMelt(args as unknown as MeltInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -7295,7 +6327,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 82, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 59, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

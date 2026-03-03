@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
-import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats } from "./tools-v4.js";
+import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats } from "./tools-v4.js";
 import {
   flowSemanticSearch,
   scoreMatch,
@@ -1735,108 +1735,9 @@ describe("flowBinData — edge cases", () => {
 // ============================================================================
 // EDGE CASES: flow_transpose_data (Tool 36)
 // ============================================================================
-
-describe("flowTransposeData — edge cases", () => {
-  it("single column besides header produces one row", () => {
-    const csv = "name,val\nA,10\nB,20";
-    const result = flowTransposeData({ csv_content: csv, header_column: "name" });
-    expect(result.row_count).toBe(1); // just "val" row
-    expect(result.column_count).toBe(3); // metric, A, B
-  });
-
-  it("numeric values preserved as strings", () => {
-    const csv = "name,a,b\nX,100,200";
-    const result = flowTransposeData({ csv_content: csv, header_column: "name" });
-    expect(result.csv).toContain("100");
-    expect(result.csv).toContain("200");
-  });
-
-  it("summary mentions header column", () => {
-    const csv = "label,a,b\nX,1,2";
-    const result = flowTransposeData({ csv_content: csv, header_column: "label" });
-    expect(result.summary).toContain("label");
-  });
-
-  it("handles special characters in values", () => {
-    const csv = 'name,val\n"Hello, World",42';
-    const result = flowTransposeData({ csv_content: csv, header_column: "name" });
-    expect(result.row_count).toBe(1);
-  });
-
-  it("default header column uses first column", () => {
-    const csv = "id,a,b\n1,10,20\n2,30,40";
-    const result = flowTransposeData({ csv_content: csv });
-    // First column "id" used as header
-    expect(result.csv).toContain("1");
-    expect(result.csv).toContain("2");
-  });
-});
-
 // ============================================================================
 // flowSampleData — edge cases
 // ============================================================================
-
-describe("flowSampleData — edge cases", () => {
-  it("n greater than total returns all rows", () => {
-    const csv = "val\n1\n2\n3";
-    const result = flowSampleData({ csv_content: csv, n: 100, method: "random" });
-    expect(result.sampled_rows).toBe(3);
-    expect(result.total_rows).toBe(3);
-  });
-
-  it("n = 1 returns exactly one row", () => {
-    const csv = "val\n10\n20\n30\n40\n50";
-    const result = flowSampleData({ csv_content: csv, n: 1, method: "random" });
-    expect(result.sampled_rows).toBe(1);
-    const lines = result.csv.trim().split("\n");
-    expect(lines.length).toBe(2); // header + 1 row
-  });
-
-  it("first method takes first N rows", () => {
-    const csv = "val\n1\n2\n3\n4\n5";
-    const result = flowSampleData({ csv_content: csv, n: 2, method: "first" });
-    expect(result.sampled_rows).toBe(2);
-    expect(result.csv).toContain("1");
-    expect(result.csv).toContain("2");
-  });
-
-  it("every_nth with n=1 returns first row only", () => {
-    const csv = "val\n10\n20\n30\n40\n50";
-    const result = flowSampleData({ csv_content: csv, n: 1, method: "every_nth" });
-    expect(result.sampled_rows).toBe(1);
-  });
-
-  it("stratified with missing column throws", () => {
-    const csv = "a,b\n1,2\n3,4";
-    expect(() => flowSampleData({ csv_content: csv, n: 1, method: "stratified", stratify_column: "missing" })).toThrow();
-  });
-
-  it("stratified without stratify_column throws", () => {
-    const csv = "a,b\n1,2\n3,4";
-    expect(() => flowSampleData({ csv_content: csv, n: 1, method: "stratified" })).toThrow();
-  });
-
-  it("preserves all columns", () => {
-    const csv = "name,age,city\nAlice,30,NYC\nBob,25,LA\nCharlie,35,SF\nDiana,28,NYC";
-    const result = flowSampleData({ csv_content: csv, n: 2, method: "first" });
-    const header = result.csv.trim().split("\n")[0];
-    expect(header).toBe("name,age,city");
-  });
-
-  it("summary includes method name", () => {
-    const csv = "val\n1\n2\n3";
-    const result = flowSampleData({ csv_content: csv, n: 2, method: "every_nth" });
-    expect(result.method).toBe("every_nth");
-    expect(result.summary).toBeTruthy();
-  });
-
-  it("empty data returns zero rows", () => {
-    const result = flowSampleData({ csv_content: "val", n: 1, method: "random" });
-    expect(result.sampled_rows).toBe(0);
-    expect(result.total_rows).toBe(0);
-  });
-});
-
 // ============================================================================
 // flowColumnStats — edge cases
 // ============================================================================
