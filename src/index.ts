@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2732,6 +2732,69 @@ Output: CSV with appended row number column, row_count, and summary.`,
           required: ["csv_content"],
         },
       },
+      {
+        name: "flow_type_cast",
+        description: `Convert a CSV column's data type to number, string, or boolean. Handles type coercion with graceful failure for unconvertible values. Boolean recognizes true/false, yes/no, 1/0, on/off.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "convert column type", "cast to number", "make this column numeric", or "convert to boolean"
+- User has string numbers that need to be actual numbers for math operations
+- User wants to normalize true/false values from mixed formats (yes/no, 1/0, true/false)
+- User asks to "change data type" or "fix column types"
+
+Input: CSV data, column name, target_type (number/string/boolean).
+Output: CSV with converted column, converted_count, failed_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data with column to cast",
+            },
+            column: {
+              type: "string",
+              description: "Column name to convert",
+            },
+            target_type: {
+              type: "string",
+              enum: ["number", "string", "boolean"],
+              description: "Target data type",
+            },
+          },
+          required: ["csv_content", "column", "target_type"],
+        },
+      },
+      {
+        name: "flow_concat_rows",
+        description: `Vertically stack two CSV datasets into one. Handles mismatched columns by creating the union of all columns and filling blanks for missing values. Optionally adds a _source column to identify origin dataset.
+
+INVOKE THIS TOOL WHEN:
+- User asks to "combine datasets", "stack rows", "append rows", "concatenate CSVs", or "union datasets"
+- User has two similar datasets that need to be merged vertically (not joined by key)
+- User wants to add more rows from a second dataset to an existing one
+- User asks to "put these together" or "merge these tables vertically"
+
+Input: Two CSV datasets, optional add_source flag.
+Output: Combined CSV with union of all columns, row_count, column_count, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content_1: {
+              type: "string",
+              description: "First CSV dataset",
+            },
+            csv_content_2: {
+              type: "string",
+              description: "Second CSV dataset to append",
+            },
+            add_source: {
+              type: "boolean",
+              description: "Add _source column identifying origin (dataset_1 or dataset_2)",
+            },
+          },
+          required: ["csv_content_1", "csv_content_2"],
+        },
+      },
     ],
   };
 });
@@ -3356,6 +3419,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_row_number": {
       try {
         const result = flowRowNumber(args as unknown as RowNumberInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_type_cast": {
+      try {
+        const result = flowTypeCast(args as unknown as TypeCastInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_concat_rows": {
+      try {
+        const result = flowConcatRows(args as unknown as ConcatRowsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6357,7 +6438,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 60, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 62, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

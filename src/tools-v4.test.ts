@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowPercentileRank, flowCoalesceColumns, flowDescribeDataset, flowLagLead, flowGroupAggregate, flowRowNumber, flowTypeCast, flowConcatRows } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, PercentileRankInput, CoalesceColumnsInput, DescribeDatasetInput, LagLeadInput, GroupAggregateInput, RowNumberInput, TypeCastInput, ConcatRowsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -3604,5 +3604,191 @@ describe("flowRowNumber", () => {
       csv_content: csv,
     });
     expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 61: flow_type_cast
+// ============================================================================
+
+describe("flow_type_cast", () => {
+  it("casts string column to number", () => {
+    const csv = "name,value\nAlice,100\nBob,200\nCarol,300";
+    const result = flowTypeCast({
+      csv_content: csv,
+      column: "value",
+      target_type: "number",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("name,value");
+    // Values should remain numeric
+    expect(lines[1]).toContain("100");
+    expect(result.converted_count).toBe(3);
+    expect(result.failed_count).toBe(0);
+  });
+
+  it("casts number column to string", () => {
+    const csv = "id,score\n1,95.5\n2,87.3";
+    const result = flowTypeCast({
+      csv_content: csv,
+      column: "score",
+      target_type: "string",
+    });
+    expect(result.converted_count).toBe(2);
+    expect(result.csv).toContain("95.5");
+  });
+
+  it("casts to boolean (truthy/falsy)", () => {
+    const csv = "name,active\nAlice,true\nBob,false\nCarol,1\nDave,0\nEve,yes\nFrank,no";
+    const result = flowTypeCast({
+      csv_content: csv,
+      column: "active",
+      target_type: "boolean",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[1]).toContain("true");
+    expect(lines[2]).toContain("false");
+    expect(lines[3]).toContain("true");
+    expect(lines[4]).toContain("false");
+    expect(lines[5]).toContain("true");
+    expect(lines[6]).toContain("false");
+  });
+
+  it("handles non-numeric values gracefully when casting to number", () => {
+    const csv = "name,value\nAlice,100\nBob,abc\nCarol,300";
+    const result = flowTypeCast({
+      csv_content: csv,
+      column: "value",
+      target_type: "number",
+    });
+    expect(result.converted_count).toBe(2);
+    expect(result.failed_count).toBe(1);
+    // Failed conversion should become empty
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2]).toMatch(/Bob,$/);
+  });
+
+  it("throws on missing column", () => {
+    const csv = "a,b\n1,2";
+    expect(() =>
+      flowTypeCast({
+        csv_content: csv,
+        column: "missing",
+        target_type: "number",
+      })
+    ).toThrow();
+  });
+
+  it("preserves other columns unchanged", () => {
+    const csv = "name,value,category\nAlice,100,A\nBob,200,B";
+    const result = flowTypeCast({
+      csv_content: csv,
+      column: "value",
+      target_type: "string",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("name,value,category");
+    expect(lines[1]).toContain("Alice");
+    expect(lines[1]).toContain("A");
+  });
+
+  it("returns summary", () => {
+    const csv = "x\n1\n2\n3";
+    const result = flowTypeCast({
+      csv_content: csv,
+      column: "x",
+      target_type: "string",
+    });
+    expect(result.summary).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// TOOL 62: flow_concat_rows
+// ============================================================================
+
+describe("flow_concat_rows", () => {
+  it("vertically stacks two CSVs with same headers", () => {
+    const csv1 = "name,value\nAlice,100\nBob,200";
+    const csv2 = "name,value\nCarol,300\nDave,400";
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toBe("name,value");
+    expect(lines.length).toBe(5); // header + 4 rows
+    expect(result.row_count).toBe(4);
+  });
+
+  it("handles mismatched columns by filling blanks", () => {
+    const csv1 = "name,value\nAlice,100";
+    const csv2 = "name,score\nBob,200";
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+    });
+    const lines = result.csv.trim().split("\n");
+    // Should have union of all columns
+    expect(lines[0]).toContain("name");
+    expect(lines[0]).toContain("value");
+    expect(lines[0]).toContain("score");
+    expect(result.row_count).toBe(2);
+  });
+
+  it("adds _source column when add_source is true", () => {
+    const csv1 = "name\nAlice";
+    const csv2 = "name\nBob";
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+      add_source: true,
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("_source");
+    expect(lines[1]).toContain("dataset_1");
+    expect(lines[2]).toContain("dataset_2");
+  });
+
+  it("handles empty second dataset", () => {
+    const csv1 = "name,value\nAlice,100";
+    const csv2 = "name,value";
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+    });
+    expect(result.row_count).toBe(1);
+  });
+
+  it("handles both empty datasets", () => {
+    const csv1 = "name,value";
+    const csv2 = "name,value";
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+    });
+    expect(result.row_count).toBe(0);
+  });
+
+  it("preserves data integrity with quoted fields", () => {
+    const csv1 = 'name,value\n"Alice, Jr.",100';
+    const csv2 = 'name,value\n"Bob, Sr.",200';
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+    });
+    expect(result.csv).toContain("Alice, Jr.");
+    expect(result.csv).toContain("Bob, Sr.");
+    expect(result.row_count).toBe(2);
+  });
+
+  it("returns summary with counts", () => {
+    const csv1 = "a\n1\n2";
+    const csv2 = "a\n3";
+    const result = flowConcatRows({
+      csv_content_1: csv1,
+      csv_content_2: csv2,
+    });
+    expect(result.summary).toContain("3");
   });
 });

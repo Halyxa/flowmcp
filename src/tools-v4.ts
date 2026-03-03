@@ -3919,3 +3919,157 @@ export function flowRowNumber(input: RowNumberInput): RowNumberResult {
     summary,
   };
 }
+
+// ============================================================================
+// TOOL 61: flow_type_cast — CONVERT COLUMN DATA TYPES
+// ============================================================================
+
+export interface TypeCastInput {
+  csv_content: string;
+  /** Column to cast */
+  column: string;
+  /** Target type: number, string, or boolean */
+  target_type: "number" | "string" | "boolean";
+}
+
+export interface TypeCastResult {
+  csv: string;
+  row_count: number;
+  converted_count: number;
+  failed_count: number;
+  summary: string;
+}
+
+export function flowTypeCast(input: TypeCastInput): TypeCastResult {
+  const { csv_content, column, target_type } = input;
+
+  const lines = csv_content.trim().split("\n");
+  if (lines.length < 1) throw new Error("CSV content is empty");
+
+  const headers = parseCSVLine(lines[0]);
+  const colIdx = headers.indexOf(column);
+  if (colIdx === -1) throw new Error(`Column "${column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  let convertedCount = 0;
+  let failedCount = 0;
+
+  const castRows = rows.map(row => {
+    const newRow = [...row];
+    const val = row[colIdx] ?? "";
+
+    if (target_type === "number") {
+      const num = Number(val);
+      if (val.trim() !== "" && !isNaN(num)) {
+        newRow[colIdx] = String(num);
+        convertedCount++;
+      } else {
+        newRow[colIdx] = "";
+        failedCount++;
+      }
+    } else if (target_type === "boolean") {
+      const lower = val.trim().toLowerCase();
+      if (["true", "1", "yes", "y", "on"].includes(lower)) {
+        newRow[colIdx] = "true";
+        convertedCount++;
+      } else if (["false", "0", "no", "n", "off", ""].includes(lower)) {
+        newRow[colIdx] = "false";
+        convertedCount++;
+      } else {
+        newRow[colIdx] = "false";
+        failedCount++;
+      }
+    } else {
+      // string — just keep the value as-is
+      newRow[colIdx] = val;
+      convertedCount++;
+    }
+
+    return newRow;
+  });
+
+  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
+  const dataLines = castRows.map(row => row.map(v => csvEscapeField(v)).join(","));
+
+  const summary = `Cast column "${column}" to ${target_type}: ${convertedCount} converted, ${failedCount} failed (${rows.length} rows).`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: rows.length,
+    converted_count: convertedCount,
+    failed_count: failedCount,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 62: flow_concat_rows — VERTICALLY STACK TWO CSVS
+// ============================================================================
+
+export interface ConcatRowsInput {
+  csv_content_1: string;
+  csv_content_2: string;
+  /** Add _source column identifying origin dataset (default false) */
+  add_source?: boolean;
+}
+
+export interface ConcatRowsResult {
+  csv: string;
+  row_count: number;
+  column_count: number;
+  summary: string;
+}
+
+export function flowConcatRows(input: ConcatRowsInput): ConcatRowsResult {
+  const { csv_content_1, csv_content_2, add_source = false } = input;
+
+  const lines1 = csv_content_1.trim().split("\n");
+  const lines2 = csv_content_2.trim().split("\n");
+
+  const headers1 = parseCSVLine(lines1[0]);
+  const headers2 = parseCSVLine(lines2[0]);
+
+  // Union of all columns, preserving order (dataset 1 first, then new from dataset 2)
+  const allHeaders: string[] = [...headers1];
+  for (const h of headers2) {
+    if (!allHeaders.includes(h)) {
+      allHeaders.push(h);
+    }
+  }
+
+  if (add_source) {
+    allHeaders.push("_source");
+  }
+
+  // Parse rows from both datasets
+  const rows1 = lines1.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+  const rows2 = lines2.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
+
+  // Map rows to unified column set
+  function mapRow(row: string[], srcHeaders: string[], source: string): string[] {
+    const mapped: string[] = allHeaders.map(h => {
+      if (add_source && h === "_source") return source;
+      const idx = srcHeaders.indexOf(h);
+      return idx >= 0 && idx < row.length ? row[idx] : "";
+    });
+    return mapped;
+  }
+
+  const mappedRows1 = rows1.map(r => mapRow(r, headers1, "dataset_1"));
+  const mappedRows2 = rows2.map(r => mapRow(r, headers2, "dataset_2"));
+  const allRows = [...mappedRows1, ...mappedRows2];
+
+  const headerLine = allHeaders.map(h => csvEscapeField(h)).join(",");
+  const dataLines = allRows.map(row => row.map(v => csvEscapeField(v)).join(","));
+
+  const totalRows = allRows.length;
+  const summary = `Concatenated ${rows1.length} + ${rows2.length} = ${totalRows} rows across ${allHeaders.length} columns.`;
+
+  return {
+    csv: [headerLine, ...dataLines].join("\n"),
+    row_count: totalRows,
+    column_count: allHeaders.length,
+    summary,
+  };
+}
