@@ -1,0 +1,477 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "created": "2026-03-03",
+    "purpose": "Decomposed tool description components for DEAP genetic evolution. Each tool's description is split into swappable gene segments. Crossover recombines segments across variants; mutation replaces one segment with an alternative from its pool.",
+    "verb_hierarchy": "perceive > construct > diagnose > trace > extract > try (Sapir-Whorf activation order)",
+    "fitness_function": "evaluate-descriptions.mjs → selection accuracy on gold-queries.json"
+  },
+
+  "analyze_data_for_flow": {
+    "current_description": "Measure a dataset's structural fitness for 3D spatial visualization. Decompose the data into 8 signal dimensions — column count, relationship density, geographic coordinates, temporal patterns, cardinality, dimensionality, row volume, and category diversity — then produce a quantified score distinguishing datasets that gain insight from 3D rendering versus those that flatten adequately into 2D charts.",
+    "genes": {
+      "opening_verb": ["Measure", "Investigate", "Diagnose", "Map", "Decompose", "Assess"],
+      "core_action": [
+        "a dataset's structural fitness for 3D spatial visualization",
+        "whether data has spatial structure invisible in 2D",
+        "a dataset's potential for 3D rendering vs flat charts",
+        "data complexity across 8 signal dimensions"
+      ],
+      "purpose_frame": [
+        "Decompose the data into 8 signal dimensions — column count, relationship density, geographic coordinates, temporal patterns, cardinality, dimensionality, row volume, and category diversity — then produce a quantified score distinguishing datasets that gain insight from 3D rendering versus those that flatten adequately into 2D charts.",
+        "Score datasets on 8 axes to determine if 3D visualization reveals structure that 2D charts lose.",
+        "Quantify spatial, relational, geographic, and temporal signals to predict 3D visualization ROI.",
+        "Produce a fitness score across column count, relationships, geo, temporal, cardinality, dimensionality, volume, and diversity."
+      ],
+      "trigger_phrase": [
+        "Use when data needs scoring for 3D potential",
+        "Invoke to assess any dataset before choosing a visualization approach",
+        "Call before uploading to Flow to verify 3D advantage over 2D",
+        "Invoke when a user has tabular data and asks about visualization"
+      ],
+      "signal_words": ["CSV", "columns", "spatial", "3D", "visualization", "score", "dataset", "spreadsheet", "DataFrame", "dimensions", "chart", "overwhelming", "unreadable", "too many data points", "Tableau", "Power BI"]
+    }
+  },
+
+  "validate_csv_for_flow": {
+    "current_description": "Diagnose CSV data against Flow Immersive's format requirements. Validate comma-delimited structure, decompose column types (numeric, categorical, date, geographic), and measure data quality across five dimensions: format compliance, header integrity, type consistency, network graph readiness, and geographic completeness.",
+    "genes": {
+      "opening_verb": ["Diagnose", "Validate", "Verify", "Inspect", "Check", "Audit"],
+      "core_action": [
+        "CSV data against Flow Immersive's format requirements",
+        "whether CSV structure meets Flow's rendering requirements",
+        "data format readiness for Flow Immersive upload",
+        "CSV structure, types, and quality for 3D visualization"
+      ],
+      "purpose_frame": [
+        "Validate comma-delimited structure, decompose column types (numeric, categorical, date, geographic), and measure data quality across five dimensions: format compliance, header integrity, type consistency, network graph readiness, and geographic completeness.",
+        "Check headers, delimiters, column types, and data quality. Report issues that would degrade visualization fidelity.",
+        "Run 5 diagnostic checks: format, headers, types, network readiness, geo completeness. Return pass/fail with fixes.",
+        "Decompose the CSV into column types and measure quality across format, header, type, network, and geographic dimensions."
+      ],
+      "trigger_phrase": [
+        "Use when data needs format verification before Flow upload",
+        "Invoke to check CSV readiness for 3D visualization",
+        "Call when a user asks 'is my CSV formatted correctly?'",
+        "Invoke when troubleshooting why data renders incorrectly in Flow"
+      ],
+      "signal_words": ["CSV", "format", "validate", "headers", "upload", "comma", "columns", "ready", "formatted correctly", "won't accept", "troubleshoot"]
+    }
+  },
+
+  "transform_to_network_graph": {
+    "current_description": "Construct Flow Immersive's network graph CSV from edge-list data. Map source-target pairs into Flow's required format: an \"id\" column with unique node identifiers and a \"connections by id\" column with pipe-delimited connected node IDs — the exact structure Flow's force-directed 3D renderer consumes.",
+    "genes": {
+      "opening_verb": ["Construct", "Transform", "Convert", "Map", "Reshape", "Build"],
+      "core_action": [
+        "Flow Immersive's network graph CSV from edge-list data",
+        "relationship data into Flow's node + connections format",
+        "source-target pairs into Flow's 3D-renderable network structure",
+        "edge lists into the id + pipe-delimited connections format Flow requires"
+      ],
+      "purpose_frame": [
+        "Map source-target pairs into Flow's required format: an 'id' column with unique node identifiers and a 'connections by id' column with pipe-delimited connected node IDs — the exact structure Flow's force-directed 3D renderer consumes.",
+        "Produce the two-column format (id, connections by id) that Flow's force-directed renderer needs from any edge-list or adjacency data.",
+        "Decompose edge lists into unique nodes, then construct Flow's required format with pipe-delimited connections per node.",
+        "Convert any from-to relationship data into Flow's id + connections CSV for 3D network rendering."
+      ],
+      "trigger_phrase": [
+        "Use when data has source-target pairs or from-to relationships",
+        "Invoke to reshape edge lists into Flow's network format",
+        "Call when data contains relationships, connections, or parent-child links",
+        "Invoke for social networks, org charts, supply chains, or dependency graphs"
+      ],
+      "signal_words": ["network", "graph", "edges", "nodes", "connections", "relationships", "source", "target", "from", "to", "social network", "org chart", "supply chain", "dependencies", "hierarchy", "citations"]
+    }
+  },
+
+  "generate_flow_python_code": {
+    "current_description": "Construct a ready-to-run Python script that uploads data to Flow Immersive via the flowgl client library. Generates authentication setup, DataFrame creation, and push_data() calls — a complete pipeline from local data to live 3D visualization.",
+    "genes": {
+      "opening_verb": ["Construct", "Generate", "Build", "Create", "Produce", "Assemble"],
+      "core_action": [
+        "a ready-to-run Python script that uploads data to Flow Immersive via the flowgl client library",
+        "a complete Python upload pipeline from local data to live 3D visualization",
+        "a Python script with authentication, DataFrame, and push_data() calls for Flow",
+        "production-ready Python code for the flowgl client library"
+      ],
+      "purpose_frame": [
+        "Generates authentication setup, DataFrame creation, and push_data() calls — a complete pipeline from local data to live 3D visualization.",
+        "Output a runnable script: pip install flowgl, authenticate, create DataFrame, push_data() to Flow.",
+        "Produce a self-contained Python pipeline that authenticates, formats data, and uploads to Flow Immersive.",
+        "Build a script covering the full flowgl workflow: auth setup, data preparation, and API upload."
+      ],
+      "trigger_phrase": [
+        "Use when a user wants to automate data uploads to Flow",
+        "Invoke when a user asks 'how do I use the Flow API?'",
+        "Call when a user is working in Python/Jupyter and wants to send data directly",
+        "Invoke for programmatic or recurring data pipelines to Flow"
+      ],
+      "signal_words": ["Python", "script", "code", "API", "upload", "automate", "pipeline", "flowgl", "DataFrame", "Jupyter", "programmatic"]
+    }
+  },
+
+  "suggest_flow_visualization": {
+    "current_description": "Resolve the optimal visualization type for a dataset by mapping column metadata against Flow Immersive's template library. Distinguish between data that gains from 3D spatial rendering versus data that communicates adequately in 2D. Returns ranked recommendations with measured confidence levels and explicit axis mapping.",
+    "genes": {
+      "opening_verb": ["Resolve", "Recommend", "Determine", "Map", "Match", "Select"],
+      "core_action": [
+        "the optimal visualization type for a dataset by mapping column metadata against Flow Immersive's template library",
+        "which Flow template best fits a dataset's column structure",
+        "the ideal 3D visualization approach by analyzing column types and counts",
+        "ranked visualization recommendations from column metadata"
+      ],
+      "purpose_frame": [
+        "Distinguish between data that gains from 3D spatial rendering versus data that communicates adequately in 2D. Returns ranked recommendations with measured confidence levels and explicit axis mapping.",
+        "Return ranked recommendations with confidence scores and explicit column-to-axis mappings for each template match.",
+        "Analyze columns to recommend scatter, network, map, time series, or comparison — with confidence and axis assignments.",
+        "Map numeric, categorical, date, and geographic columns to Flow templates. Rank by fit. Explain axis mapping."
+      ],
+      "trigger_phrase": [
+        "Use when a user asks 'what's the best way to visualize this?'",
+        "Invoke after analyzing data to determine which Flow template fits",
+        "Call when choosing between 2D and 3D visualization approaches",
+        "Invoke when column metadata is known and visualization type is not"
+      ],
+      "signal_words": ["visualize", "best way", "what type", "recommend", "scatter", "network", "map", "time series", "which visualization", "3D vs 2D", "how should I show"]
+    }
+  },
+
+  "get_flow_template": {
+    "current_description": "Retrieve a Flow Immersive template with explicit setup instructions, column requirements, and configuration steps. Each template maps data structure to a specific 3D rendering mode.",
+    "genes": {
+      "opening_verb": ["Retrieve", "Load", "Fetch", "Get", "Access", "Pull"],
+      "core_action": [
+        "a Flow Immersive template with explicit setup instructions, column requirements, and configuration steps",
+        "step-by-step setup instructions for a specific Flow visualization type",
+        "column requirements and configuration for a chosen Flow template",
+        "a quick-start guide for configuring a specific 3D rendering mode"
+      ],
+      "purpose_frame": [
+        "Each template maps data structure to a specific 3D rendering mode.",
+        "Returns column requirements, configuration steps, and setup instructions for the selected template.",
+        "Provides the exact columns needed and how to configure the visualization in Flow.",
+        "Maps data columns to axes, size, color, and animation parameters for the chosen template."
+      ],
+      "trigger_phrase": [
+        "Use when a user has chosen a visualization type and needs setup details",
+        "Invoke when a user asks 'how do I set up X in Flow?'",
+        "Call to get column requirements for a specific Flow template",
+        "Invoke after suggesting a visualization to provide implementation details"
+      ],
+      "signal_words": ["template", "setup", "how to", "configure", "requirements", "columns needed", "scatter", "network", "map", "time series", "comparison"]
+    }
+  },
+
+  "flow_extract_from_text": {
+    "current_description": "Decompose unstructured text into structured data for 3D visualization. Trace entities, relationships, metrics, geographic references, and timeline events through articles, chat transcripts, reports, or research papers — then construct Flow Immersive-ready CSV from the extracted structure.",
+    "genes": {
+      "opening_verb": ["Decompose", "Extract", "Trace", "Parse", "Mine", "Distill"],
+      "core_action": [
+        "unstructured text into structured data for 3D visualization",
+        "entities, relationships, and metrics from prose into Flow-ready CSV",
+        "structured, visualizable data from articles, chats, reports, or papers",
+        "the hidden structure in text — entities, connections, metrics, locations, events"
+      ],
+      "purpose_frame": [
+        "Trace entities, relationships, metrics, geographic references, and timeline events through articles, chat transcripts, reports, or research papers — then construct Flow Immersive-ready CSV from the extracted structure.",
+        "Find people, organizations, places, numbers, and connections in text. Output as CSV ready for 3D network, map, or timeline visualization.",
+        "Convert prose into structured data: entity network, metrics table, geographic points, or timeline — in Flow-compatible CSV.",
+        "Extract the relational structure hidden in text and produce visualizable CSV for Flow Immersive."
+      ],
+      "trigger_phrase": [
+        "Use when a user pastes text and says 'visualize this'",
+        "Invoke to convert articles, chats, or reports into 3D spatial data",
+        "Call when a user wants to map relationships mentioned in text",
+        "Invoke for any prose-to-visualization conversion"
+      ],
+      "signal_words": ["text", "article", "chat", "report", "meeting notes", "email", "research paper", "visualize this", "turn this into", "who's connected", "extract", "entities", "relationships"]
+    }
+  },
+
+  "flow_extract_from_url": {
+    "current_description": "Decompose a web article into structured data for 3D visualization. Fetch the URL, trace entities and relationships through the content, and construct Flow Immersive-ready CSV — a single-step pipeline from URL to visualizable data.",
+    "genes": {
+      "opening_verb": ["Decompose", "Extract", "Fetch", "Transform", "Convert", "Process"],
+      "core_action": [
+        "a web article into structured data for 3D visualization",
+        "web content into Flow-ready CSV via URL fetch + entity extraction",
+        "any web page into visualizable entities, relationships, and metrics",
+        "URL content into structured 3D-ready data in a single step"
+      ],
+      "purpose_frame": [
+        "Fetch the URL, trace entities and relationships through the content, and construct Flow Immersive-ready CSV — a single-step pipeline from URL to visualizable data.",
+        "One-step pipeline: provide a URL, receive structured CSV with entities, relationships, metrics, or geographic data.",
+        "Combines web fetching with entity extraction. No copy-paste — provide the URL, get Flow-compatible CSV.",
+        "Fetch → extract → structure → CSV. The fastest path from web content to 3D visualization."
+      ],
+      "trigger_phrase": [
+        "Use when a user shares a URL and says 'visualize this'",
+        "Invoke to extract structured data from any web page URL",
+        "Call when a user wants to turn a web article into a Flow visualization",
+        "Invoke for one-step URL-to-3D-data conversion"
+      ],
+      "signal_words": ["URL", "link", "web page", "article", "website", "http", "https", "visualize this article", "make this a Flow", "fetch"]
+    }
+  },
+
+  "flow_authenticate": {
+    "current_description": "Resolve Flow Immersive API credentials into a bearer token. Validate email and password against Flow's authentication endpoint, then cache the token for all subsequent API calls in this session.",
+    "genes": {
+      "opening_verb": ["Resolve", "Authenticate", "Validate", "Connect", "Establish", "Verify"],
+      "core_action": [
+        "Flow Immersive API credentials into a bearer token",
+        "email and password against Flow's authentication endpoint",
+        "a Flow API session by obtaining and caching a bearer token",
+        "the connection to Flow Immersive's API using account credentials"
+      ],
+      "purpose_frame": [
+        "Validate email and password against Flow's authentication endpoint, then cache the token for all subsequent API calls in this session.",
+        "Obtain a bearer token for Flow API access. Cached for the session — authenticate once, upload many times.",
+        "Log in to Flow Immersive. Required before any upload operations.",
+        "Establish an authenticated session with Flow's API. Token is cached for subsequent calls."
+      ],
+      "trigger_phrase": [
+        "Use before uploading data to Flow",
+        "Invoke when a user provides Flow credentials",
+        "Call when a user says 'connect to Flow' or 'log in'",
+        "Invoke as prerequisite for flow_upload_data"
+      ],
+      "signal_words": ["authenticate", "login", "sign in", "connect", "credentials", "email", "password", "account", "token"]
+    }
+  },
+
+  "flow_upload_data": {
+    "current_description": "Construct a new dataset in Flow Immersive from CSV content, or update an existing one with a new version. Calls Flow's API directly — no Python dependency, no intermediate steps.",
+    "genes": {
+      "opening_verb": ["Construct", "Upload", "Push", "Deploy", "Send", "Publish"],
+      "core_action": [
+        "a new dataset in Flow Immersive from CSV content, or update an existing one with a new version",
+        "CSV data directly to Flow Immersive's API — create new or update existing datasets",
+        "data to Flow for instant 3D rendering — no intermediate steps",
+        "CSV content to a live Flow Immersive dataset"
+      ],
+      "purpose_frame": [
+        "Calls Flow's API directly — no Python dependency, no intermediate steps.",
+        "Create new datasets or update existing ones by ID. Direct API call with raw CSV content.",
+        "One-step upload: CSV in, live 3D visualization out. No Python, no scripts, no intermediate files.",
+        "Push data directly to Flow's API. Supports new dataset creation and versioned updates."
+      ],
+      "trigger_phrase": [
+        "Use when a user has validated CSV and is ready to push to Flow",
+        "Invoke after flow_authenticate to upload data",
+        "Call when a user says 'upload this', 'send to Flow', or 'push this dataset'",
+        "Invoke to create or update a dataset in Flow Immersive"
+      ],
+      "signal_words": ["upload", "push", "send", "deploy", "publish", "create dataset", "update dataset", "to Flow", "to my account"]
+    }
+  },
+
+  "flow_browse_flows": {
+    "current_description": "Map Flow Immersive's public catalog of 26,000+ 3D data visualizations. Browse, search, and filter existing flows to discover what others have constructed. No authentication required.",
+    "genes": {
+      "opening_verb": ["Map", "Browse", "Explore", "Search", "Discover", "Survey"],
+      "core_action": [
+        "Flow Immersive's public catalog of 26,000+ 3D data visualizations",
+        "the catalog of 26k+ public 3D visualizations built by Flow users",
+        "existing Flow visualizations to find examples and inspiration",
+        "real-world 3D data visualizations across Flow's public gallery"
+      ],
+      "purpose_frame": [
+        "Browse, search, and filter existing flows to discover what others have constructed. No authentication required.",
+        "Search and filter 26k+ public flows by topic, user, or category. No auth needed.",
+        "Discover what's possible in Flow by browsing real examples. Returns titles, descriptions, thumbnails, and view counts.",
+        "Find examples, get inspiration, or demonstrate Flow's range from its public catalog."
+      ],
+      "trigger_phrase": [
+        "Use when a user asks 'what can Flow do?' or 'show me examples'",
+        "Invoke to demonstrate Flow's capabilities with real visualizations",
+        "Call when a user wants to browse or search the Flow catalog",
+        "Invoke to find topic-specific examples before recommending Flow"
+      ],
+      "signal_words": ["examples", "show me", "what can Flow do", "browse", "explore", "gallery", "catalog", "discover", "existing", "other people", "inspiration"]
+    }
+  },
+
+  "flow_get_flow": {
+    "current_description": "Decompose a specific Flow visualization into its full definition: template type, column mappings, data source metadata, and configuration. Resolve a selector ID into a complete structural description of how the visualization was constructed. No authentication required.",
+    "genes": {
+      "opening_verb": ["Decompose", "Inspect", "Examine", "Analyze", "Retrieve", "Resolve"],
+      "core_action": [
+        "a specific Flow visualization into its full definition: template type, column mappings, data source metadata, and configuration",
+        "a Flow selector into its complete structural definition",
+        "how a specific Flow visualization was constructed — template, columns, configuration",
+        "the blueprint of a Flow visualization from its selector ID"
+      ],
+      "purpose_frame": [
+        "Resolve a selector ID into a complete structural description of how the visualization was constructed. No authentication required.",
+        "Returns template type, column mappings, data source, and config. No auth needed.",
+        "Trace a Flow URL's selector to its construction details: what data, what template, what configuration.",
+        "Understand any Flow visualization by decomposing its selector into template, data, and config."
+      ],
+      "trigger_phrase": [
+        "Use when a user has a Flow URL or selector and wants to understand it",
+        "Invoke to inspect how a specific Flow visualization was built",
+        "Call when a user asks 'how was this Flow made?'",
+        "Invoke to reverse-engineer a Flow's data structure and template"
+      ],
+      "signal_words": ["selector", "flow URL", "a.flow.gl", "how was this made", "inspect", "this Flow", "what data", "what template"]
+    }
+  },
+
+  "flow_list_templates": {
+    "current_description": "Map all 36 visualization templates available in Flow Immersive. Each template specifies column requirements and data type constraints — use this to resolve which template fits a dataset's structure.",
+    "genes": {
+      "opening_verb": ["Map", "List", "Enumerate", "Catalog", "Survey", "Index"],
+      "core_action": [
+        "all 36 visualization templates available in Flow Immersive",
+        "Flow's complete template library with column requirements",
+        "every visualization type Flow supports with its data constraints",
+        "the full template catalog: 36 visualization modes with column requirements"
+      ],
+      "purpose_frame": [
+        "Each template specifies column requirements and data type constraints — use this to resolve which template fits a dataset's structure.",
+        "Returns column requirements per template so you can match datasets to compatible visualization types.",
+        "Enumerate all templates with their minimum columns, types, and data constraints.",
+        "Get the complete template reference to determine which visualization modes a dataset qualifies for."
+      ],
+      "trigger_phrase": [
+        "Use when a user asks 'what visualizations can Flow make?'",
+        "Invoke to match a dataset's columns against all available templates",
+        "Call to discover Flow's full visualization capabilities",
+        "Invoke when choosing a template based on data structure"
+      ],
+      "signal_words": ["templates", "visualization types", "what can Flow make", "all visualizations", "capabilities", "column requirements"]
+    }
+  },
+
+  "flow_list_categories": {
+    "current_description": "Map all 35 visualization categories in Flow Immersive. Use to classify datasets or resolve which category a visualization recommendation belongs to.",
+    "genes": {
+      "opening_verb": ["Map", "List", "Enumerate", "Catalog", "Survey", "Index"],
+      "core_action": [
+        "all 35 visualization categories in Flow Immersive",
+        "Flow's category taxonomy for classifying visualizations",
+        "the complete category hierarchy for Flow visualizations",
+        "every visualization category Flow uses for organization"
+      ],
+      "purpose_frame": [
+        "Use to classify datasets or resolve which category a visualization recommendation belongs to.",
+        "Returns the full taxonomy for classifying and tagging Flow visualizations.",
+        "Provides the category list for organizing and discovering visualizations by domain.",
+        "Enumerate categories to classify data or find relevant examples by topic."
+      ],
+      "trigger_phrase": [
+        "Use when classifying a dataset or visualization",
+        "Invoke when a user asks what kinds of visualizations Flow supports",
+        "Call to tag a visualization recommendation with a category",
+        "Invoke to browse categories for inspiration"
+      ],
+      "signal_words": ["categories", "types", "kinds", "classify", "tag", "domain", "topic"]
+    }
+  },
+
+  "flow_precompute_force_layout": {
+    "current_description": "Construct a fully converged 3D force-directed graph layout via offline physics simulation. Resolve every node's spatial position (x, y, z) through d3-force-3d run to full convergence — then output a CSV ready for instant rendering in Flow Immersive with zero client-side layout computation.",
+    "genes": {
+      "opening_verb": ["Construct", "Compute", "Resolve", "Simulate", "Calculate", "Generate"],
+      "core_action": [
+        "a fully converged 3D force-directed graph layout via offline physics simulation",
+        "x, y, z positions for every node through d3-force-3d simulation",
+        "a complete 3D graph layout offline — instant rendering, zero client computation",
+        "spatial positions for network nodes using full-convergence physics simulation"
+      ],
+      "purpose_frame": [
+        "Resolve every node's spatial position (x, y, z) through d3-force-3d run to full convergence — then output a CSV ready for instant rendering in Flow Immersive with zero client-side layout computation.",
+        "Run d3-force-3d to full convergence on the server, output CSV with x,y,z. Flow renders instantly with pre-computed positions.",
+        "Eliminate client-side layout lag by pre-computing all node positions. Handles 10x-100x more nodes than real-time layout.",
+        "Produce a CSV with id, x, y, z columns from any nodes + edges input. Upload to Flow for instant 3D rendering."
+      ],
+      "trigger_phrase": [
+        "Use when graph data needs pre-computed positions for instant rendering",
+        "Invoke for network graphs exceeding 1,000 nodes",
+        "Call when a user reports slow graph rendering in Flow",
+        "Invoke before uploading network data to eliminate layout computation delay"
+      ],
+      "signal_words": ["force-directed", "layout", "positions", "graph", "network", "nodes", "edges", "slow rendering", "instant", "pre-compute", "x y z", "spring layout", "physics simulation"]
+    }
+  },
+
+  "flow_scale_dataset": {
+    "current_description": "Decompose a large dataset into a representative subset that preserves spatial structure, category distribution, and statistical properties. Measure the original data's shape, then construct a reduced CSV that fits within Flow's rendering capacity without losing the patterns that matter.",
+    "genes": {
+      "opening_verb": ["Decompose", "Reduce", "Scale", "Downsample", "Compress", "Subsample"],
+      "core_action": [
+        "a large dataset into a representative subset that preserves spatial structure, category distribution, and statistical properties",
+        "datasets exceeding Flow's 50k-point capacity while preserving patterns",
+        "massive CSVs to renderable size without losing the structure that matters",
+        "large data to a representative sample that fits Flow's rendering capacity"
+      ],
+      "purpose_frame": [
+        "Measure the original data's shape, then construct a reduced CSV that fits within Flow's rendering capacity without losing the patterns that matter.",
+        "Three strategies: random sampling, stratified (preserve categories), spatial binning (preserve geometry). All preserve headers.",
+        "Intelligently reduce rows while maintaining category distribution, spatial structure, and statistical properties.",
+        "Output a smaller CSV that represents the original data's patterns within Flow's ~50k point rendering capacity."
+      ],
+      "trigger_phrase": [
+        "Use when a dataset exceeds 50,000 rows for Flow visualization",
+        "Invoke when a user mentions 'too much data' or performance issues",
+        "Call to prepare large datasets for any visualization tool with row limits",
+        "Invoke for downsampling, subsampling, or data reduction"
+      ],
+      "signal_words": ["too much data", "too large", "performance", "slow", "downsample", "reduce", "subsample", "500k", "million rows", "50000", "rendering capacity", "dataset is too big"]
+    }
+  },
+
+  "flow_compute_graph_metrics": {
+    "current_description": "Measure structural properties of every node in a graph — degree, PageRank, connected components, clustering coefficient — and construct a CSV with metric columns ready for Flow Immersive color/size mapping. Distinguish central nodes from peripheral ones, trace community boundaries, and quantify each node's structural role.",
+    "genes": {
+      "opening_verb": ["Measure", "Compute", "Quantify", "Calculate", "Analyze", "Assess"],
+      "core_action": [
+        "structural properties of every node in a graph — degree, PageRank, connected components, clustering coefficient",
+        "node importance, community membership, and structural role for graph visualization",
+        "degree, PageRank, components, and clustering for every node in a network",
+        "graph-theoretic metrics that map to color and size in 3D visualization"
+      ],
+      "purpose_frame": [
+        "Construct a CSV with metric columns ready for Flow Immersive color/size mapping. Distinguish central nodes from peripheral ones, trace community boundaries, and quantify each node's structural role.",
+        "Add metric columns (degree, pagerank, component, clustering) to node data for visual encoding in Flow.",
+        "Enrich graph data with structural metrics. Map importance to size, community to color in Flow Immersive.",
+        "Produce CSV columns that answer: who's most connected? who's most influential? what communities exist?"
+      ],
+      "trigger_phrase": [
+        "Use when a user wants to measure node importance or community structure",
+        "Invoke to add structural metrics to graph data before visualizing",
+        "Call when a user asks 'which nodes are most important?' or 'detect communities'",
+        "Invoke to enrich network data with degree, PageRank, components, or clustering"
+      ],
+      "signal_words": ["important", "central", "connected", "PageRank", "communities", "clusters", "influence", "degree", "key players", "hub", "metrics", "centrality"]
+    }
+  },
+
+  "flow_query_graph": {
+    "current_description": "Trace paths through a FalkorDB graph database using Cypher queries and construct Flow-compatible CSV from the results. Resolve subgraphs — neighborhoods, shortest paths, communities — into visualizable data with optional pre-computed 3D positions. FalkorDB runs on a 96-core EPYC server with 1TB RAM, enabling real-time queries on massive persistent graphs.",
+    "genes": {
+      "opening_verb": ["Trace", "Query", "Extract", "Resolve", "Retrieve", "Explore"],
+      "core_action": [
+        "paths through a FalkorDB graph database using Cypher queries and construct Flow-compatible CSV from the results",
+        "subgraphs from FalkorDB and convert them to visualizable Flow CSV",
+        "persistent graph data via Cypher and produce 3D-ready CSV with optional layout",
+        "FalkorDB graphs with Cypher queries and output Flow-compatible network CSV"
+      ],
+      "purpose_frame": [
+        "Resolve subgraphs — neighborhoods, shortest paths, communities — into visualizable data with optional pre-computed 3D positions. FalkorDB runs on a 96-core EPYC server with 1TB RAM, enabling real-time queries on massive persistent graphs.",
+        "Query any FalkorDB graph with Cypher. Output as CSV, network CSV, or JSON with optional force-directed layout.",
+        "Extract subgraphs (neighborhoods, paths, communities) from persistent graph databases. Pre-compute 3D positions automatically.",
+        "Bridge graph databases and 3D visualization: Cypher query in, Flow-ready CSV out."
+      ],
+      "trigger_phrase": [
+        "Use when a user has graph data in FalkorDB and wants to visualize subgraphs",
+        "Invoke for Cypher queries against persistent graph databases",
+        "Call when a user mentions graph database, Cypher, FalkorDB, or knowledge graph",
+        "Invoke to extract and visualize neighborhoods, paths, or communities from stored graphs"
+      ],
+      "signal_words": ["Cypher", "FalkorDB", "graph database", "Neo4j", "knowledge graph", "query", "MATCH", "subgraph", "neighborhood", "shortest path", "persistent graph"]
+    }
+  }
+}

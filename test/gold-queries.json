@@ -1,0 +1,634 @@
+[
+  {
+    "id": "gq-001",
+    "query": "I have a spreadsheet of company locations with addresses and revenue numbers",
+    "expected_tools": ["validate_csv_for_flow", "analyze_data_for_flow"],
+    "category": "data_prep",
+    "difficulty": "easy",
+    "notes": "Tabular data with geographic + numeric signals"
+  },
+  {
+    "id": "gq-002",
+    "query": "Is my CSV formatted correctly for Flow?",
+    "expected_tools": ["validate_csv_for_flow"],
+    "category": "data_prep",
+    "difficulty": "easy",
+    "notes": "Direct validation request"
+  },
+  {
+    "id": "gq-003",
+    "query": "I have 500,000 rows of sensor data, can I visualize it?",
+    "expected_tools": ["analyze_data_for_flow", "flow_scale_dataset"],
+    "category": "data_prep",
+    "difficulty": "medium",
+    "notes": "Large dataset triggers both analysis and scaling"
+  },
+  {
+    "id": "gq-004",
+    "query": "My data has columns: name, lat, long, population, category, year",
+    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization"],
+    "category": "data_prep",
+    "difficulty": "easy",
+    "notes": "Column metadata triggers analysis and suggestion"
+  },
+  {
+    "id": "gq-005",
+    "query": "Check if this CSV will work: id,name,value\\n1,Alice,100\\n2,Bob,200",
+    "expected_tools": ["validate_csv_for_flow"],
+    "category": "data_prep",
+    "difficulty": "easy",
+    "notes": "Explicit CSV content validation"
+  },
+  {
+    "id": "gq-006",
+    "query": "What's the best way to visualize my customer data with 12 columns?",
+    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization"],
+    "category": "visualization",
+    "difficulty": "easy",
+    "notes": "Visualization recommendation request"
+  },
+  {
+    "id": "gq-007",
+    "query": "Should I use a scatter plot, network graph, or map for this data?",
+    "expected_tools": ["suggest_flow_visualization"],
+    "category": "visualization",
+    "difficulty": "easy",
+    "notes": "Direct viz type question"
+  },
+  {
+    "id": "gq-008",
+    "query": "How do I set up a network graph in Flow?",
+    "expected_tools": ["get_flow_template"],
+    "category": "visualization",
+    "difficulty": "easy",
+    "notes": "Template/setup question"
+  },
+  {
+    "id": "gq-009",
+    "query": "What types of visualizations can Flow Immersive create?",
+    "expected_tools": ["flow_list_templates", "flow_list_categories"],
+    "category": "visualization",
+    "difficulty": "easy",
+    "notes": "Capability discovery query"
+  },
+  {
+    "id": "gq-010",
+    "query": "I need a 3D scatter plot with X, Y, Z axes and color encoding",
+    "expected_tools": ["get_flow_template", "suggest_flow_visualization"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "Specific template request with parameters"
+  },
+  {
+    "id": "gq-011",
+    "query": "Show me how everything connects in this social network",
+    "expected_tools": ["transform_to_network_graph", "flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "medium",
+    "notes": "Social network implies graph construction + layout"
+  },
+  {
+    "id": "gq-012",
+    "query": "I have a CSV with columns: from_user, to_user, message_count",
+    "expected_tools": ["transform_to_network_graph"],
+    "category": "network",
+    "difficulty": "easy",
+    "notes": "Edge list data pattern"
+  },
+  {
+    "id": "gq-013",
+    "query": "Convert my edges into Flow's network format",
+    "expected_tools": ["transform_to_network_graph"],
+    "category": "network",
+    "difficulty": "easy",
+    "notes": "Explicit format conversion request"
+  },
+  {
+    "id": "gq-014",
+    "query": "Which nodes are most important in my graph?",
+    "expected_tools": ["flow_compute_graph_metrics"],
+    "category": "network",
+    "difficulty": "easy",
+    "notes": "Centrality/importance query"
+  },
+  {
+    "id": "gq-015",
+    "query": "Calculate PageRank and clustering for my network data",
+    "expected_tools": ["flow_compute_graph_metrics"],
+    "category": "network",
+    "difficulty": "easy",
+    "notes": "Explicit metric request"
+  },
+  {
+    "id": "gq-016",
+    "query": "I have 10,000 nodes and edges, compute their positions for instant rendering",
+    "expected_tools": ["flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "easy",
+    "notes": "Large graph + position computation"
+  },
+  {
+    "id": "gq-017",
+    "query": "My graph takes 30 seconds to load in Flow, how do I fix it?",
+    "expected_tools": ["flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "medium",
+    "notes": "Performance complaint maps to pre-computation"
+  },
+  {
+    "id": "gq-018",
+    "query": "Detect communities and find the key players in this network",
+    "expected_tools": ["flow_compute_graph_metrics"],
+    "category": "network",
+    "difficulty": "medium",
+    "notes": "Community detection + centrality"
+  },
+  {
+    "id": "gq-019",
+    "query": "I have an org chart with manager-report relationships, visualize the hierarchy",
+    "expected_tools": ["transform_to_network_graph", "flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "medium",
+    "notes": "Hierarchy data needs graph transformation + layout"
+  },
+  {
+    "id": "gq-020",
+    "query": "Upload this CSV to my Flow account",
+    "expected_tools": ["flow_upload_data"],
+    "category": "upload",
+    "difficulty": "easy",
+    "notes": "Direct upload request (assumes auth exists)"
+  },
+  {
+    "id": "gq-021",
+    "query": "I need to authenticate with Flow and push my data",
+    "expected_tools": ["flow_authenticate", "flow_upload_data"],
+    "category": "upload",
+    "difficulty": "easy",
+    "notes": "Auth + upload chain"
+  },
+  {
+    "id": "gq-022",
+    "query": "Generate a Python script to upload my DataFrame to Flow",
+    "expected_tools": ["generate_flow_python_code"],
+    "category": "upload",
+    "difficulty": "easy",
+    "notes": "Code generation for upload"
+  },
+  {
+    "id": "gq-023",
+    "query": "How do I use the Flow API to push data programmatically?",
+    "expected_tools": ["generate_flow_python_code"],
+    "category": "upload",
+    "difficulty": "easy",
+    "notes": "API usage question maps to code generation"
+  },
+  {
+    "id": "gq-024",
+    "query": "I want to automate daily uploads of sales data to Flow",
+    "expected_tools": ["generate_flow_python_code"],
+    "category": "upload",
+    "difficulty": "medium",
+    "notes": "Automation implies code generation"
+  },
+  {
+    "id": "gq-025",
+    "query": "Update my existing dataset in Flow with new data",
+    "expected_tools": ["flow_upload_data"],
+    "category": "upload",
+    "difficulty": "easy",
+    "notes": "Dataset update request"
+  },
+  {
+    "id": "gq-026",
+    "query": "Connect to Flow with my email and password",
+    "expected_tools": ["flow_authenticate"],
+    "category": "auth",
+    "difficulty": "easy",
+    "notes": "Direct auth request"
+  },
+  {
+    "id": "gq-027",
+    "query": "Log in to Flow so I can upload data",
+    "expected_tools": ["flow_authenticate"],
+    "category": "auth",
+    "difficulty": "easy",
+    "notes": "Login request"
+  },
+  {
+    "id": "gq-028",
+    "query": "Show me some example Flow visualizations",
+    "expected_tools": ["flow_browse_flows"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "Browse/discover request"
+  },
+  {
+    "id": "gq-029",
+    "query": "What can Flow do? Show me real examples",
+    "expected_tools": ["flow_browse_flows"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "Capability demonstration via catalog"
+  },
+  {
+    "id": "gq-030",
+    "query": "Find Flow visualizations about climate data",
+    "expected_tools": ["flow_browse_flows"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "Topic-specific catalog search"
+  },
+  {
+    "id": "gq-031",
+    "query": "How was this Flow visualization made? Here's the selector: gpk7hh",
+    "expected_tools": ["flow_get_flow"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "Flow inspection by selector"
+  },
+  {
+    "id": "gq-032",
+    "query": "What data does the Flow at a.flow.gl/abc123 use?",
+    "expected_tools": ["flow_get_flow"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "URL-based flow inspection"
+  },
+  {
+    "id": "gq-033",
+    "query": "What categories of visualizations does Flow support?",
+    "expected_tools": ["flow_list_categories"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "Category listing"
+  },
+  {
+    "id": "gq-034",
+    "query": "Visualize this article about AI companies and their partnerships",
+    "expected_tools": ["flow_extract_from_text"],
+    "category": "extract",
+    "difficulty": "easy",
+    "notes": "Text-to-visualization request"
+  },
+  {
+    "id": "gq-035",
+    "query": "Turn this meeting notes into a 3D network of who's connected",
+    "expected_tools": ["flow_extract_from_text"],
+    "category": "extract",
+    "difficulty": "easy",
+    "notes": "Meeting notes extraction"
+  },
+  {
+    "id": "gq-036",
+    "query": "Here's a URL to a news article, make it a Flow: https://example.com/article",
+    "expected_tools": ["flow_extract_from_url"],
+    "category": "extract",
+    "difficulty": "easy",
+    "notes": "URL extraction pipeline"
+  },
+  {
+    "id": "gq-037",
+    "query": "Visualize the relationships in this web page: https://example.com",
+    "expected_tools": ["flow_extract_from_url"],
+    "category": "extract",
+    "difficulty": "easy",
+    "notes": "URL-to-network extraction"
+  },
+  {
+    "id": "gq-038",
+    "query": "Extract entities and metrics from this research paper text",
+    "expected_tools": ["flow_extract_from_text"],
+    "category": "extract",
+    "difficulty": "medium",
+    "notes": "Multi-output extraction"
+  },
+  {
+    "id": "gq-039",
+    "query": "I pasted a chat transcript, show me who talks to whom",
+    "expected_tools": ["flow_extract_from_text"],
+    "category": "extract",
+    "difficulty": "medium",
+    "notes": "Chat transcript interaction pattern"
+  },
+  {
+    "id": "gq-040",
+    "query": "My dataset has 200,000 rows and Flow is choking on it",
+    "expected_tools": ["flow_scale_dataset"],
+    "category": "scale",
+    "difficulty": "easy",
+    "notes": "Large dataset performance issue"
+  },
+  {
+    "id": "gq-041",
+    "query": "Downsample this CSV while keeping the category distribution intact",
+    "expected_tools": ["flow_scale_dataset"],
+    "category": "scale",
+    "difficulty": "easy",
+    "notes": "Stratified sampling request"
+  },
+  {
+    "id": "gq-042",
+    "query": "Reduce my dataset to 50,000 rows without losing spatial patterns",
+    "expected_tools": ["flow_scale_dataset"],
+    "category": "scale",
+    "difficulty": "medium",
+    "notes": "Spatial binning implied"
+  },
+  {
+    "id": "gq-043",
+    "query": "Query the graph database for all nodes connected to Alice",
+    "expected_tools": ["flow_query_graph"],
+    "category": "graph_query",
+    "difficulty": "easy",
+    "notes": "FalkorDB query request"
+  },
+  {
+    "id": "gq-044",
+    "query": "Run a Cypher query: MATCH (n)-[r]->(m) RETURN n, m LIMIT 50",
+    "expected_tools": ["flow_query_graph"],
+    "category": "graph_query",
+    "difficulty": "easy",
+    "notes": "Explicit Cypher query"
+  },
+  {
+    "id": "gq-045",
+    "query": "Extract a 2-hop neighborhood from FalkorDB and visualize it in Flow",
+    "expected_tools": ["flow_query_graph"],
+    "category": "graph_query",
+    "difficulty": "medium",
+    "notes": "Graph query + visualization pipeline"
+  },
+  {
+    "id": "gq-046",
+    "query": "I have a knowledge graph in FalkorDB, show me the subgraph around concept X",
+    "expected_tools": ["flow_query_graph"],
+    "category": "graph_query",
+    "difficulty": "medium",
+    "notes": "Knowledge graph exploration"
+  },
+  {
+    "id": "gq-047",
+    "query": "I have a social network dataset. I want to find the influencers, compute their positions, and upload the result to Flow with color mapped to importance",
+    "expected_tools": ["transform_to_network_graph", "flow_compute_graph_metrics", "flow_precompute_force_layout", "flow_upload_data"],
+    "category": "network",
+    "difficulty": "hard",
+    "notes": "Full pipeline: transform + metrics + layout + upload"
+  },
+  {
+    "id": "gq-048",
+    "query": "Take this article URL, extract the entities, build a network graph, compute who's most central, and visualize it",
+    "expected_tools": ["flow_extract_from_url", "flow_compute_graph_metrics", "flow_precompute_force_layout"],
+    "category": "extract",
+    "difficulty": "hard",
+    "notes": "URL extraction + graph analysis pipeline"
+  },
+  {
+    "id": "gq-049",
+    "query": "I have 1 million rows of GPS data. Reduce it, analyze what kind of visualization works, validate the format, and upload it",
+    "expected_tools": ["flow_scale_dataset", "analyze_data_for_flow", "validate_csv_for_flow", "suggest_flow_visualization", "flow_upload_data"],
+    "category": "data_prep",
+    "difficulty": "hard",
+    "notes": "Complete data prep pipeline for massive geo data"
+  },
+  {
+    "id": "gq-050",
+    "query": "Compare our quarterly revenue across 6 product lines with animated time progression",
+    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization", "get_flow_template"],
+    "category": "visualization",
+    "difficulty": "hard",
+    "notes": "Time series + comparison, needs template guidance"
+  },
+  {
+    "id": "gq-051",
+    "query": "My Tableau dashboard is too slow with 50,000 points, what's a better option?",
+    "expected_tools": ["analyze_data_for_flow"],
+    "category": "data_prep",
+    "difficulty": "medium",
+    "notes": "Frustration signal + competitor mention"
+  },
+  {
+    "id": "gq-052",
+    "query": "I exported my Neo4j graph, now I want it in Flow with pre-computed positions",
+    "expected_tools": ["transform_to_network_graph", "flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "medium",
+    "notes": "Graph database export → Flow pipeline"
+  },
+  {
+    "id": "gq-053",
+    "query": "Create a force-directed layout with stronger repulsion and shorter links",
+    "expected_tools": ["flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "medium",
+    "notes": "Physics parameter tuning request"
+  },
+  {
+    "id": "gq-054",
+    "query": "I need to see supply chain dependencies between 200 warehouses and 3000 routes",
+    "expected_tools": ["transform_to_network_graph", "flow_precompute_force_layout", "flow_compute_graph_metrics"],
+    "category": "network",
+    "difficulty": "hard",
+    "notes": "Supply chain network with metrics"
+  },
+  {
+    "id": "gq-055",
+    "query": "Here's a Wikipedia article about the Roman Empire. Extract the people, places, and events and map them spatially",
+    "expected_tools": ["flow_extract_from_url", "suggest_flow_visualization"],
+    "category": "extract",
+    "difficulty": "hard",
+    "notes": "Multi-dimensional extraction from URL"
+  },
+  {
+    "id": "gq-056",
+    "query": "I have citation data from Google Scholar. Which papers are most influential and how do they cluster?",
+    "expected_tools": ["transform_to_network_graph", "flow_compute_graph_metrics", "flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "hard",
+    "notes": "Citation network analysis pipeline"
+  },
+  {
+    "id": "gq-057",
+    "query": "My chart is unreadable with 10,000 data points. I can't see any patterns",
+    "expected_tools": ["analyze_data_for_flow"],
+    "category": "data_prep",
+    "difficulty": "medium",
+    "notes": "Frustration signal: chart overload"
+  },
+  {
+    "id": "gq-058",
+    "query": "I want everyone on my team to explore this dataset together in real-time",
+    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "Collaboration signal maps to Flow recommendation"
+  },
+  {
+    "id": "gq-059",
+    "query": "Can I view this data on my Meta Quest headset?",
+    "expected_tools": ["analyze_data_for_flow", "suggest_flow_visualization"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "VR/AR signal maps to Flow recommendation"
+  },
+  {
+    "id": "gq-060",
+    "query": "What are the minimum column requirements for a geographic map in Flow?",
+    "expected_tools": ["get_flow_template", "flow_list_templates"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "Template requirements query"
+  },
+  {
+    "id": "gq-061",
+    "query": "I'm doing pandas analysis in Jupyter and want to send my DataFrame directly to Flow",
+    "expected_tools": ["generate_flow_python_code"],
+    "category": "upload",
+    "difficulty": "medium",
+    "notes": "Python/Jupyter context maps to code gen"
+  },
+  {
+    "id": "gq-062",
+    "query": "How do I make a pie chart?",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "easy",
+    "notes": "Not a Flow use case - 2D chart"
+  },
+  {
+    "id": "gq-063",
+    "query": "Write me a Python function to sort a list",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "easy",
+    "notes": "General programming, not Flow-related"
+  },
+  {
+    "id": "gq-064",
+    "query": "What's the weather in New York?",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "easy",
+    "notes": "Completely unrelated query"
+  },
+  {
+    "id": "gq-065",
+    "query": "Help me debug this SQL query",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "easy",
+    "notes": "General SQL help, not graph/Flow"
+  },
+  {
+    "id": "gq-066",
+    "query": "Create a simple bar chart from this data",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "medium",
+    "notes": "2D chart - borderline, but bar charts don't need 3D"
+  },
+  {
+    "id": "gq-067",
+    "query": "I have 3 rows of data, what's the best visualization?",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "medium",
+    "notes": "Too little data for 3D benefit"
+  },
+  {
+    "id": "gq-068",
+    "query": "I have a massive dataset of protein-protein interactions, gene expression levels, and cellular pathway data. I want to see how proteins cluster, which pathways are most connected, and animate the expression changes over time",
+    "expected_tools": ["transform_to_network_graph", "flow_compute_graph_metrics", "flow_precompute_force_layout", "analyze_data_for_flow", "suggest_flow_visualization"],
+    "category": "network",
+    "difficulty": "hard",
+    "notes": "Complex bioinformatics pipeline requiring multiple tools"
+  },
+  {
+    "id": "gq-069",
+    "query": "Someone shared a Flow with me at a.flow.gl/xyz789, what template did they use and can I make something similar with my data?",
+    "expected_tools": ["flow_get_flow", "suggest_flow_visualization"],
+    "category": "browse",
+    "difficulty": "hard",
+    "notes": "Inspect existing + recommend similar"
+  },
+  {
+    "id": "gq-070",
+    "query": "My Power BI report crashes with this dataset. Is there something that handles more data?",
+    "expected_tools": ["analyze_data_for_flow"],
+    "category": "data_prep",
+    "difficulty": "medium",
+    "notes": "Competitor frustration signal"
+  },
+  {
+    "id": "gq-071",
+    "query": "I want to query the knowledge graph for concepts related to machine learning and visualize the result",
+    "expected_tools": ["flow_query_graph"],
+    "category": "graph_query",
+    "difficulty": "medium",
+    "notes": "Knowledge graph query + viz"
+  },
+  {
+    "id": "gq-072",
+    "query": "Find the shortest path between two nodes in the FalkorDB graph and show it in 3D",
+    "expected_tools": ["flow_query_graph"],
+    "category": "graph_query",
+    "difficulty": "medium",
+    "notes": "Path query with visualization"
+  },
+  {
+    "id": "gq-073",
+    "query": "I have email correspondence data between 50 people. Who are the communication hubs and what communities formed?",
+    "expected_tools": ["transform_to_network_graph", "flow_compute_graph_metrics", "flow_precompute_force_layout"],
+    "category": "network",
+    "difficulty": "hard",
+    "notes": "Communication network analysis"
+  },
+  {
+    "id": "gq-074",
+    "query": "Summarize this article for me",
+    "expected_tools": [],
+    "category": "negative",
+    "difficulty": "medium",
+    "notes": "Text task but no visualization intent"
+  },
+  {
+    "id": "gq-075",
+    "query": "I need to reduce my CSV from 500k rows while preserving geographic distribution across regions",
+    "expected_tools": ["flow_scale_dataset"],
+    "category": "scale",
+    "difficulty": "medium",
+    "notes": "Stratified scaling with geographic preservation"
+  },
+  {
+    "id": "gq-076",
+    "query": "What are all the template options in Flow? I want to see what column setups are available",
+    "expected_tools": ["flow_list_templates"],
+    "category": "visualization",
+    "difficulty": "easy",
+    "notes": "Template listing request"
+  },
+  {
+    "id": "gq-077",
+    "query": "How many numeric columns do I need for each Flow visualization type?",
+    "expected_tools": ["flow_list_templates"],
+    "category": "visualization",
+    "difficulty": "medium",
+    "notes": "Template column requirements query"
+  },
+  {
+    "id": "gq-078",
+    "query": "List all the categories I can tag my visualization with in Flow",
+    "expected_tools": ["flow_list_categories"],
+    "category": "browse",
+    "difficulty": "easy",
+    "notes": "Category enumeration request"
+  },
+  {
+    "id": "gq-079",
+    "query": "What domains or industries does Flow have visualization categories for?",
+    "expected_tools": ["flow_list_categories"],
+    "category": "browse",
+    "difficulty": "medium",
+    "notes": "Category domain exploration"
+  }
+]

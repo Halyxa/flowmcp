@@ -2,7 +2,7 @@
  * MCP Protocol Integration Test
  *
  * Connects to the Flow MCP server over stdio using the MCP SDK client,
- * verifies all 18 tools are listed, and calls each one to validate
+ * verifies all 25 tools are listed, and calls each one to validate
  * end-to-end protocol correctness.
  *
  * This is the REAL test — unit tests call exported functions,
@@ -48,9 +48,9 @@ describe("MCP Protocol Integration", () => {
   // Tool Discovery
   // ====================================================================
 
-  it("lists all 18 tools", async () => {
+  it("lists all 25 tools", async () => {
     const result = await client.listTools();
-    expect(result.tools.length).toBe(18);
+    expect(result.tools.length).toBe(25);
   });
 
   it("includes all expected tool names", async () => {
@@ -76,6 +76,13 @@ describe("MCP Protocol Integration", () => {
       "flow_scale_dataset",
       "flow_compute_graph_metrics",
       "flow_query_graph",
+      "flow_semantic_search",
+      "flow_time_series_animate",
+      "flow_merge_datasets",
+      "flow_anomaly_detect",
+      "flow_geo_enhance",
+      "flow_nlp_to_viz",
+      "flow_export_formats",
     ];
 
     for (const name of expected) {
@@ -488,4 +495,28 @@ describe("MCP Protocol Integration", () => {
     const parsed = getResultJson(result);
     expect(parsed.categories.length).toBeGreaterThan(0);
   }, 15000);
+
+  // ====================================================================
+  // Tool Execution — Semantic Search
+  // ====================================================================
+
+  it("flow_semantic_search responds via MCP protocol", async () => {
+    const result = await client.callTool({
+      name: "flow_semantic_search",
+      arguments: {
+        query: "network graph",
+        max_results: 5,
+      },
+    });
+
+    const parsed = getResultJson(result);
+    // Either returns results from live catalog or an error if network fails
+    if (parsed.error) {
+      expect(parsed.error).toBeDefined();
+    } else {
+      expect(parsed.query_interpretation).toContain("network graph");
+      expect(parsed.results).toBeDefined();
+      expect(Array.isArray(parsed.results)).toBe(true);
+    }
+  }, 30000);
 });

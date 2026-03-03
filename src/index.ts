@@ -19,6 +19,12 @@ import {
 } from "d3-force-3d";
 import { FalkorDB } from "falkordb";
 import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { flowSemanticSearch, _injectCatalogForTesting, _clearCatalogCache } from "./tools-search.js";
+import type { SemanticSearchInput } from "./tools-search.js";
+import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
+import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
+import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
+import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1087,6 +1093,357 @@ REQUIRES: FalkorDB server connection (configured via FALKORDB_HOST, FALKORDB_POR
           required: ["query"],
         },
       },
+      {
+        name: "flow_semantic_search",
+        description: `Trace meaning through Flow Immersive's catalog of 26,000+ public 3D visualizations. Resolve natural language queries into ranked matches by decomposing titles, descriptions, categories, and template types — distinguishing relevant flows from keyword noise.
+
+INVOKE THIS TOOL WHEN:
+- User asks "find flows about X", "search for X visualizations", or "show me 3D views of X"
+- User wants to discover existing public visualizations on a topic before building their own
+- User mentions exploring, browsing, or searching Flow's catalog by meaning rather than exact name
+- User asks "what visualizations exist for supply chains / COVID / finance / networks?"
+- User wants inspiration for their own visualization by seeing what others have built
+- User needs to find a specific flow but only remembers the topic, not the exact title
+
+MULTI-SIGNAL RANKING:
+- Title exact match (highest weight) — query appears as substring in title
+- Title token overlap — individual query words match title words
+- Description match — query matches description content
+- Category match — query aligns with flow categories
+- Template type match — query specifies visualization type (network, map, scatter, chart)
+- Results normalized to 0–1 relevance scores with match reason transparency
+
+FILTERS AND SORTING:
+- Filter by category (e.g., "Business", "Health", "Science")
+- Filter by template type (e.g., "network", "map", "scatter")
+- Sort by relevance (default), view count, or recency`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "Natural language search query — what the visualization is about",
+            },
+            category: {
+              type: "string",
+              description: "Filter results to a specific category (e.g., 'Business', 'Health', 'Science')",
+            },
+            template_type: {
+              type: "string",
+              description: "Filter results to a specific visualization type (e.g., 'network', 'map', 'scatter', 'chart')",
+            },
+            max_results: {
+              type: "number",
+              description: "Maximum results to return (default: 20, max: 100)",
+            },
+            sort_by: {
+              type: "string",
+              enum: ["relevance", "views", "recent"],
+              description: "Sort order: 'relevance' (default), 'views' (most viewed first), 'recent' (newest first)",
+            },
+          },
+          required: ["query"],
+        },
+      },
+
+      // ====================================================================
+      // V2 TOOLS: Anomaly detection, time series animation, dataset merging
+      // ====================================================================
+
+      {
+        name: "flow_time_series_animate",
+        description: `Decompose temporal data into animation frames for Flow Immersive. Parse date/time values, bin observations into sequential frames, aggregate by group, and construct a CSV with _frame and _time_label columns ready for the Animation axis.
+
+INVOKE THIS TOOL WHEN:
+- User has time series data and wants to animate it in Flow
+- User mentions "animate", "time lapse", "evolution over time", "temporal animation", or "show change over time"
+- User has date/timestamp columns and wants to see progression
+- User wants to turn static data into a dynamic visualization
+- User mentions "frames", "keyframes", or "animation sequence"
+
+Supports ISO 8601, Unix timestamps, US dates (MM/DD/YYYY), and year-only values. Groups by category for multi-series animation. Optional cumulative mode for running totals.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV content with headers, containing a time/date column",
+            },
+            time_column: {
+              type: "string",
+              description: "Name of the column containing dates/timestamps",
+            },
+            value_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Numeric columns to animate. Auto-detected if omitted.",
+            },
+            group_column: {
+              type: "string",
+              description: "Column to group by (e.g., 'city', 'category'). Creates separate animation tracks per group.",
+            },
+            frame_count: {
+              type: "number",
+              description: "Number of animation frames (default 50, max 200). More frames = smoother but larger CSV.",
+            },
+            interpolation: {
+              type: "string",
+              enum: ["linear", "step", "none"],
+              description: "How to fill gaps: 'linear' carries forward values, 'step' holds last value, 'none' skips empty frames. Default: 'linear'.",
+            },
+            aggregation: {
+              type: "string",
+              enum: ["mean", "sum", "min", "max", "last"],
+              description: "How to combine multiple values in the same frame: mean, sum, min, max, or last. Default: 'mean'.",
+            },
+            cumulative: {
+              type: "boolean",
+              description: "If true, values accumulate over frames (running total). Default: false.",
+            },
+          },
+          required: ["csv_content", "time_column"],
+        },
+      },
+      {
+        name: "flow_merge_datasets",
+        description: `Construct a unified dataset from multiple CSV sources. Join on shared columns (inner, left, outer) or concatenate vertically. Resolve column name collisions, add source tracking, and output a single CSV ready for multi-source visualization in Flow Immersive.
+
+INVOKE THIS TOOL WHEN:
+- User has multiple CSV files or datasets to combine before visualizing
+- User mentions "merge", "join", "combine datasets", "union", or "concatenate"
+- User wants to compare data from different sources in one visualization
+- User needs to enrich one dataset with columns from another
+- User has split data across files and wants a single upload
+
+Join types: 'inner' (only matching rows), 'left' (all left + matching right), 'outer' (all rows from both), 'concatenate' (stack vertically). Auto-detects join columns from shared names, preferring 'id'/'key'/'name'.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            datasets: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  csv_content: {
+                    type: "string",
+                    description: "CSV content with headers",
+                  },
+                  label: {
+                    type: "string",
+                    description: "Label for this dataset (used in _source column and conflict prefixing). Default: 'dataset_N'.",
+                  },
+                },
+                required: ["csv_content"],
+              },
+              description: "Array of datasets to merge (minimum 2)",
+            },
+            join_type: {
+              type: "string",
+              enum: ["inner", "left", "outer", "concatenate"],
+              description: "Join strategy: 'inner' (intersection), 'left' (keep all left rows), 'outer' (keep all rows), 'concatenate' (stack vertically). Default: 'inner'.",
+            },
+            join_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to join on. Auto-detected from shared column names if omitted.",
+            },
+            conflict_resolution: {
+              type: "string",
+              enum: ["prefix", "keep_first", "keep_last"],
+              description: "How to handle column name collisions: 'prefix' (add dataset label), 'keep_first', 'keep_last'. Default: 'prefix'.",
+            },
+            add_source_column: {
+              type: "boolean",
+              description: "Add _source column tracking which dataset each row came from. Default: true.",
+            },
+          },
+          required: ["datasets"],
+        },
+      },
+      {
+        name: "flow_anomaly_detect",
+        description: `Measure statistical anomalies in numeric data using Z-score or IQR methods. Score every row's deviation from normal, flag outliers, and construct a CSV with _anomaly_score, _is_anomaly, and _anomaly_reasons columns ready for Color and Size mapping in Flow Immersive.
+
+INVOKE THIS TOOL WHEN:
+- User wants to find outliers, anomalies, or unusual values in their data
+- User mentions "anomaly detection", "outlier detection", "find unusual", "flag abnormal", or "detect deviations"
+- User has numeric data and wants to highlight what stands out
+- User wants to color-code or size-code data points by how unusual they are
+- User asks "what's abnormal in this data?" or "which rows are outliers?"
+
+Methods: 'zscore' (best for normal distributions), 'iqr' (robust to skew), 'auto' (chooses based on skewness). Output modes: 'annotated' (full CSV + scores), 'anomalies_only' (just outlier rows), 'summary' (statistics only).`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV content with headers containing numeric columns to analyze",
+            },
+            numeric_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns to analyze for anomalies. Auto-detected if omitted.",
+            },
+            method: {
+              type: "string",
+              enum: ["zscore", "iqr", "auto"],
+              description: "Detection method: 'zscore' for normally distributed data, 'iqr' for skewed data, 'auto' chooses based on skewness. Default: 'auto'.",
+            },
+            threshold: {
+              type: "number",
+              description: "Sensitivity threshold. For zscore: number of standard deviations (default 2.5). For iqr: IQR multiplier (default 2.5). Lower = more sensitive.",
+            },
+            output_mode: {
+              type: "string",
+              enum: ["annotated", "anomalies_only", "summary"],
+              description: "Output format: 'annotated' (all rows + scores), 'anomalies_only' (just outlier rows), 'summary' (statistics only). Default: 'annotated'.",
+            },
+          },
+          required: ["csv_content"],
+        },
+      },
+
+      // ====================================================================
+      // V3 TOOLS: NLP-to-viz, geographic enhancement, export formats
+      // ====================================================================
+
+      {
+        name: "flow_geo_enhance",
+        description: `Resolve text-based geographic references into latitude and longitude coordinates using a built-in gazetteer of world cities and countries. Construct a geo-enriched CSV ready for Flow Immersive's 3D map visualization. Matches exact city names, alternate names (NYC, SF), country names and codes, fuzzy matches (Levenshtein distance ≤ 3), and raw coordinate pairs. Returns confidence scores: 1.0=exact, 0.8=city+country, 0.6=fuzzy, 0.4=country, 0.0=unresolved.
+
+INVOKE THIS TOOL WHEN:
+- User has CSV data with city names, country names, or text-based location references
+- User wants to plot locations on a 3D globe or map but data lacks lat/lng columns
+- User says "geocode", "add coordinates", "resolve locations", or "put this on a map"
+- Data has a "city", "location", "country", "region", or "address" column
+- User is preparing data for Flow's Globe / Map template and needs geographic coordinates
+- User wants to enrich a dataset with spatial coordinates for 3D geographic visualization`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV content with header row containing location data to geocode",
+            },
+            location_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Column name(s) containing location data. Examples: ['city'], ['city', 'country']",
+            },
+            location_format: {
+              type: "string",
+              enum: ["city", "country", "city_country", "coordinates", "auto"],
+              description: "Expected format of location data. 'auto' (default) tries all matching strategies.",
+            },
+            combine_columns: {
+              type: "boolean",
+              description: "If true, concatenate all location_columns into one string before matching. Default: true when multiple columns provided.",
+            },
+            fallback_coordinates: {
+              type: "object",
+              properties: {
+                lat: { type: "number" },
+                lng: { type: "number" },
+              },
+              description: "Fallback lat/lng for unresolved locations. If omitted, unresolved rows get empty coordinates.",
+            },
+          },
+          required: ["csv_content", "location_columns"],
+        },
+      },
+      {
+        name: "flow_nlp_to_viz",
+        description: `Construct a complete 3D visualization from a single natural language description. Decompose the request into data requirements, generate synthetic or transformed data, select the optimal Flow template, and produce a ready-to-upload CSV with column mappings and setup instructions. Supports network graphs, geographic maps, time series, and multi-dimensional scatter plots. Can generate synthetic data or reshape provided CSV data.
+
+INVOKE THIS TOOL WHEN:
+- User describes a visualization in natural language: "show me a social network", "create a world map of sales"
+- User wants to see a quick prototype or proof-of-concept 3D visualization
+- User says "visualize", "show me", "create a chart of", "graph this", or "plot"
+- User has a concept but no data yet — generate synthetic data to demonstrate
+- User has CSV data and wants automatic template selection and column mapping
+- User wants a complete end-to-end pipeline: prompt → data → template → upload instructions`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            prompt: {
+              type: "string",
+              description: "Natural language description of the desired visualization. Examples: 'social network of user connections', 'world map of company offices', 'stock market trends over time'",
+            },
+            data_source: {
+              type: "string",
+              enum: ["generate", "transform"],
+              description: "'generate' creates synthetic data from prompt (default). 'transform' reshapes provided csv_content.",
+            },
+            csv_content: {
+              type: "string",
+              description: "CSV data to transform (required when data_source='transform')",
+            },
+            complexity: {
+              type: "string",
+              enum: ["simple", "medium", "rich"],
+              description: "Data complexity: 'simple' (fewer columns/groups), 'medium' (default), 'rich' (more dimensions)",
+            },
+            row_count: {
+              type: "number",
+              description: "Number of data rows to generate (default: 100, max: 5000). Ignored in transform mode.",
+            },
+            style: {
+              type: "string",
+              enum: ["scientific", "business", "storytelling", "exploratory"],
+              description: "Visual style hint for template selection",
+            },
+          },
+          required: ["prompt"],
+        },
+      },
+      {
+        name: "flow_export_formats",
+        description: `Construct presentation-ready outputs from Flow visualization data. Transform CSV into embeddable HTML 3D viewers, structured JSON, GeoJSON for mapping tools, or statistical summaries. The HTML viewer generates a self-contained page with Three.js that renders an interactive 3D scatter plot with orbit controls — no server needed, just open the file.
+
+INVOKE THIS TOOL WHEN:
+- User wants to export visualization data to JSON, GeoJSON, or an HTML file
+- User says "export", "download", "save as", "convert to JSON", or "create an HTML page"
+- User needs a self-contained HTML file with an interactive 3D viewer
+- User wants GeoJSON for use in Mapbox, Leaflet, QGIS, or other mapping tools
+- User wants a statistical summary of their dataset before visualizing
+- User needs to share a visualization as a standalone file (no Flow account needed)`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV content with header row to export",
+            },
+            format: {
+              type: "string",
+              enum: ["html_viewer", "json", "geojson", "summary"],
+              description: "'json': array of objects. 'geojson': FeatureCollection (needs lat/lng). 'summary': markdown statistics. 'html_viewer': self-contained Three.js 3D scatter.",
+            },
+            title: {
+              type: "string",
+              description: "Title for the export (used in HTML viewer and summary header)",
+            },
+            visualization_type: {
+              type: "string",
+              description: "Hint for visualization type (scatter, network, map)",
+            },
+            options: {
+              type: "object",
+              properties: {
+                color_column: { type: "string", description: "Column to use for color coding" },
+                size_column: { type: "string", description: "Column to use for point sizing" },
+                lat_column: { type: "string", description: "Latitude column (required for geojson)" },
+                lng_column: { type: "string", description: "Longitude column (required for geojson)" },
+                x_column: { type: "string", description: "X-axis column for HTML viewer" },
+                y_column: { type: "string", description: "Y-axis column for HTML viewer" },
+                z_column: { type: "string", description: "Z-axis column for HTML viewer" },
+              },
+              description: "Format-specific options for column mapping",
+            },
+          },
+          required: ["csv_content", "format"],
+        },
+      },
     ],
   };
 });
@@ -1333,6 +1690,69 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_query_graph": {
       try {
         const result = await queryGraph(args as unknown as GraphQueryInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_semantic_search": {
+      try {
+        const result = await flowSemanticSearch(args as unknown as SemanticSearchInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_time_series_animate": {
+      try {
+        const result = flowTimeSeriesAnimate(args as unknown as TimeSeriesAnimateInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_merge_datasets": {
+      try {
+        const result = flowMergeDatasets(args as unknown as MergeDatasetsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_anomaly_detect": {
+      try {
+        const result = flowAnomalyDetect(args as unknown as AnomalyDetectInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_geo_enhance": {
+      try {
+        const result = flowGeoEnhance(args as unknown as GeoEnhanceInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_nlp_to_viz": {
+      try {
+        const result = flowNlpToViz(args as unknown as NlpToVizInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_export_formats": {
+      try {
+        const result = flowExportFormats(args as unknown as ExportFormatsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -4267,6 +4687,15 @@ export {
   scaleDataset,
   computeGraphMetrics,
   queryGraph,
+  flowSemanticSearch,
+  _injectCatalogForTesting,
+  _clearCatalogCache,
+  flowAnomalyDetect,
+  flowTimeSeriesAnimate,
+  flowMergeDatasets,
+  flowNlpToViz,
+  flowGeoEnhance,
+  flowExportFormats,
   FLOW_API_BASE,
   LIMITS,
 };
