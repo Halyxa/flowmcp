@@ -2904,7 +2904,7 @@ export function flowUnpivot(input: UnpivotInput): UnpivotResult {
 }
 
 // ============================================================================
-// TOOL 50: flow_join_datasets — SQL-STYLE JOINS BETWEEN TWO CSVs
+// TOOL 50: flow_join_datasets — SQL-STYLE JOINS BETWEEN TWO CSVs (below)
 // ============================================================================
 
 export interface JoinDatasetsInput {
@@ -3030,6 +3030,217 @@ export function flowJoinDatasets(input: JoinDatasetsInput): JoinDatasetsResult {
     join_key,
     left_columns: leftHeaders,
     right_columns: rightHeaders,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 51: flow_cross_tabulate — CONTINGENCY TABLE / CROSSTAB
+// ============================================================================
+
+export interface CrossTabulateInput {
+  csv_content: string;
+  row_column: string;
+  col_column: string;
+  value_column?: string;
+  aggregation?: "count" | "sum" | "mean";
+}
+
+export interface CrossTabulateResult {
+  csv: string;
+  row_count: number;
+  row_column: string;
+  col_column: string;
+  aggregation: string;
+  summary: string;
+}
+
+export function flowCrossTabulate(input: CrossTabulateInput): CrossTabulateResult {
+  const { csv_content, row_column, col_column, value_column, aggregation = "count" } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+
+  const rowIdx = headers.indexOf(row_column);
+  if (rowIdx === -1) throw new Error(`Row column "${row_column}" not found. Available: ${headers.join(", ")}`);
+
+  const colIdx = headers.indexOf(col_column);
+  if (colIdx === -1) throw new Error(`Column column "${col_column}" not found. Available: ${headers.join(", ")}`);
+
+  let valIdx = -1;
+  if (value_column) {
+    valIdx = headers.indexOf(value_column);
+    if (valIdx === -1) throw new Error(`Value column "${value_column}" not found. Available: ${headers.join(", ")}`);
+  }
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Collect unique row/col values (sorted alphabetically)
+  const rowValues = [...new Set(rows.map(r => r[rowIdx] || ""))].sort();
+  const colValues = [...new Set(rows.map(r => r[colIdx] || ""))].sort();
+
+  // Build accumulator: rowVal -> colVal -> values[]
+  const accum = new Map<string, Map<string, number[]>>();
+  for (const rv of rowValues) {
+    const colMap = new Map<string, number[]>();
+    for (const cv of colValues) {
+      colMap.set(cv, []);
+    }
+    accum.set(rv, colMap);
+  }
+
+  for (const row of rows) {
+    const rv = row[rowIdx] || "";
+    const cv = row[colIdx] || "";
+    const colMap = accum.get(rv);
+    if (colMap) {
+      const arr = colMap.get(cv);
+      if (arr) {
+        if (aggregation === "count") {
+          arr.push(1);
+        } else {
+          const val = valIdx >= 0 ? Number(row[valIdx]) : 0;
+          if (!isNaN(val)) arr.push(val);
+        }
+      }
+    }
+  }
+
+  // Aggregate
+  function aggregate(values: number[]): string {
+    if (values.length === 0) return "0";
+    if (aggregation === "count") return String(values.length);
+    if (aggregation === "sum") return String(values.reduce((a, b) => a + b, 0));
+    // mean
+    const sum = values.reduce((a, b) => a + b, 0);
+    return String(sum / values.length);
+  }
+
+  // Build output CSV
+  const outHeader = [row_column, ...colValues].map(h => csvEscapeField(h)).join(",");
+  const outRows: string[] = [];
+  for (const rv of rowValues) {
+    const colMap = accum.get(rv)!;
+    const cells = [rv];
+    for (const cv of colValues) {
+      cells.push(aggregate(colMap.get(cv)!));
+    }
+    outRows.push(cells.map(c => csvEscapeField(c)).join(","));
+  }
+
+  const summary = `Cross-tabulation of "${row_column}" × "${col_column}": ${rowValues.length} rows × ${colValues.length} columns, ${aggregation} aggregation.`;
+
+  return {
+    csv: [outHeader, ...outRows].join("\n"),
+    row_count: rowValues.length,
+    row_column,
+    col_column,
+    aggregation,
+    summary,
+  };
+}
+
+// ============================================================================
+// TOOL 52: flow_window_functions — ROLLING/SLIDING WINDOW AGGREGATIONS
+// ============================================================================
+
+export interface WindowFunctionsInput {
+  csv_content: string;
+  value_column: string;
+  window_size: number;
+  functions: ("mean" | "sum" | "min" | "max")[];
+}
+
+export interface WindowFunctionsResult {
+  csv: string;
+  row_count: number;
+  value_column: string;
+  window_size: number;
+  functions_applied: string[];
+  summary: string;
+}
+
+export function flowWindowFunctions(input: WindowFunctionsInput): WindowFunctionsResult {
+  const { csv_content, value_column, window_size, functions } = input;
+
+  const lines = csv_content.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 1) throw new Error("CSV must have at least a header row");
+
+  const headers = parseCSVLine(lines[0]);
+  const valIdx = headers.indexOf(value_column);
+  if (valIdx === -1) throw new Error(`Value column "${value_column}" not found. Available: ${headers.join(", ")}`);
+
+  const rows = lines.slice(1).map(l => parseCSVLine(l));
+
+  // Extract numeric values from the value column
+  const values = rows.map(r => {
+    const v = Number(r[valIdx]);
+    return isNaN(v) ? null : v;
+  });
+
+  // Compute window functions
+  const newColumns: Map<string, string[]> = new Map();
+
+  for (const fn of functions) {
+    const colName = `${value_column}_${fn}_${window_size}`;
+    const computed: string[] = [];
+
+    for (let i = 0; i < values.length; i++) {
+      // Collect window values (trailing window: from i-window_size+1 to i)
+      const windowStart = Math.max(0, i - window_size + 1);
+      const windowVals: number[] = [];
+      for (let j = windowStart; j <= i; j++) {
+        if (values[j] !== null) windowVals.push(values[j]!);
+      }
+
+      // Only compute if we have a full window
+      if (i < window_size - 1 || windowVals.length === 0) {
+        computed.push("");
+      } else {
+        let result: number;
+        switch (fn) {
+          case "mean":
+            result = windowVals.reduce((a, b) => a + b, 0) / windowVals.length;
+            break;
+          case "sum":
+            result = windowVals.reduce((a, b) => a + b, 0);
+            break;
+          case "min":
+            result = Math.min(...windowVals);
+            break;
+          case "max":
+            result = Math.max(...windowVals);
+            break;
+        }
+        computed.push(String(result));
+      }
+    }
+
+    newColumns.set(colName, computed);
+  }
+
+  // Build output CSV
+  const newColNames = [...newColumns.keys()];
+  const outHeaders = [...headers, ...newColNames];
+  const outHeaderLine = outHeaders.map(h => csvEscapeField(h)).join(",");
+
+  const outRows: string[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const originalCells = rows[i].map(v => csvEscapeField(v));
+    const newCells = newColNames.map(cn => csvEscapeField(newColumns.get(cn)![i]));
+    outRows.push([...originalCells, ...newCells].join(","));
+  }
+
+  const summary = `Applied ${functions.join(", ")} with window size ${window_size} to "${value_column}" (${rows.length} rows).`;
+
+  return {
+    csv: [outHeaderLine, ...outRows].join("\n"),
+    row_count: rows.length,
+    value_column,
+    window_size,
+    functions_applied: [...functions],
     summary,
   };
 }

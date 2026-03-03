@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -2771,6 +2771,200 @@ describe("flowJoinDatasets", () => {
       right_csv: right,
       join_key: "id",
       join_type: "inner",
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 51: flow_cross_tabulate
+// ============================================================================
+
+describe("flowCrossTabulate", () => {
+  it("counts co-occurrences of two columns", () => {
+    const csv = "color,size\nred,S\nred,M\nblue,S\nblue,S\nred,S";
+    const result = flowCrossTabulate({
+      csv_content: csv,
+      row_column: "color",
+      col_column: "size",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Header: color,M,S (alphabetical column values)
+    expect(lines[0]).toContain("color");
+    expect(lines[0]).toContain("S");
+    expect(lines[0]).toContain("M");
+    // blue row: S=2, M=0
+    const blueLine = lines.find(l => l.startsWith("blue"));
+    expect(blueLine).toBeTruthy();
+    expect(result.row_count).toBe(2); // 2 unique row values: blue, red
+  });
+
+  it("uses count aggregation by default", () => {
+    const csv = "dept,grade\nEng,A\nEng,B\nEng,A\nSales,B";
+    const result = flowCrossTabulate({
+      csv_content: csv,
+      row_column: "dept",
+      col_column: "grade",
+    });
+    expect(result.aggregation).toBe("count");
+    expect(result.summary).toBeTruthy();
+  });
+
+  it("supports sum aggregation with value column", () => {
+    const csv = "region,product,revenue\nUS,A,100\nUS,B,200\nEU,A,150\nEU,A,50";
+    const result = flowCrossTabulate({
+      csv_content: csv,
+      row_column: "region",
+      col_column: "product",
+      value_column: "revenue",
+      aggregation: "sum",
+    });
+    // EU,A should sum to 200
+    const lines = result.csv.trim().split("\n");
+    const euLine = lines.find(l => l.startsWith("EU"));
+    expect(euLine).toBeTruthy();
+    expect(result.row_count).toBe(2);
+  });
+
+  it("supports mean aggregation", () => {
+    const csv = "cat,type,val\nA,X,10\nA,X,20\nA,Y,30\nB,X,40";
+    const result = flowCrossTabulate({
+      csv_content: csv,
+      row_column: "cat",
+      col_column: "type",
+      value_column: "val",
+      aggregation: "mean",
+    });
+    // A,X mean = 15
+    const lines = result.csv.trim().split("\n");
+    const aLine = lines.find(l => l.startsWith("A"));
+    expect(aLine).toContain("15");
+  });
+
+  it("handles single unique value per column", () => {
+    const csv = "x,y\na,b\na,b\na,b";
+    const result = flowCrossTabulate({
+      csv_content: csv,
+      row_column: "x",
+      col_column: "y",
+    });
+    expect(result.row_count).toBe(1);
+  });
+
+  it("throws on missing row column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowCrossTabulate({
+      csv_content: csv,
+      row_column: "missing",
+      col_column: "b",
+    })).toThrow();
+  });
+
+  it("throws on missing col column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowCrossTabulate({
+      csv_content: csv,
+      row_column: "a",
+      col_column: "missing",
+    })).toThrow();
+  });
+});
+
+// ============================================================================
+// TOOL 52: flow_window_functions
+// ============================================================================
+
+describe("flowWindowFunctions", () => {
+  it("computes rolling average", () => {
+    const csv = "day,val\n1,10\n2,20\n3,30\n4,40\n5,50";
+    const result = flowWindowFunctions({
+      csv_content: csv,
+      value_column: "val",
+      window_size: 3,
+      functions: ["mean"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("val_mean_3");
+    // First 2 rows: insufficient window, should be empty or partial
+    // Row 3 (val=30): mean(10,20,30) = 20
+    expect(result.row_count).toBe(5);
+  });
+
+  it("computes rolling sum", () => {
+    const csv = "t,v\n1,1\n2,2\n3,3\n4,4";
+    const result = flowWindowFunctions({
+      csv_content: csv,
+      value_column: "v",
+      window_size: 2,
+      functions: ["sum"],
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[0]).toContain("v_sum_2");
+    // Row 2: sum(1,2) = 3
+    expect(lines[2]).toContain("3");
+  });
+
+  it("computes rolling min and max", () => {
+    const csv = "t,v\n1,5\n2,3\n3,8\n4,1";
+    const result = flowWindowFunctions({
+      csv_content: csv,
+      value_column: "v",
+      window_size: 3,
+      functions: ["min", "max"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("v_min_3");
+    expect(header).toContain("v_max_3");
+  });
+
+  it("computes multiple functions at once", () => {
+    const csv = "x,y\n1,10\n2,20\n3,30";
+    const result = flowWindowFunctions({
+      csv_content: csv,
+      value_column: "y",
+      window_size: 2,
+      functions: ["mean", "sum", "min", "max"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("y_mean_2");
+    expect(header).toContain("y_sum_2");
+    expect(header).toContain("y_min_2");
+    expect(header).toContain("y_max_2");
+  });
+
+  it("preserves all original columns", () => {
+    const csv = "a,b,c\n1,10,x\n2,20,y\n3,30,z";
+    const result = flowWindowFunctions({
+      csv_content: csv,
+      value_column: "b",
+      window_size: 2,
+      functions: ["mean"],
+    });
+    const header = result.csv.trim().split("\n")[0];
+    expect(header).toContain("a");
+    expect(header).toContain("b");
+    expect(header).toContain("c");
+    expect(header).toContain("b_mean_2");
+  });
+
+  it("returns summary with window details", () => {
+    const csv = "t,v\n1,10\n2,20\n3,30";
+    const result = flowWindowFunctions({
+      csv_content: csv,
+      value_column: "v",
+      window_size: 2,
+      functions: ["mean"],
+    });
+    expect(result.summary).toBeTruthy();
+    expect(result.window_size).toBe(2);
+  });
+
+  it("throws on missing value column", () => {
+    const csv = "a,b\n1,2";
+    expect(() => flowWindowFunctions({
+      csv_content: csv,
+      value_column: "missing",
+      window_size: 2,
+      functions: ["mean"],
     })).toThrow();
   });
 });

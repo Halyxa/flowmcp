@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowTransposeData, flowSampleData, flowColumnStats, flowComputedColumns, flowParseDates, flowStringTransform, flowValidateRules, flowFillMissing, flowRenameColumns, flowFilterRows, flowSplitDataset, flowSelectColumns, flowSortRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, TransposeDataInput, SampleDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, StringTransformInput, ValidateRulesInput, FillMissingInput, RenameColumnsInput, FilterRowsInput, SplitDatasetInput, SelectColumnsInput, SortRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2395,6 +2395,87 @@ Output: Joined CSV with row_count, matched_rows, join_type, join_key, column lis
           required: ["left_csv", "right_csv", "join_key"],
         },
       },
+      // Tool 51: flow_cross_tabulate
+      {
+        name: "flow_cross_tabulate",
+        description: `Create cross-tabulation (contingency table) from two categorical columns. Counts co-occurrences or aggregates values (sum, mean) to produce a matrix showing the relationship between two variables. Essential for discovering patterns in categorical data.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "cross-tabulation", "contingency table", "crosstab", or "pivot count"
+- User wants to see how two categories co-occur (e.g., "department by grade distribution")
+- User asks "how many X per Y" across two categorical dimensions
+- User needs frequency matrix or co-occurrence counts
+
+Input: CSV data, row_column, col_column, optional value_column and aggregation (count/sum/mean).
+Output: Matrix CSV with row_count, row_column, col_column, aggregation, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data to cross-tabulate",
+            },
+            row_column: {
+              type: "string",
+              description: "Column whose unique values become rows in the output",
+            },
+            col_column: {
+              type: "string",
+              description: "Column whose unique values become columns in the output",
+            },
+            value_column: {
+              type: "string",
+              description: "Column to aggregate (required for sum/mean, optional for count)",
+            },
+            aggregation: {
+              type: "string",
+              enum: ["count", "sum", "mean"],
+              description: "Aggregation function (default: count)",
+            },
+          },
+          required: ["csv_content", "row_column", "col_column"],
+        },
+      },
+      // Tool 52: flow_window_functions
+      {
+        name: "flow_window_functions",
+        description: `Apply rolling/sliding window aggregations to numeric columns. Computes moving averages, rolling sums, and sliding min/max over a configurable window size. Critical for time series smoothing, trend detection, and noise reduction before visualization.
+
+INVOKE THIS TOOL WHEN:
+- User asks for "moving average", "rolling mean", "sliding window", or "running total"
+- User wants to "smooth" time series data or "reduce noise"
+- User needs trend lines or rolling statistics over sequential data
+- User asks for "7-day average", "30-day rolling sum", etc.
+
+Input: CSV data, value_column, window_size, and functions (mean/sum/min/max).
+Output: Original CSV with appended window function columns, row_count, window_size, and summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_content: {
+              type: "string",
+              description: "CSV data (rows should be in desired order, e.g., chronological)",
+            },
+            value_column: {
+              type: "string",
+              description: "Numeric column to apply window functions to",
+            },
+            window_size: {
+              type: "number",
+              description: "Number of rows in the sliding window",
+            },
+            functions: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["mean", "sum", "min", "max"],
+              },
+              description: "Window functions to compute (e.g., ['mean', 'sum'])",
+            },
+          },
+          required: ["csv_content", "value_column", "window_size", "functions"],
+        },
+      },
     ],
   };
 });
@@ -2929,6 +3010,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_join_datasets": {
       try {
         const result = flowJoinDatasets(args as unknown as JoinDatasetsInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_cross_tabulate": {
+      try {
+        const result = flowCrossTabulate(args as unknown as CrossTabulateInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_window_functions": {
+      try {
+        const result = flowWindowFunctions(args as unknown as WindowFunctionsInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -5930,7 +6029,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 50, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 52, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
