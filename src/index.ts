@@ -31,6 +31,8 @@ import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalD
 import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
 import { flowNarrateData, flowFamousNetwork, flowGuidedTour } from "./tools-narrative.js";
 import type { NarrateDataInput, FamousNetworkInput, GuidedTourInput } from "./tools-narrative.js";
+import { flowQuestGenerator, flowAnomalyExplain } from "./tools-v5.js";
+import type { QuestGeneratorInput, AnomalyExplainInput } from "./tools-v5.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2786,6 +2788,104 @@ OUTPUT: Tour title, introduction narration, sequenced stops (each with creative 
           required: ["csv"],
         },
       },
+
+      // ====================================================================
+      // HOLODECK INTELLIGENCE TOOLS: Next-gen perception layer
+      // ====================================================================
+
+      {
+        name: "flow_quest_generator",
+        description: `Generate exploration quests from dataset topology — anomalies to investigate, clusters to compare, trends to explain, hypotheses to test, connections to trace. Scans a dataset's statistical structure and produces ranked procedural quests with narrative hooks, difficulty ratings, investigation steps, and statistical basis. Each quest emerges from the data itself: z-score outliers become anomaly quests, k-means clusters become comparison quests, slope changes become trend quests, near-significant correlations become hypothesis quests, and network bridges become connection quests. TRIGGER: generate quests, explore this data, what should I investigate, data quests, find interesting patterns, what is worth exploring, discovery quests, data exploration, investigation tasks
+
+INVOKE THIS TOOL WHEN:
+- User asks "what should I investigate in this data" or "generate exploration quests"
+- User says "what is interesting" or "find patterns to explore"
+- User wants guided analytical tasks derived from dataset structure
+- User asks "what is worth looking at" or "where should I start"
+- User wants procedural exploration of a dataset
+- Before detailed analysis to identify the most interesting starting points
+
+QUEST TYPES:
+- anomaly: Z-score outliers (|z| > 2.5) — statistical surprises worth investigating
+- comparison: K-means clusters — two populations that differ systematically
+- trend: Slope changes in ordered data — reversals and accelerations
+- hypothesis: Near-significant correlations (0.5 < |r| < 0.95) — causal or coincidental?
+- connection: Network bridge nodes — structural glue connecting communities
+
+DIFFICULTY:
+- easy: Single-column observations (anomalies)
+- medium: Cross-column patterns (comparisons, trends)
+- hard: Multi-step investigations (hypotheses, connections)
+
+Output: Quests array (each with id, type, difficulty, narrative title, hook, target_columns, target_rows, investigation_steps, reward, statistical_basis), dataset_summary with quest_density, and suggested_sequence.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: {
+              type: "string",
+              description: "CSV data to generate quests from",
+            },
+            max_quests: {
+              type: "number",
+              description: "Maximum number of quests to generate (default 5, max 20)",
+            },
+            difficulty: {
+              type: "string",
+              enum: ["easy", "medium", "hard", "all"],
+              description: "Filter quests by difficulty level. Default: all",
+            },
+          },
+          required: ["csv_data"],
+        },
+      },
+
+      // ====================================================================
+      // HOLODECK INTELLIGENCE: Anomaly explanation
+      // ====================================================================
+
+      {
+        name: "flow_anomaly_explain",
+        description: `Explain WHY a data point is surprising — nearest neighbor comparison, feature contribution breakdown, micro-cluster detection, detective-story narrative. Takes anomalous rows and builds a complete explanation: which features drive the surprise (with % contribution), who the nearest normal neighbors are, whether multiple anomalies share a pattern (micro-cluster = systemic issue vs. noise), and a narrative that reads like a detective story. TRIGGER: explain anomaly, why is this an outlier, what makes this row different, anomaly explanation, surprise explanation, investigate outlier, explain this data point, why is this surprising
+
+INVOKE THIS TOOL WHEN:
+- User asks "why is this row an outlier" or "explain this anomaly"
+- User says "what makes this data point different" or "why is this surprising"
+- User wants to understand the root cause of an anomaly, not just flag it
+- User has identified outliers and wants the story behind them
+- User asks "investigate this data point" or "compare to neighbors"
+- After running flow_anomaly_detect and wanting deeper understanding
+
+STYLES:
+- detective (default): Reads like a noir investigation — "Row 47 stands apart from its neighbors..."
+- scientific: Statistical language with z-scores and confidence intervals
+- casual: Conversational explanation accessible to non-technical users
+
+OUTPUT: Explanations array (each with surprise_score, driving_features with contribution %, nearest_neighbors, micro_cluster detection, narrative story, investigation_leads).`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: {
+              type: "string",
+              description: "CSV data containing the dataset to analyze",
+            },
+            target_rows: {
+              type: "array",
+              items: { type: "number" },
+              description: "Row indices (0-indexed, excluding header) of rows to explain",
+            },
+            id_column: {
+              type: "string",
+              description: "Optional column name to use as row identifier in narratives",
+            },
+            style: {
+              type: "string",
+              enum: ["detective", "scientific", "casual"],
+              description: "Narrative style (default: detective)",
+            },
+          },
+          required: ["csv_data", "target_rows"],
+        },
+      },
     ],
   };
 });
@@ -3412,6 +3512,24 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_guided_tour": {
       try {
         const result = flowGuidedTour(args as unknown as GuidedTourInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_quest_generator": {
+      try {
+        const result = flowQuestGenerator(args as unknown as QuestGeneratorInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_anomaly_explain": {
+      try {
+        const result = flowAnomalyExplain(args as unknown as AnomalyExplainInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
