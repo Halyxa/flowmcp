@@ -578,17 +578,31 @@ function kMeans(
 function silhouetteScore(data: number[][], assignments: number[], k: number): number {
   if (k <= 1 || data.length <= k) return 0;
 
-  const n = data.length;
+  // Sample for large datasets to avoid O(n²) blowup
+  const SAMPLE_LIMIT = 2000;
+  let sampleData = data;
+  let sampleAssignments = assignments;
+  if (data.length > SAMPLE_LIMIT) {
+    const indices: number[] = [];
+    const step = data.length / SAMPLE_LIMIT;
+    for (let i = 0; i < SAMPLE_LIMIT; i++) {
+      indices.push(Math.min(Math.floor(i * step), data.length - 1));
+    }
+    sampleData = indices.map(i => data[i]);
+    sampleAssignments = indices.map(i => assignments[i]);
+  }
+
+  const n = sampleData.length;
   let totalScore = 0;
 
   for (let i = 0; i < n; i++) {
-    const myCluster = assignments[i];
+    const myCluster = sampleAssignments[i];
 
     // a(i) = mean distance to points in same cluster
     let aSum = 0, aCount = 0;
     for (let j = 0; j < n; j++) {
-      if (j !== i && assignments[j] === myCluster) {
-        aSum += euclideanDistance(data[i], data[j]);
+      if (j !== i && sampleAssignments[j] === myCluster) {
+        aSum += euclideanDistance(sampleData[i], sampleData[j]);
         aCount++;
       }
     }
@@ -600,8 +614,8 @@ function silhouetteScore(data: number[][], assignments: number[], k: number): nu
       if (c === myCluster) continue;
       let bSum = 0, bCount = 0;
       for (let j = 0; j < n; j++) {
-        if (assignments[j] === c) {
-          bSum += euclideanDistance(data[i], data[j]);
+        if (sampleAssignments[j] === c) {
+          bSum += euclideanDistance(sampleData[i], sampleData[j]);
           bCount++;
         }
       }
