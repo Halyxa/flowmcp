@@ -1,8 +1,8 @@
 # FlowMCP
 
-The world's first AI-to-3D data visualization bridge. An MCP server with **71 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
+The world's first AI-to-3D data visualization bridge. An MCP server with **75 tools** that lets any AI assistant transform raw data into interactive 3D spatial visualizations via [Flow Immersive](https://flowimmersive.com).
 
-**1278 tests. 32 smoke checks. Zero competitors in 3D viz MCP.**
+**1363 tests. 40 smoke checks. Zero competitors in 3D viz MCP.**
 
 > *"Turn any data into an interactive 3D visualization from your AI assistant."*
 
@@ -68,9 +68,9 @@ MCP_HTTP_PORT=8080 node dist/index.js --http # Custom port
 MCP_AUTH_TOKEN=mysecret node dist/index.js --http # With bearer auth
 ```
 
-Health check: `GET /health` returns `{"status":"ok","tools":71,"transport":"streamable-http"}`
+Health check: `GET /health` returns `{"status":"ok","tools":75,"transport":"streamable-http"}`
 
-## Tools (71)
+## Tools (75)
 
 ### Intelligence & Analysis (5)
 
@@ -193,7 +193,7 @@ Health check: `GET /health` returns `{"status":"ok","tools":71,"transport":"stre
 |------|-------------|
 | `flow_generate_synthetic` | On-demand synthetic CSV: configurable schemas, distributions, correlations, network/geo/timeseries modes |
 
-### Holodeck Intelligence (10)
+### Holodeck Intelligence (14)
 
 Tools that transform datasets into explorable data worlds with progressive revelation, quests, and multi-lens analysis.
 
@@ -209,6 +209,10 @@ Tools that transform datasets into explorable data worlds with progressive revel
 | `flow_data_world_builder` | One-call data world synthesis — combines multiple tools into a complete explorable environment |
 | `flow_sparkle_engine` | Progressive intelligence by dwell time — the longer you look, the smarter it gets |
 | `flow_exploration_dna` | Dataset personality fingerprinting — characterize a dataset's analytical identity |
+| `flow_fog_of_war` | Fog-of-war visibility system — progressive data reveal with exploration state tracking |
+| `flow_explorer_profile` | Explorer personality profiling — classify exploration style and recommend strategies |
+| `flow_viral_video_spec` | Viral video specification generator — data-driven storyboards for 3D viz content |
+| `flow_discovery_narrator` | Discovery narration — real-time storytelling as data is explored |
 
 Plus **3 prompts** and **5 resources** for guided workflows.
 
@@ -244,8 +248,8 @@ node scripts/stress-test-tools.mjs   # Tool performance benchmark at increasing 
 ## Testing
 
 ```bash
-npm test           # 1278 tests
-npm run smoke-test # 32 standalone MCP checks
+npm test           # 1363 tests
+npm run smoke-test # 40 standalone MCP checks
 npm run ci         # Full pipeline: build + test + smoke
 ```
 

@@ -3,7 +3,7 @@
 > This file is reference data extracted from CLAUDE.md to stay under the ~150 instruction ceiling.
 > Load on demand when you need tool inventory or file locations.
 
-## Tools (71)
+## Tools (75)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -78,6 +78,10 @@
 | 69 | `flow_sparkle_engine` | Progressive intelligence — deeper insights the longer you dwell |
 | 70 | `flow_exploration_dna` | Dataset personality fingerprinting — 8 archetypes, exploration style guide |
 | 71 | `flow_generate_synthetic` | On-demand synthetic data: configurable schemas, distributions, correlations, network/geo/timeseries modes |
+| 72 | `flow_fog_of_war` | Fog-of-war visibility system — progressive data reveal with exploration state tracking |
+| 73 | `flow_explorer_profile` | Explorer personality profiling — classify exploration style and recommend strategies |
+| 74 | `flow_viral_video_spec` | Viral video specification generator — data-driven storyboards for 3D viz content |
+| 75 | `flow_discovery_narrator` | Discovery narration — real-time storytelling as data is explored |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -86,7 +90,7 @@
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 71 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 75 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |
@@ -110,6 +114,14 @@
 | `src/tools-world.test.ts` | Data world builder tests (18 tests) |
 | `src/tools-synthetic.ts` | Synthetic data generator tool 71 |
 | `src/tools-synthetic.test.ts` | Synthetic data generator tests (22 tests) |
+| `src/tools-fog.ts` | Fog-of-war tool 72 |
+| `src/tools-fog.test.ts` | Fog-of-war tests (31 tests) |
+| `src/tools-explorer.ts` | Explorer profile tool 73 |
+| `src/tools-explorer.test.ts` | Explorer profile tests (19 tests) |
+| `src/tools-video.ts` | Viral video spec tool 74 |
+| `src/tools-video.test.ts` | Viral video spec tests (19 tests) |
+| `src/tools-narrator.ts` | Discovery narrator tool 75 |
+| `src/tools-narrator.test.ts` | Discovery narrator tests (16 tests) |
 | `src/tools-genetic.test.ts` | Genetic/property/fuzz/stress tests (133 tests) |
 | `src/tools-demo.test.ts` | Celebrity CSV demo integration tests (14 tests) |
 | `src/tools-pipeline.test.ts` | Full holodeck pipeline composition tests (50 tests) |
@@ -140,9 +152,9 @@
 ## Commands
 
 ```bash
-npm test             # 1250 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + v5 + v6 + narrative + sparkle + dna + world + genetic + property + edge)
+npm test             # 1363 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + v5 + v6 + narrative + sparkle + dna + world + fog + explorer + video + narrator + genetic + property + edge)
 npm run build        # Compile TypeScript
-npm run smoke-test   # 29 standalone checks
+npm run smoke-test   # 40 standalone checks
 npm run ci           # Full pipeline: build + test + smoke
 npm start            # Run MCP server
 npx @modelcontextprotocol/inspector node dist/index.js  # Inspector

@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 71 tools. 1278 tests. All green.
+Production TypeScript MCP server. 75 tools. 1363 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,8 +29,8 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 1278/1278 tests green |
-| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 71 tools respond |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 1363/1363 tests green |
+| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 75 tools respond |
 | L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 1250 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
@@ -115,7 +115,7 @@ ON_CI_FAILURE(stage, error):
         Smoke tests validate the contract AI clients see. Change smoke only if contract changed.
      c. IF fix touches shared code (csv-utils.ts, fetchWithTimeout):
         Run FULL smoke suite → all 15 checks pass.
-        BECAUSE shared code has blast radius across all 71 tools.
+        BECAUSE shared code has blast radius across all 75 tools.
 
   --- STAGE D: FULL PIPELINE (npm run ci) ---
   5. AFTER all individual stages green → run npm run ci end-to-end.
@@ -130,7 +130,7 @@ ON_CI_FAILURE(stage, error):
      Create skills/<pattern>.md → trigger, diagnosis, fix, files affected.
      BECAUSE crystallized patterns compound. Re-diagnosis wastes cycles.
   8. IF fix touched tool interface or shared code:
-     Run MCP Inspector → verify 71 tools respond to list_tools.
+     Run MCP Inspector → verify 75 tools respond to list_tools.
      BECAUSE demo readiness is a loss function. Never ship with broken tool listing.
 ```
 
@@ -194,7 +194,7 @@ ON_API_CHANGE(endpoint, old_behavior, new_behavior):
 ON_DEMO_PREP(audience):
   1. Run npm run ci → all green. Do not demo broken code.
   2. Verify 5 sample CSVs in samples/.
-  3. MCP Inspector: verify 71 tools respond to list_tools.
+  3. MCP Inspector: verify 75 tools respond to list_tools.
   4. Execute 3-tool walkthrough end-to-end:
      analyze_data_for_flow → suggest_flow_visualization → flow_upload_data.
   5. IF audience = Jason:
@@ -341,7 +341,7 @@ Feeds: SPINE-05 (api_change patterns), SPINE-08 (error history), SPINE-09 (Brier
 
 ## Tools & Paths
 
-71 tools, 3 prompts, 5 resources. Full inventory: `TOOLS-REFERENCE.md`.
+75 tools, 3 prompts, 5 resources. Full inventory: `TOOLS-REFERENCE.md`.
 Key source files: `src/index.ts` (main), `src/tools-v4.ts` (26-50), `src/tools-v5.ts` (61-66), `src/tools-narrative.ts` (58-60).
 
 ## Domain: Flow Immersive
@@ -376,9 +376,9 @@ Key source files: `src/index.ts` (main), `src/tools-v4.ts` (26-50), `src/tools-v
 ## Commands
 
 ```bash
-npm test             # 1278 tests
+npm test             # 1363 tests
 npm run build        # Compile TypeScript
-npm run smoke-test   # 32 standalone checks
+npm run smoke-test   # 40 standalone checks
 npm run ci           # Full pipeline: build + test + smoke
 npm start            # Run MCP server
 ```
