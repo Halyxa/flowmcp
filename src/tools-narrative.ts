@@ -900,15 +900,15 @@ export interface FamousNetworkResult {
 
 // Wikidata property IDs for relationship types
 const RELATIONSHIP_PROPERTIES: Record<string, { props: string[]; label: string }> = {
-  spouse: { props: ["P26"], label: "spouse" },
+  spouse: { props: ["P26", "P451"], label: "spouse" },
   child: { props: ["P40", "P22", "P25"], label: "family" },
-  colleague: { props: ["P108", "P1327"], label: "colleague" },
-  influenced: { props: ["P737", "P800"], label: "influenced" },
+  colleague: { props: ["P108", "P1327", "P3342"], label: "colleague" },
+  influenced: { props: ["P737", "P1066", "P802"], label: "influenced" },
   educated_with: { props: ["P69"], label: "education" },
 };
 
 const WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
-const FETCH_TIMEOUT = 15_000;
+const FETCH_TIMEOUT = 20_000;
 const USER_AGENT = "FlowMCP/1.0 (https://github.com/Halyxa/flowmcp)";
 
 function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = FETCH_TIMEOUT): Promise<Response> {
@@ -944,15 +944,17 @@ interface NetworkEdge {
 }
 
 function buildPersonSearchQuery(name: string): string {
-  // Search for the person by label, filtering to instances of human (Q5)
+  // Search for the person using MediaWiki EntitySearch API (wikibase:mwapi)
+  // Note: wikibase:mquery is deprecated and returns 500 errors
   const escaped = name.replace(/"/g, '\\"');
   return `
 SELECT ?person ?personLabel ?personDesc WHERE {
-  SERVICE wikibase:mquery {
-    bd:serviceParam wikibase:searchQuery "${escaped}" .
-    bd:serviceParam wikibase:searchLanguage "en" .
-    bd:serviceParam wikibase:limit 5 .
-    ?person wikibase:apiResult "true" .
+  SERVICE wikibase:mwapi {
+    bd:serviceParam wikibase:endpoint "www.wikidata.org" .
+    bd:serviceParam wikibase:api "EntitySearch" .
+    bd:serviceParam mwapi:search "${escaped}" .
+    bd:serviceParam mwapi:language "en" .
+    ?person wikibase:apiOutputItem mwapi:item .
   }
   ?person wdt:P31 wd:Q5 .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
@@ -975,51 +977,20 @@ function buildRelationshipQuery(
   }
 
   if (allProps.length === 0) {
-    // "all" was selected or no valid types — use all properties
     for (const mapping of Object.values(RELATIONSHIP_PROPERTIES)) {
       allProps.push(...mapping.props);
     }
   }
 
-  // Deduplicate
   const uniqueProps = [...new Set(allProps)];
 
-  // Build UNION clauses for each property
-  const unionClauses = uniqueProps.map((prop) => {
-    return `{ wd:${personQid} wdt:${prop} ?related . BIND(wdt:${prop} AS ?prop) }
-    UNION
-    { ?related wdt:${prop} wd:${personQid} . BIND(wdt:${prop} AS ?prop) }`;
-  }).join("\n    UNION\n    ");
-
-  // For employer/education properties, also find others at the same institution
-  const sharedInstitutionClauses: string[] = [];
-  if (uniqueProps.includes("P108")) {
-    sharedInstitutionClauses.push(`{
-      wd:${personQid} wdt:P108 ?org .
-      ?related wdt:P108 ?org .
-      FILTER(?related != wd:${personQid})
-      BIND(wdt:P108 AS ?prop)
-    }`);
-  }
-  if (uniqueProps.includes("P69")) {
-    sharedInstitutionClauses.push(`{
-      wd:${personQid} wdt:P69 ?school .
-      ?related wdt:P69 ?school .
-      FILTER(?related != wd:${personQid})
-      ?related wdt:P31 wd:Q5 .
-      BIND(wdt:P69 AS ?prop)
-    }`);
-  }
-
-  const allUnions = sharedInstitutionClauses.length > 0
-    ? unionClauses + "\n    UNION\n    " + sharedInstitutionClauses.join("\n    UNION\n    ")
-    : unionClauses;
+  // Use VALUES clause for compact, fast querying — single request, no rate limit issues
+  const valuesClause = uniqueProps.map((p) => `wdt:${p}`).join(" ");
 
   return `
 SELECT DISTINCT ?related ?relatedLabel ?relatedDesc ?prop WHERE {
-  {
-    ${allUnions}
-  }
+  VALUES ?prop { ${valuesClause} }
+  { { wd:${personQid} ?prop ?related } UNION { ?related ?prop wd:${personQid} } }
   ?related wdt:P31 wd:Q5 .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }
@@ -1031,7 +1002,7 @@ function buildDepth2Query(
   relTypes: string[],
   maxNodes: number,
 ): string {
-  // Get relationships of first-hop people
+  // Get relationships of first-hop people using VALUES for both QIDs and properties
   const allProps: string[] = [];
   for (const rt of relTypes) {
     const mapping = RELATIONSHIP_PROPERTIES[rt];
@@ -1045,22 +1016,14 @@ function buildDepth2Query(
     }
   }
   const uniqueProps = [...new Set(allProps)];
-
-  // Build VALUES clause for the first-hop QIDs
-  const valuesClause = qids.map((q) => `wd:${q}`).join(" ");
-
-  const unionClauses = uniqueProps.map((prop) => {
-    return `{ ?hop1 wdt:${prop} ?related . BIND(wdt:${prop} AS ?prop) }
-    UNION
-    { ?related wdt:${prop} ?hop1 . BIND(wdt:${prop} AS ?prop) }`;
-  }).join("\n    UNION\n    ");
+  const propValues = uniqueProps.map((p) => `wdt:${p}`).join(" ");
+  const qidValues = qids.map((q) => `wd:${q}`).join(" ");
 
   return `
 SELECT DISTINCT ?hop1 ?related ?relatedLabel ?relatedDesc ?prop WHERE {
-  VALUES ?hop1 { ${valuesClause} }
-  {
-    ${unionClauses}
-  }
+  VALUES ?hop1 { ${qidValues} }
+  VALUES ?prop { ${propValues} }
+  { { ?hop1 ?prop ?related } UNION { ?related ?prop ?hop1 } }
   ?related wdt:P31 wd:Q5 .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 }
@@ -1068,12 +1031,15 @@ LIMIT ${maxNodes}`.trim();
 }
 
 async function sparqlQuery(query: string): Promise<WikidataBinding[]> {
-  const url = `${WIKIDATA_SPARQL_ENDPOINT}?query=${encodeURIComponent(query)}`;
-  const response = await fetchWithTimeout(url, {
+  // Use POST to avoid URL length limits with large UNION queries
+  const response = await fetchWithTimeout(WIKIDATA_SPARQL_ENDPOINT, {
+    method: "POST",
     headers: {
       "Accept": "application/sparql-results+json",
       "User-Agent": USER_AGENT,
+      "Content-Type": "application/x-www-form-urlencoded",
     },
+    body: `query=${encodeURIComponent(query)}`,
   });
 
   if (!response.ok) {
@@ -1098,14 +1064,17 @@ function propToRelationship(propUri: string): string {
   const prop = propUri.replace("http://www.wikidata.org/prop/direct/", "");
   switch (prop) {
     case "P26": return "spouse";
+    case "P451": return "partner";
     case "P40": return "child";
     case "P22": return "father";
     case "P25": return "mother";
     case "P737": return "influenced_by";
+    case "P1066": return "student_of";
+    case "P802": return "student";
     case "P1327": return "business_partner";
+    case "P3342": return "significant_person";
     case "P69": return "educated_at_same";
     case "P108": return "worked_at_same";
-    case "P800": return "collaborator";
     default: return "related";
   }
 }
@@ -1149,7 +1118,7 @@ export async function flowFamousNetwork(input: FamousNetworkInput): Promise<Famo
   const centerLabel = centerResult.personLabel?.value ?? person;
   const centerDesc = centerResult.personDesc?.value ?? "";
 
-  // Step 2: Get relationships from center person
+  // Step 2: Get relationships from center person (single VALUES query)
   const relQuery = buildRelationshipQuery(centerQid, relTypes, maxNodes);
   let relResults: WikidataBinding[];
   try {
