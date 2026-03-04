@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { normalizeCsvArgs } from "./csv-utils.js";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import { flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats } from "./tools-v4.js";
@@ -1823,5 +1824,49 @@ describe("flowColumnStats — edge cases", () => {
     const csv = "name,city\nAlice,NYC\nBob,LA";
     const result = flowColumnStats({ csv_content: csv });
     expect(result.stats.length).toBe(0);
+  });
+});
+
+// ============================================================================
+// CSV ARG NORMALIZATION (normalizeCsvArgs)
+// ============================================================================
+
+describe("normalizeCsvArgs", () => {
+  it("copies csv_content to csv_data when only csv_content provided", () => {
+    const args = normalizeCsvArgs({ csv_content: "a,b\n1,2" });
+    expect(args.csv_content).toBe("a,b\n1,2");
+    expect(args.csv_data).toBe("a,b\n1,2");
+  });
+
+  it("copies csv_data to csv_content when only csv_data provided", () => {
+    const args = normalizeCsvArgs({ csv_data: "x,y\n3,4" });
+    expect(args.csv_data).toBe("x,y\n3,4");
+    expect(args.csv_content).toBe("x,y\n3,4");
+  });
+
+  it("preserves both when both provided", () => {
+    const args = normalizeCsvArgs({ csv_content: "a", csv_data: "b" });
+    expect(args.csv_content).toBe("a");
+    expect(args.csv_data).toBe("b");
+  });
+
+  it("does nothing when neither is provided", () => {
+    const args = normalizeCsvArgs({ column: "name", value: 5 });
+    expect(args.csv_content).toBeUndefined();
+    expect(args.csv_data).toBeUndefined();
+    expect(args.column).toBe("name");
+  });
+
+  it("does not clobber other args", () => {
+    const args = normalizeCsvArgs({ csv_content: "data", style: "explorer" });
+    expect(args.csv_data).toBe("data");
+    expect(args.style).toBe("explorer");
+  });
+
+  it("works with tools expecting csv_content when csv_data is passed", () => {
+    const csv = "name,value\nAlice,10\nBob,20";
+    const args = normalizeCsvArgs({ csv_data: csv });
+    const result = flowColumnStats({ csv_content: args.csv_content as string });
+    expect(result.stats.length).toBeGreaterThan(0);
   });
 });

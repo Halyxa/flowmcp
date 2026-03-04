@@ -20,7 +20,7 @@ import {
   forceCollide,
 } from "d3-force-3d";
 import { FalkorDB } from "falkordb";
-import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { parseCSVLine, csvEscapeField, normalizeCsvArgs } from "./csv-utils.js";
 import { flowSemanticSearch, _injectCatalogForTesting, _clearCatalogCache } from "./tools-search.js";
 import type { SemanticSearchInput } from "./tools-search.js";
 import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./tools-v2.js";
@@ -41,6 +41,8 @@ import { flowExplorationDna } from "./tools-dna.js";
 import type { ExplorationDnaInput } from "./tools-dna.js";
 import { flowDataWorldBuilder } from "./tools-world.js";
 import type { DataWorldBuilderInput } from "./tools-world.js";
+import { flowGenerateSynthetic } from "./tools-synthetic.js";
+import type { GenerateSyntheticInput } from "./tools-synthetic.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -3137,13 +3139,58 @@ OUTPUT: World name, archetype, DNA code, layered CSVs (surface to full), sparkle
           required: ["csv_data"],
         },
       },
+      {
+        name: "flow_generate_synthetic",
+        description: `Generate synthetic CSV datasets on demand — configurable schemas, distributions, correlations, and structures for testing, demos, and benchmarking.
+
+INVOKE THIS TOOL WHEN:
+- User needs sample data or test data for a pipeline
+- User says "generate data" or "create a dataset" or "make some test data"
+- User wants to benchmark FlowMCP tools at various scales
+- User needs network, geographic, or time series data without a real source
+- User is learning FlowMCP and needs data to experiment with
+
+MODES: default (tabular) | network (id + pipe-delimited connections) | geographic (lat/lon) | timeseries (sequential dates)
+COLUMN TYPES: numeric (min/max range) | categorical (custom categories) | date | id (unique sequential) | text
+FEATURES: seeded PRNG for reproducibility, inter-column correlations, configurable scale (1 to 100k+ rows)
+
+OUTPUT: CSV string ready for any FlowMCP tool, plus metadata (row count, column count, schema description).`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            rows: { type: "number", description: "Number of rows to generate (1 to 100000)" },
+            mode: { type: "string", enum: ["default", "network", "geographic", "timeseries"], description: "Data structure mode (default: default)" },
+            seed: { type: "number", description: "Random seed for reproducible output" },
+            schema: {
+              type: "array",
+              description: "Column definitions. If omitted, sensible defaults for the mode are used.",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string", description: "Column name" },
+                  type: { type: "string", enum: ["numeric", "categorical", "date", "id", "text"], description: "Column type" },
+                  min: { type: "number", description: "Min value for numeric columns" },
+                  max: { type: "number", description: "Max value for numeric columns" },
+                  categories: { type: "array", items: { type: "string" }, description: "Values for categorical columns" },
+                  correlate_with: { type: "string", description: "Column name to correlate with" },
+                  correlation: { type: "number", description: "Correlation strength (-1 to 1)" },
+                },
+                required: ["name", "type"],
+              },
+            },
+          },
+          required: ["rows"],
+        },
+      },
     ],
   };
 });
 
 // Tool execution handler
 s.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  const { name, arguments: rawArgs } = request.params;
+  // Normalize CSV arg names: accept both csv_content and csv_data for all tools
+  const args = normalizeCsvArgs((rawArgs || {}) as Record<string, unknown>);
 
   switch (name) {
     case "analyze_data_for_flow": {
@@ -3853,6 +3900,15 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_data_world_builder": {
       try {
         const result = await flowDataWorldBuilder(args as unknown as DataWorldBuilderInput);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_generate_synthetic": {
+      try {
+        const result = flowGenerateSynthetic(args as unknown as GenerateSyntheticInput);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6932,7 +6988,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 57, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 71, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

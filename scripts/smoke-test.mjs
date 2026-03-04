@@ -16,7 +16,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-const EXPECTED_TOOLS = 70;
+const EXPECTED_TOOLS = 71;
 const EXPECTED_PROMPTS = 3;
 const EXPECTED_RESOURCES = 5;
 
@@ -263,6 +263,21 @@ async function main() {
     check("World builder returns sparkles", typeof parsed.sparkles === "object" && Array.isArray(parsed.sparkles.instant));
   } catch (e) {
     check("Data world builder", false, e.message);
+  }
+
+  // 15. Synthetic Data Generator
+  console.log("\n15. Tool Execution (flow_generate_synthetic)");
+  try {
+    const result = await client.callTool({
+      name: "flow_generate_synthetic",
+      arguments: { rows: 20, mode: "network", seed: 42 },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Synthetic generates correct row count", parsed.rows === 20);
+    check("Synthetic returns CSV with connections", parsed.csv.includes("connections"));
+    check("Synthetic is reproducible with seed", parsed.csv.length > 0);
+  } catch (e) {
+    check("Synthetic data generator", false, e.message);
   }
 
   // Cleanup

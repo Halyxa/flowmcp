@@ -82,6 +82,20 @@ export function isDateLike(val: string): boolean {
   return datePatterns.some((p) => p.test(val.trim()));
 }
 
+/**
+ * Normalize CSV argument names so tools accept both csv_content and csv_data.
+ * Tools 1-57 expect csv_content; tools 58-70 expect csv_data.
+ * This bridge ensures AI clients can use either name with any tool.
+ */
+export function normalizeCsvArgs(args: Record<string, unknown>): Record<string, unknown> {
+  if (args.csv_content && !args.csv_data) {
+    args.csv_data = args.csv_content;
+  } else if (args.csv_data && !args.csv_content) {
+    args.csv_content = args.csv_data;
+  }
+  return args;
+}
+
 /** Detect if a column is an ID-like column based on name or uniqueness of values. */
 export function isIdLike(name: string, values: string[], totalRows: number): boolean {
   const nameLower = name.toLowerCase();

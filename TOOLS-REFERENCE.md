@@ -3,7 +3,7 @@
 > This file is reference data extracted from CLAUDE.md to stay under the ~150 instruction ceiling.
 > Load on demand when you need tool inventory or file locations.
 
-## Tools (70)
+## Tools (71)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -77,6 +77,7 @@
 | 68 | `flow_data_world_builder` | THE synthesis — orchestrates all tools into one "enter the world" call |
 | 69 | `flow_sparkle_engine` | Progressive intelligence — deeper insights the longer you dwell |
 | 70 | `flow_exploration_dna` | Dataset personality fingerprinting — 8 archetypes, exploration style guide |
+| 71 | `flow_generate_synthetic` | On-demand synthetic data: configurable schemas, distributions, correlations, network/geo/timeseries modes |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -85,7 +86,7 @@
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 70 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 71 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |
@@ -107,6 +108,8 @@
 | `src/tools-dna.test.ts` | Exploration DNA tests (18 tests) |
 | `src/tools-world.ts` | Data world builder tool 68 |
 | `src/tools-world.test.ts` | Data world builder tests (18 tests) |
+| `src/tools-synthetic.ts` | Synthetic data generator tool 71 |
+| `src/tools-synthetic.test.ts` | Synthetic data generator tests (22 tests) |
 | `src/tools-genetic.test.ts` | Genetic/property/fuzz/stress tests (133 tests) |
 | `src/tools-demo.test.ts` | Celebrity CSV demo integration tests (14 tests) |
 | `src/tools-pipeline.test.ts` | Full holodeck pipeline composition tests (50 tests) |

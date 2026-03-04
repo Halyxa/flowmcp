@@ -23,7 +23,7 @@ async function call(client, name, args) {
 async function main() {
   console.log(`\n${B}╔══════════════════════════════════════════════╗${R}`);
   console.log(`${B}║  FlowMCP — 30-Second Pipeline Demo           ║${R}`);
-  console.log(`${B}║  70 tools • 1250 tests • 3D data viz         ║${R}`);
+  console.log(`${B}║  71 tools • 1278 tests • 3D data viz         ║${R}`);
   console.log(`${B}╚══════════════════════════════════════════════╝${R}`);
 
   const transport = new StdioClientTransport({ command: "node", args: ["dist/index.js"] });
@@ -79,7 +79,7 @@ async function main() {
   const elapsed = Date.now() - start;
   console.log(`\n${B}${G}═══ Pipeline Complete ═══${R}`);
   console.log(`  Time: ${B}${(elapsed / 1000).toFixed(1)}s${R}`);
-  console.log(`  Tools: ${B}5 of 70${R} (describe → cluster → narrate → quest → stats)`);
+  console.log(`  Tools: ${B}5 of 71${R} (describe → cluster → narrate → quest → stats)`);
   console.log(`  Input: ${rows} rows of startup data`);
   console.log(`  ${D}All from a single AI assistant conversation.${R}\n`);
 
