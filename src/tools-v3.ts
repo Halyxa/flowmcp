@@ -1063,7 +1063,7 @@ function exportJson(
 
   return {
     format: "json",
-    output: JSON.stringify(objects, null, 2),
+    output: JSON.stringify(objects),
     metadata: {
       rows: rows.length,
       columns: headers,
@@ -1136,7 +1136,7 @@ function exportGeoJson(
 
   return {
     format: "geojson",
-    output: JSON.stringify(geojson, null, 2),
+    output: JSON.stringify(geojson),
     metadata: {
       rows: features.length,
       columns: headers,

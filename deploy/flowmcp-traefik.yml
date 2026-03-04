@@ -1,0 +1,19 @@
+# FlowMCP — Traefik dynamic config
+# Install: sudo cp deploy/flowmcp-traefik.yml /etc/traefik/dynamic/ && Traefik auto-reloads (watch: true)
+# Domain: mcp.superbeing.ai (needs Cloudflare DNS A/CNAME record first)
+# Test: curl https://mcp.superbeing.ai/health
+
+http:
+  routers:
+    flowmcp:
+      rule: "Host(`mcp.superbeing.ai`)"
+      entryPoints: [websecure]
+      service: flowmcp
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    flowmcp:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:3100"

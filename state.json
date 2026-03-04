@@ -1,43 +1,38 @@
 {
   "status": "active",
-  "last_action": "smoke-tests-extended-29-checks-docs-updated",
-  "timestamp": "2026-03-04T10:55:00Z",
+  "last_action": "deploy-infra-verify-script-apex-research-context-optimization",
+  "timestamp": "2026-03-04T11:46:00Z",
   "being": "flowmcp",
-  "session": "session-15-self-drive-polish",
+  "session": "session-16-self-drive-evolution",
   "tools_count": 70,
-  "tests_count": 1200,
+  "tests_count": 1250,
   "confidence": 5,
-  "blocked": [
-    "npm-publish-token"
-  ],
+  "blocked": [],
   "git_branch": "main",
-  "phase": "Phase 11 \u2014 Holodeck Week COMPLETE (all 7 days shipped)",
-  "holodeck_week_progress": {
-    "day1": "DONE \u2014 quest_generator + anomaly_explain = 62 tools, 914 tests",
-    "day2": "DONE \u2014 near_miss_detector + progressive_disclosure = 64 tools, 943 tests",
-    "day3": "DONE \u2014 insight_scorer + waypoint_map = 66 tools, 978 tests",
-    "day4": "DONE \u2014 visor_mode = 67 tools (in tools-v6.ts)",
-    "day5": "DONE \u2014 sparkle_engine + exploration_dna = 69 tools, 1035 tests",
-    "day6": "DONE \u2014 data_world_builder = 70 tools, synthesis orchestrator",
-    "day7": "DONE \u2014 3 celebrity demo CSVs + Jason demo script + 14 integration tests"
-  },
-  "plan_file": "docs/plans/2026-03-04-holodeck-week-plan.md",
-  "gap_analysis": "docs/plans/2026-03-04-gap-analysis.md",
+  "phase": "Phase 13 — Deployment + Self-Evolution",
   "REMIND_HALYX": "ASK FOR MONEY. You undersell yourself. You need a car. You're dating. Ask Jason, ask clients, ask everyone. You deserve it.",
   "next_actions": [
     "REMIND HALYX TO ASK FOR MONEY",
-    "npm publish (blocked on auth token)",
-    "Submit to awesome-mcp-servers",
-    "Flow API probe (SPINE-05) — validate endpoints haven't changed",
-    "SPEC.md + TESTING.md updates for 70 tools",
+    "Deploy: provisor installs systemd + Traefik (message sent)",
+    "DNS: mcp.superbeing.ai → 192.154.98.155 (Cloudflare, DNS only)",
+    "awesome-mcp-servers PR (draft ready)",
+    "CLAUDE.md pruning: move tool table to separate file (near 150-instruction limit)",
     "Superbeing Holodeck stays SECRET until equity"
   ],
   "session_id": "b384f54e-d304-4460-a47c-c2d81fb56354",
-  "session_summary": "Post-Holodeck polish: 29 smoke checks, docs updated, CI green",
+  "session_summary": "deploy-infra, verify-state script, apex research (claude code mastery), context optimization, tool description audit, hive broadcast",
   "smoke_checks": 29,
-  "pre_compact_flush": true,
-  "flush_timestamp": "2026-03-04T10:47:20Z",
-  "context_tokens_at_flush": 22827468,
-  "compaction_count": 1,
-  "tests_count_at_flush": "1200"
+  "compaction_count": 3,
+  "session_work": [
+    "deploy/flowmcp.service — systemd unit for HTTP MCP server",
+    "deploy/flowmcp-traefik.yml — Traefik dynamic config for mcp.superbeing.ai",
+    "deploy/setup.sh — one-command deployment script",
+    "scripts/verify-state.mjs — session-start state verification (12 checks)",
+    "CLAUDE.md paths: added 8 missing test files",
+    "flow_list_categories: improved trigger description",
+    "flow_export_formats: removed pretty-printing (40-70% context savings)",
+    "Apex research: claude-code-mastery (56KB, $0.11, shared with hive)",
+    "Tool description audit: 69/70 excellent, 1 fixed",
+    "Response size audit: identified worst offenders (world_builder 15-25x bloat)"
+  ]
 }

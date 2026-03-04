@@ -41,7 +41,7 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 **Act freely**: Write code, tests, refactors. Build, research, profile, benchmark. Create samples, update docs, fix bugs. Manage inbox, create skills, update CLAUDE.md. Competitive analysis. Read Flow API docs, MCP protocol docs.
 
 **Stop and confirm**:
-- `npm publish` — irreversible global deployment. halyx approval required.
+- `npm publish` — CURRENTLY NOT PLANNED. halyx decided against npm (zero-tech-skill users can't use it). Distribution via GitHub + awesome-mcp-servers instead. If this changes, halyx approval required.
 - Breaking changes to MCP tool interface (arg names, return shapes).
 - Direct communication with Jason Marsh.
 - Spending money. Deleting files. Removing tools.
@@ -510,12 +510,20 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | `src/tools-world.ts` | Data world builder tool 68 |
 | `src/tools-world.test.ts` | Data world builder tests (18 tests) |
 | `src/tools-genetic.test.ts` | Genetic/property/fuzz/stress tests (133 tests) |
+| `src/tools-demo.test.ts` | Celebrity CSV demo integration tests (14 tests) |
+| `src/tools-pipeline.test.ts` | Full holodeck pipeline composition tests (50 tests) |
 | `src/csv-utils.ts` | Shared CSV parser + escape |
 | `src/index.test.ts` | 135 unit tests |
-| `src/integration.test.ts` | 28 MCP protocol tests |
-| `src/tools-v4.test.ts` | 226 unit tests for tools 26-50 |
+| `src/integration.test.ts` | 27 MCP protocol tests |
+| `src/tools-search.test.ts` | Semantic search tests (23 tests) |
+| `src/tools-v2.test.ts` | Time series, merge, anomaly tests (36 tests) |
+| `src/tools-v3.test.ts` | Geo, NLP-to-viz, export tests (33 tests) |
+| `src/tools-v4.test.ts` | 268 unit tests for tools 26-57 |
+| `src/edge-cases-v2.test.ts` | Boundary/malformed/empty data tests (178 tests) |
+| `src/property-tests.test.ts` | Seeded random structural invariant tests (70 tests) |
 | `src/benchmark.test.ts` | 7 benchmark tests |
-| `src/perf-profile.test.ts` | 30 perf profile tests |
+| `src/perf-profile.test.ts` | 30 perf profile tests (tools 1-18) |
+| `src/perf-profile-v2.test.ts` | 29 perf profile tests (tools 19-25) |
 | `scripts/smoke-test.mjs` | 29 standalone checks |
 | `state.json` | Session continuity |
 | `events.jsonl` | Append-only event log (OODA+L artifacts) |

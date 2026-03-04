@@ -885,11 +885,14 @@ Returns template metadata: min numeric columns, min categorical columns, date re
       },
       {
         name: "flow_list_categories",
-        description: `Map visualization categories in Flow Immersive (8 categories derived from templates). Use to classify datasets or resolve which category a visualization recommendation belongs to.
+        description: `Browse all visualization categories in Flow Immersive — discover what themes your data fits (Business, Science, Health, Finance, Geographic, Temporal, Network, Categorical). 8 categories derived from 37 templates. Each category maps to specific viz types with column requirements.
 
 INVOKE THIS TOOL WHEN:
-- User asks what kinds of visualizations Flow supports
-- You need to classify or tag a visualization recommendation`,
+- User asks "what kinds of visualizations are available" or "show me categories"
+- User wants to browse by theme: "show me business visualizations" or "anything for health data?"
+- You need to classify or tag a visualization recommendation
+- After suggesting a viz type and user wants to explore alternatives in the same category
+- User asks "are there Finance flows?" or "what can I do with geographic data?"`,
         inputSchema: {
           type: "object",
           properties: {},
