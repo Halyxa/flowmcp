@@ -16,7 +16,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-const EXPECTED_TOOLS = 71;
+const EXPECTED_TOOLS = 75;
 const EXPECTED_PROMPTS = 3;
 const EXPECTED_RESOURCES = 5;
 
@@ -278,6 +278,69 @@ async function main() {
     check("Synthetic is reproducible with seed", parsed.csv.length > 0);
   } catch (e) {
     check("Synthetic data generator", false, e.message);
+  }
+
+  // 16. Fog of War
+  console.log("\n16. Tool Execution (flow_fog_of_war)");
+  try {
+    const result = await client.callTool({
+      name: "flow_fog_of_war",
+      arguments: { csv_data: SAMPLE_CSV },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Fog of war returns fog_csv", typeof parsed.fog_csv === "string" && parsed.fog_csv.length > 0);
+    check("Fog of war returns world_coverage", typeof parsed.world_coverage === "number");
+  } catch (e) {
+    check("Fog of war", false, e.message);
+  }
+
+  // 17. Explorer Profile
+  console.log("\n17. Tool Execution (flow_explorer_profile)");
+  try {
+    const result = await client.callTool({
+      name: "flow_explorer_profile",
+      arguments: { exploration_actions: [{ tool: "flow_anomaly_detect", columns: ["value"], finding: "2 outliers" }] },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Explorer profile returns archetype", typeof parsed.dominant_archetype === "string");
+    check("Explorer profile returns dna_string", typeof parsed.dna_string === "string");
+  } catch (e) {
+    check("Explorer profile", false, e.message);
+  }
+
+  // 18. Viral Video Spec
+  console.log("\n18. Tool Execution (flow_viral_video_spec)");
+  const NETWORK_CSV = "id,connections,group\nAlice,Bob|Carol,Eng\nBob,Alice|Dave,Eng\nCarol,Alice|Eve,Design\nDave,Bob|Eve,Mgmt\nEve,Carol|Dave,Design";
+  try {
+    const result = await client.callTool({
+      name: "flow_viral_video_spec",
+      arguments: { csv_data: NETWORK_CSV, navigation_path: ["Alice", "Bob", "Dave"] },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Video spec returns camera keyframes", Array.isArray(parsed.camera_keyframes) && parsed.camera_keyframes.length > 0);
+    check("Video spec returns narrative caption", typeof parsed.narrative_caption === "string");
+  } catch (e) {
+    check("Viral video spec", false, e.message);
+  }
+
+  // 19. Discovery Narrator
+  console.log("\n19. Tool Execution (flow_discovery_narrator)");
+  try {
+    const result = await client.callTool({
+      name: "flow_discovery_narrator",
+      arguments: {
+        csv_data: SAMPLE_CSV,
+        exploration_path: [
+          { action: "viewed_column", target: "value", finding: "Range 100-300" },
+          { action: "detected_anomaly", target: "Carol", finding: "Highest score" },
+        ],
+      },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Narrator returns narrative", typeof parsed.narrative === "string" && parsed.narrative.length > 50);
+    check("Narrator returns chapters", Array.isArray(parsed.chapters) && parsed.chapters.length > 0);
+  } catch (e) {
+    check("Discovery narrator", false, e.message);
   }
 
   // Cleanup

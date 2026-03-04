@@ -43,6 +43,14 @@ import { flowDataWorldBuilder } from "./tools-world.js";
 import type { DataWorldBuilderInput } from "./tools-world.js";
 import { flowGenerateSynthetic } from "./tools-synthetic.js";
 import type { GenerateSyntheticInput } from "./tools-synthetic.js";
+import { flowFogOfWar } from "./tools-fog.js";
+import type { FogOfWarInput } from "./tools-fog.js";
+import { flowExplorerProfile } from "./tools-explorer.js";
+import type { ExplorerProfileInput } from "./tools-explorer.js";
+import { flowViralVideoSpec } from "./tools-video.js";
+import type { ViralVideoInput } from "./tools-video.js";
+import { flowDiscoveryNarrator } from "./tools-narrator.js";
+import type { DiscoveryNarratorInput } from "./tools-narrator.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -3182,6 +3190,130 @@ OUTPUT: CSV string ready for any FlowMCP tool, plus metadata (row count, column 
           required: ["rows"],
         },
       },
+      {
+        name: "flow_fog_of_war",
+        description: `Reveal your data one layer at a time — like fog of war in a video game. Unexplored dimensions stay hidden until you earn them through exploration. The data WANTS to be discovered.
+
+INVOKE THIS TOOL WHEN:
+- User has a dataset and wants to explore it progressively
+- User says "what's hidden" or "what haven't I seen yet"
+- User wants a game-like exploration experience with their data
+- After using other tools, to see what dimensions remain unexplored
+- User says "fog of war" or "reveal more" or "what's behind the fog"
+
+INPUT: CSV data + optional exploration_history (columns_viewed, rows_viewed)
+OUTPUT: Filtered CSV with only visible columns + _visibility (0-4) + _reveal_hint columns, reveal hints teasing hidden dimensions with real stats, world coverage score.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data to explore through fog of war" },
+            exploration_history: {
+              type: "object",
+              description: "What the user has explored so far",
+              properties: {
+                columns_viewed: { type: "array", items: { type: "string" }, description: "Column names the user has examined" },
+                rows_viewed: { type: "array", items: { type: "number" }, description: "Row indices the user has examined" },
+              },
+            },
+          },
+          required: ["csv_data"],
+        },
+      },
+      {
+        name: "flow_explorer_profile",
+        description: `Discover your analytical personality — like Spotify Wrapped for data exploration. After exploring data with FlowMCP tools, this reveals what kind of analyst you are across 8 archetypes.
+
+INVOKE THIS TOOL WHEN:
+- User has used several FlowMCP tools and asks "what kind of explorer am I"
+- User says "show my profile" or "what's my exploration style"
+- User wants to see their analytical strengths and blind spots
+- User asks "what should I try next" (recommends tools for blind spots)
+- After a session of exploration, to generate a shareable profile
+
+ARCHETYPES: Anomaly Hunter | Correlation Spotter | Causal Reasoner | Network Navigator | Pattern Seeker | Detail Diver | Big Picture Thinker | Creative Connector
+
+OUTPUT: Dominant archetype, 8 archetype scores (0-1), shareable DNA string, strengths, blind spots, recommended tools.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            exploration_actions: {
+              type: "array",
+              description: "Sequence of tools used during exploration",
+              items: {
+                type: "object",
+                properties: {
+                  tool: { type: "string", description: "FlowMCP tool name that was used" },
+                  columns: { type: "array", items: { type: "string" }, description: "Columns that were analyzed" },
+                  finding: { type: "string", description: "What was discovered" },
+                },
+                required: ["tool"],
+              },
+            },
+          },
+          required: ["exploration_actions"],
+        },
+      },
+      {
+        name: "flow_viral_video_spec",
+        description: `Generate a 30-second TikTok-ready video specification from any network dataset. Give it a path through nodes and get camera keyframes, highlight animations, text overlays, and a narrative caption — ready for Three.js rendering.
+
+INVOKE THIS TOOL WHEN:
+- User wants to create a shareable video from a network or graph
+- User says "make a video" or "create a flythrough" or "TikTok this"
+- User has explored a network and wants to share their discovery path
+- After flow_famous_network, to create a viral celebrity connection video
+- User says "animate this path" or "show the journey"
+
+OUTPUT: Camera keyframes (position, lookAt, timestamp), node highlights with colors, text overlays with timing, narrative caption, video metadata.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "Network CSV with id and connections columns" },
+            navigation_path: {
+              type: "array",
+              items: { type: "string" },
+              description: "Sequence of node IDs to fly through",
+            },
+            duration_seconds: { type: "number", description: "Video duration in seconds (default 30, range 5-60)" },
+          },
+          required: ["csv_data", "navigation_path"],
+        },
+      },
+      {
+        name: "flow_discovery_narrator",
+        description: `Turn your data exploration into a story. Give it the path of what you discovered and it writes a narrative — with chapters, camera waypoints for a 3D flythrough, and a tweet-ready summary.
+
+INVOKE THIS TOOL WHEN:
+- User has explored data and wants to share their journey as a story
+- User says "tell the story of what I found" or "narrate my discoveries"
+- After a series of tool calls, to generate a narrative of the exploration
+- User wants to create a presentation or report from their analysis
+- User says "write up my findings" or "summarize my exploration"
+
+STORY ARCS: journey | discovery | revelation | convergence | mystery
+
+OUTPUT: Full narrative text, chapters with titles, camera waypoints for 3D flythrough, story arc type, shareable tweet-length summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data that was explored" },
+            exploration_path: {
+              type: "array",
+              description: "Sequence of discoveries made during exploration",
+              items: {
+                type: "object",
+                properties: {
+                  action: { type: "string", description: "What was done: viewed_column, detected_anomaly, found_correlation, discovered_outlier, viewed_node, traversed_edge, discovered_bridge" },
+                  target: { type: "string", description: "What was examined (column name, entity, 'X -> Y')" },
+                  finding: { type: "string", description: "What was discovered" },
+                },
+                required: ["action", "target"],
+              },
+            },
+          },
+          required: ["csv_data", "exploration_path"],
+        },
+      },
     ],
   };
 });
@@ -3909,6 +4041,42 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_generate_synthetic": {
       try {
         const result = flowGenerateSynthetic(args as unknown as GenerateSyntheticInput);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_fog_of_war": {
+      try {
+        const result = flowFogOfWar(args as unknown as FogOfWarInput);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_explorer_profile": {
+      try {
+        const result = flowExplorerProfile(args as unknown as ExplorerProfileInput);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_viral_video_spec": {
+      try {
+        const result = flowViralVideoSpec(args as unknown as ViralVideoInput);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_discovery_narrator": {
+      try {
+        const result = flowDiscoveryNarrator(args as unknown as DiscoveryNarratorInput);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
@@ -6988,7 +7156,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 71, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 75, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);
