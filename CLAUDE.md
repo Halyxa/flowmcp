@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 57 tools. 836 tests. All green.
+Production TypeScript MCP server. 60 tools. 875 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,9 +29,9 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 836/836 tests green |
-| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 57 tools respond |
-| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 878 |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 875/875 tests green |
+| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 60 tools respond |
+| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 875 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
 | L6: Tool Descriptions | HIGH | Descriptions ARE AI training | Trigger language > implementation docs |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 836 (floor never drops).
+     f. Verify test count >= 875 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -376,7 +376,7 @@ HOW EVENTS FEED OTHER SPINES:
 BECAUSE session transcripts evaporate. events.jsonl is the permanent record.
 An agent that cannot reconstruct its own history cannot learn from it.
 
-## Tools (57)
+## Tools (60)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -437,6 +437,9 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | 55 | `flow_distance_matrix` | Pairwise distances (euclidean/manhattan/cosine) |
 | 56 | `flow_rank_values` | Dense/ordinal/min/max ranking |
 | 57 | `flow_string_extract` | Regex capture group extraction |
+| 58 | `flow_narrate_data` | CSV → NarrativeArc with statistical characters, outlier/correlation/trend detection, 3 styles (explorer/executive/journalist) |
+| 59 | `flow_guided_tour` | CSV → TourStop sequence with camera hints, narration, 5 focus strategies (outliers/clusters/connections/trends/overview) |
+| 60 | `flow_famous_network` | Person name → Wikidata SPARQL → celebrity network CSV with relationships (zero-cost, no API key) |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -474,11 +477,13 @@ An agent that cannot reconstruct its own history cannot learn from it.
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 57 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 60 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |
 | `src/tools-v4.ts` | Tools 26-50: live data, cluster, graph, data wrangling, joins |
+| `src/tools-narrative.ts` | Narrative intelligence: narrate, guided tour, famous network (tools 58-60) |
+| `src/tools-narrative.test.ts` | Tests for narrative intelligence tools |
 | `src/csv-utils.ts` | Shared CSV parser + escape |
 | `src/index.test.ts` | 135 unit tests |
 | `src/integration.test.ts` | 28 MCP protocol tests |
@@ -500,7 +505,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 ## Commands
 
 ```bash
-npm test             # 836 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + property + edge)
+npm test             # 875 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + narrative + property + edge)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 15 standalone checks
 npm run ci           # Full pipeline: build + test + smoke
