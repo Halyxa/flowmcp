@@ -3,7 +3,7 @@
 ## Quick Commands
 
 ```bash
-npm test             # Full test suite (1200 tests across 24 test files)
+npm test             # Full test suite (1250 tests across 24 test files)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 29 standalone MCP protocol checks
 npm run ci           # Full pipeline: build + test + smoke
@@ -73,17 +73,23 @@ npm run ci           # Full pipeline: build + test + smoke
 - **14 tests** running 3 celebrity CSVs through holodeck tool pipelines
 - Run: `npx vitest run src/tools-demo.test.ts`
 
-### 13. Benchmark Tests (`src/benchmark.test.ts`)
+### 13. Pipeline Composition Tests (`src/tools-pipeline.test.ts`)
+- **50 tests** exercising every holodeck tool in sequence on Taylor Swift celebrity CSV
+- Verifies cross-tool composition: DNA → disclosure → sparkle → quests → near-misses → insight → waypoints → visor → anomaly explain → world builder
+- Proves progressive intelligence (sparkles increase with dwell time) and deterministic composition (standalone DNA matches world builder DNA)
+- Run: `npx vitest run src/tools-pipeline.test.ts`
+
+### 14. Benchmark Tests (`src/benchmark.test.ts`)
 - **7 tests** for force layout performance with varying graph sizes
 - Run: `npx vitest run src/benchmark.test.ts`
 
-### 14. Performance Profile Tests
+### 15. Performance Profile Tests
 | File | Tests | Coverage |
 |------|-------|----------|
 | `src/perf-profile.test.ts` | 30 | Tools 1-18 latency (p50/p95/max) |
 | `src/perf-profile-v2.test.ts` | 29 | Tools 19-25 latency |
 
-### 15. Smoke Test (`scripts/smoke-test.mjs`)
+### 16. Smoke Test (`scripts/smoke-test.mjs`)
 - **29 checks** via standalone Node.js script (no vitest)
 - Validates compiled `dist/index.js` as real MCP server
 - Covers: handshake, 70-tool discovery, prompt/resource listing, 10 tool executions
@@ -108,7 +114,8 @@ npm run ci           # Full pipeline: build + test + smoke
 | Demo integration | 14 |
 | Benchmark | 7 |
 | Performance | 59 |
-| **Total** | **1200** |
+| Pipeline composition | 50 |
+| **Total** | **1250** |
 | Smoke checks | 29 |
 
 ## MCP Inspector (Interactive)
@@ -176,4 +183,4 @@ Browse all 70 tools, execute with custom arguments, view prompts and resources.
 npm run ci    # build && test && smoke-test
 ```
 
-All three stages must pass for a green build. Build compiles TypeScript, test runs all 1200 vitest tests, smoke-test validates the compiled dist/ as a real MCP server with 29 protocol checks.
+All three stages must pass for a green build. Build compiles TypeScript, test runs all 1250 vitest tests, smoke-test validates the compiled dist/ as a real MCP server with 29 protocol checks.
