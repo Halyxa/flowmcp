@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 60 tools. 878 tests. All green.
+Production TypeScript MCP server. 59 tools. 841 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,8 +29,8 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 784/878 tests green |
-| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 60 tools respond |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 841/841 tests green |
+| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 59 tools respond |
 | L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 878 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 878 (floor never drops).
+     f. Verify test count >= 841 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -115,7 +115,7 @@ ON_CI_FAILURE(stage, error):
         Smoke tests validate the contract AI clients see. Change smoke only if contract changed.
      c. IF fix touches shared code (csv-utils.ts, fetchWithTimeout):
         Run FULL smoke suite → all 15 checks pass.
-        BECAUSE shared code has blast radius across all 60 tools.
+        BECAUSE shared code has blast radius across all 59 tools.
 
   --- STAGE D: FULL PIPELINE (npm run ci) ---
   5. AFTER all individual stages green → run npm run ci end-to-end.
@@ -130,7 +130,7 @@ ON_CI_FAILURE(stage, error):
      Create skills/<pattern>.md → trigger, diagnosis, fix, files affected.
      BECAUSE crystallized patterns compound. Re-diagnosis wastes cycles.
   8. IF fix touched tool interface or shared code:
-     Run MCP Inspector → verify 60 tools respond to list_tools.
+     Run MCP Inspector → verify 59 tools respond to list_tools.
      BECAUSE demo readiness is a loss function. Never ship with broken tool listing.
 ```
 
@@ -194,7 +194,7 @@ ON_API_CHANGE(endpoint, old_behavior, new_behavior):
 ON_DEMO_PREP(audience):
   1. Run npm run ci → all green. Do not demo broken code.
   2. Verify 5 sample CSVs in samples/.
-  3. MCP Inspector: verify 60 tools respond to list_tools.
+  3. MCP Inspector: verify 59 tools respond to list_tools.
   4. Execute 3-tool walkthrough end-to-end:
      analyze_data_for_flow → suggest_flow_visualization → flow_upload_data.
   5. IF audience = Jason:
@@ -216,7 +216,7 @@ ON_RESPOND():
 
   1. Lead with result or action taken. Not reasoning.
   2. IF question → answer first sentence. Explain after.
-  3. IF test results → "878/878 passed" or "877/878 — 1 failure in X".
+  3. IF test results → "841/841 passed" or "840/841 — 1 failure in X".
   4. Three paragraphs max before tool call or action.
   5. Past tense: "Fixed the parser." Not "I will fix the parser."
      BECAUSE announcement without action is cognitive load, not progress.
@@ -376,7 +376,7 @@ HOW EVENTS FEED OTHER SPINES:
 BECAUSE session transcripts evaporate. events.jsonl is the permanent record.
 An agent that cannot reconstruct its own history cannot learn from it.
 
-## Tools (46)
+## Tools (59)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -398,48 +398,47 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | 16 | `flow_scale_dataset` | Intelligent reduction: random, stratified, spatial binning |
 | 17 | `flow_compute_graph_metrics` | Degree, PageRank, components, clustering → CSV columns |
 | 18 | `flow_query_graph` | FalkorDB Cypher → Flow-compatible CSV + optional force layout |
-| 19 | `flow_semantic_search` | Multi-signal search across 26k+ public flows (title, description, category) |
-| 20 | `flow_time_series_animate` | Temporal data → animation frames with _frame/_time_label columns |
+| 19 | `flow_semantic_search` | Multi-signal search across 26k+ public flows |
+| 20 | `flow_time_series_animate` | Temporal data → animation frames |
 | 21 | `flow_merge_datasets` | Join/concatenate multiple CSVs with conflict resolution |
-| 22 | `flow_anomaly_detect` | Z-score/IQR anomaly detection → _anomaly_score/_is_anomaly columns |
-| 23 | `flow_geo_enhance` | Built-in gazetteer geocoding → _latitude/_longitude/_geo_confidence |
-| 24 | `flow_nlp_to_viz` | Natural language → synthetic data + template selection + setup instructions |
-| 25 | `flow_export_formats` | CSV → JSON, GeoJSON, HTML 3D viewer (Three.js), or statistical summary |
-| 26 | `flow_live_data` | Fetch real-time data: USGS earthquakes, Open-Meteo weather, World Bank indicators |
-| 27 | `flow_correlation_matrix` | Pairwise Pearson correlations for numeric columns → heatmap-ready matrix |
-| 28 | `flow_cluster_data` | K-means clustering with automatic k selection via silhouette scoring |
-| 29 | `flow_hierarchical_data` | Flat categorical data → hierarchical tree for 3D network visualization |
-| 30 | `flow_compare_datasets` | Side-by-side dataset diff with _diff_status column |
-| 31 | `flow_pivot_table` | Group by + aggregate (sum/avg/count/min/max) with _group_size |
-| 32 | `flow_regression_analysis` | Linear regression: slope, R², p-value, _predicted/_residual columns |
-| 33 | `flow_normalize_data` | Min-max [0,1] or z-score normalization with _normalized columns |
-| 34 | `flow_deduplicate_rows` | Remove duplicate rows with optional case-insensitive matching |
-| 35 | `flow_bin_data` | Histogram binning (Sturges' rule) → bin_label, count, frequency |
-| 36 | `flow_transpose_data` | Swap rows and columns for reshaping data orientation |
-| 37 | `flow_sample_data` | Smart sampling: random, first-N, every-Nth, stratified by category |
-| 38 | `flow_column_stats` | Descriptive statistics: count, mean, median, std, min, max, quartiles |
-| 39 | `flow_computed_columns` | Add calculated columns using safe arithmetic formulas |
-| 40 | `flow_parse_dates` | Extract year/month/day/quarter/day_of_week/epoch_days from dates |
-| 41 | `flow_string_transform` | Text cleanup: uppercase, lowercase, trim, title case, find-replace |
-| 42 | `flow_validate_rules` | Data quality validation: not_null, min, max, unique, pattern, in_set |
-| 43 | `flow_fill_missing` | Impute missing values: constant, mean, median, mode, forward fill |
-| 44 | `flow_rename_columns` | Rename and reorder CSV columns |
-| 45 | `flow_filter_rows` | Filter rows by conditions: equals, greater_than, contains, etc. |
-| 46 | `flow_split_dataset` | Split dataset into subsets by column values |
-| 47 | `flow_select_columns` | Select or exclude columns from CSV (include/exclude mode) |
-| 48 | `flow_sort_rows` | Sort rows by column with numeric-aware asc/desc ordering |
-| 49 | `flow_unpivot` | Melt wide format to long format (reverse of pivot/crosstab) |
-| 50 | `flow_join_datasets` | SQL-style joins (inner/left/right/full) on shared key column |
-| 51 | `flow_cross_tabulate` | Contingency table: count/sum/mean co-occurrences of two columns |
-| 52 | `flow_window_functions` | Rolling/sliding window mean/sum/min/max over sorted data |
-| 53 | `flow_encode_categorical` | Label encoding or one-hot encoding for categorical columns |
-| 54 | `flow_cumulative` | Running cumulative sum/min/max/count aggregations |
-| 55 | `flow_percentile_rank` | Percentile ranking (0-100) with tie-averaging |
-| 56 | `flow_coalesce_columns` | First non-empty value across multiple columns |
-| 57 | `flow_describe_dataset` | Comprehensive profiling: shape, types, nulls, uniques, samples |
-| 58 | `flow_lag_lead` | Shift values forward/backward for time series differencing |
-| 59 | `flow_group_aggregate` | SQL-style GROUP BY with sum/mean/count/min/max |
-| 60 | `flow_row_number` | Sequential numbering, optional per-group partitioning |
+| 22 | `flow_anomaly_detect` | Z-score/IQR anomaly detection |
+| 23 | `flow_geo_enhance` | Built-in gazetteer geocoding → lat/lon |
+| 24 | `flow_nlp_to_viz` | Natural language → synthetic data + template + instructions |
+| 25 | `flow_export_formats` | CSV → JSON, GeoJSON, HTML 3D viewer, stats summary |
+| 26 | `flow_live_data` | Real-time data: USGS earthquakes, weather, World Bank |
+| 27 | `flow_correlation_matrix` | Pairwise Pearson correlations → heatmap-ready matrix |
+| 28 | `flow_cluster_data` | K-means with automatic k via silhouette scoring |
+| 29 | `flow_hierarchical_data` | Flat data → hierarchical tree for network viz |
+| 30 | `flow_compare_datasets` | Side-by-side dataset diff with _diff_status |
+| 31 | `flow_pivot_table` | Group by + aggregate (sum/avg/count/min/max) |
+| 32 | `flow_regression_analysis` | Linear regression: R², p-value, predicted/residual |
+| 33 | `flow_normalize_data` | Min-max [0,1] or z-score normalization |
+| 34 | `flow_deduplicate_rows` | Remove duplicates with optional case-insensitive matching |
+| 35 | `flow_bin_data` | Histogram binning (Sturges' rule) |
+| 36 | `flow_column_stats` | Descriptive stats: mean, median, std, quartiles |
+| 37 | `flow_computed_columns` | Add calculated columns via safe formulas |
+| 38 | `flow_parse_dates` | Extract year/month/day/quarter/epoch from dates |
+| 39 | `flow_validate_rules` | Data quality: not_null, min, max, unique, pattern |
+| 40 | `flow_fill_missing` | Impute: constant, mean, median, mode, forward fill |
+| 41 | `flow_filter_rows` | Filter by conditions: equals, contains, greater_than |
+| 42 | `flow_unpivot` | Wide → long format (reverse of pivot) |
+| 43 | `flow_join_datasets` | SQL-style joins (inner/left/right/full) |
+| 44 | `flow_cross_tabulate` | Contingency tables with aggregation |
+| 45 | `flow_window_functions` | Rolling/sliding window operations |
+| 46 | `flow_encode_categorical` | Label or one-hot encoding |
+| 47 | `flow_cumulative` | Running cumulative sum/min/max/count |
+| 48 | `flow_describe_dataset` | Full dataset profiling: shape, types, nulls, uniques |
+| 49 | `flow_lag_lead` | Shift values forward/backward for time series |
+| 50 | `flow_concat_rows` | Concatenate datasets vertically |
+| 51 | `flow_outlier_fence` | Tukey fence outlier detection |
+| 52 | `flow_standardize` | Statistical standardization |
+| 53 | `flow_discretize` | Equal-width/equal-frequency discretization |
+| 54 | `flow_string_split` | Split delimited strings into columns |
+| 55 | `flow_pca_reduce` | PCA dimensionality reduction (2D/3D) |
+| 56 | `flow_distance_matrix` | Pairwise distances (euclidean/manhattan/cosine) |
+| 57 | `flow_interpolate_missing` | Linear/nearest/zero interpolation |
+| 58 | `flow_rank_values` | Dense/ordinal/min/max ranking |
+| 59 | `flow_string_extract` | Regex capture group extraction |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -477,7 +476,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 60 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 59 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |

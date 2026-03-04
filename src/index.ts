@@ -4904,7 +4904,7 @@ async function extractFromUrl(input: UrlExtractionInput) {
     };
   }
 
-  if (!parsedUrl.protocol.startsWith("http")) {
+  if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
     return {
       error: `Unsupported protocol: "${parsedUrl.protocol}". Only http:// and https:// URLs are supported.`,
       url,
@@ -4912,6 +4912,52 @@ async function extractFromUrl(input: UrlExtractionInput) {
       csv_output: "",
       flow_ready: false,
     };
+  }
+
+  // SECURITY: SSRF prevention — reject private/internal network addresses
+  const hostname = parsedUrl.hostname.toLowerCase();
+  if (hostname === "localhost" || hostname === "[::1]") {
+    return {
+      error: "URL rejected: localhost/loopback addresses are not allowed (SSRF protection)",
+      url,
+      fetch_status: "error",
+      csv_output: "",
+      flow_ready: false,
+    };
+  }
+  // Check for IP address patterns pointing to private/internal networks
+  const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4Match) {
+    const [, a, b] = ipv4Match.map(Number);
+    const isPrivate =
+      a === 10 ||                              // 10.0.0.0/8
+      a === 127 ||                             // 127.0.0.0/8 (loopback)
+      (a === 172 && b >= 16 && b <= 31) ||     // 172.16.0.0/12
+      (a === 192 && b === 168) ||              // 192.168.0.0/16
+      (a === 0 && ipv4Match.slice(1).every(x => Number(x) === 0)) ||  // 0.0.0.0
+      a === 169 && b === 254;                  // 169.254.0.0/16 (link-local)
+    if (isPrivate) {
+      return {
+        error: "URL rejected: private/internal IP addresses are not allowed (SSRF protection)",
+        url,
+        fetch_status: "error",
+        csv_output: "",
+        flow_ready: false,
+      };
+    }
+  }
+  // Check for IPv6 private/loopback (fc00::/7, ::1)
+  if (hostname.startsWith("[")) {
+    const ipv6 = hostname.slice(1, -1).toLowerCase();
+    if (ipv6 === "::1" || ipv6.startsWith("fc") || ipv6.startsWith("fd") || ipv6.startsWith("fe80")) {
+      return {
+        error: "URL rejected: private/internal IPv6 addresses are not allowed (SSRF protection)",
+        url,
+        fetch_status: "error",
+        csv_output: "",
+        flow_ready: false,
+      };
+    }
   }
 
   // Fetch the page
@@ -5646,6 +5692,21 @@ async function queryGraph(input: GraphQueryInput) {
     return { error: "query is required and must be a non-empty Cypher string", csv: "" };
   }
 
+  // SECURITY: Cypher injection prevention — only allow read-only queries
+  const sanitizedQuery = query.trim();
+  if (sanitizedQuery.includes(";")) {
+    return { error: "Query rejected: semicolons are not allowed (prevents multi-statement injection)", csv: "" };
+  }
+  const DANGEROUS_KEYWORDS = /\b(DROP|DELETE|MERGE|CREATE|SET|REMOVE|DETACH|CALL)\b/i;
+  if (DANGEROUS_KEYWORDS.test(sanitizedQuery)) {
+    return { error: "Query rejected: only read-only Cypher queries are allowed (MATCH, RETURN, WHERE, ORDER, LIMIT, SKIP, WITH, UNWIND, OPTIONAL). Detected write/admin keyword.", csv: "" };
+  }
+  const READONLY_KEYWORDS = /\b(MATCH|RETURN|WHERE|ORDER|LIMIT|SKIP|WITH|UNWIND|OPTIONAL|BY|AS|DESC|ASC|AND|OR|NOT|IN|IS|NULL|TRUE|FALSE|COUNT|SUM|AVG|MIN|MAX|COLLECT|DISTINCT|EXISTS|CASE|WHEN|THEN|ELSE|END|STARTS|ENDS|CONTAINS|ID|LABELS|TYPE|PROPERTIES|SIZE|LENGTH|KEYS|NODES|RELATIONSHIPS|RANGE|COALESCE|HEAD|LAST|TAIL|REDUCE|EXTRACT|FILTER|NONE|ANY|ALL|SINGLE)\b/i;
+  // Extract words from the query (ignoring string literals, numbers, operators, etc.)
+  const queryWords = sanitizedQuery.replace(/'[^']*'|"[^"]*"/g, '').match(/\b[a-zA-Z_]\w*\b/g) || [];
+  const disallowedWords = queryWords.filter(w => !READONLY_KEYWORDS.test(w) && !/^[a-zA-Z_]\w*$/.test(w) === false);
+  // Note: we allow identifiers (variable/property names) — we only block dangerous KEYWORDS above
+
   const validFormats = new Set(["csv", "network_csv", "json"]);
   if (output_format && !validFormats.has(output_format)) {
     return { error: `Invalid output_format: "${output_format}". Valid formats: csv, network_csv, json`, csv: "" };
@@ -6307,9 +6368,15 @@ async function main() {
     const corsHeaders = {
       "Access-Control-Allow-Origin": process.env.MCP_CORS_ORIGIN || "*",
       "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, mcp-session-id, Accept",
+      "Access-Control-Allow-Headers": "Content-Type, mcp-session-id, Accept, Authorization",
       "Access-Control-Expose-Headers": "mcp-session-id",
     };
+
+    // SECURITY: Bearer token auth for HTTP transport
+    const authToken = process.env.MCP_AUTH_TOKEN;
+    if (!authToken) {
+      console.error("WARNING: MCP_AUTH_TOKEN not set — HTTP transport is unauthenticated. Set MCP_AUTH_TOKEN for production use.");
+    }
 
     const httpServer = createHttpServer(async (req: IncomingMessage, res: ServerResponse) => {
       // CORS preflight
@@ -6322,6 +6389,17 @@ async function main() {
       // Set CORS headers on all responses
       for (const [key, value] of Object.entries(corsHeaders)) {
         res.setHeader(key, value);
+      }
+
+      // Auth check: if MCP_AUTH_TOKEN is set, require Bearer token on all requests (except health + OPTIONS)
+      if (authToken && req.url !== "/health") {
+        const authHeader = req.headers["authorization"] || "";
+        const expectedHeader = `Bearer ${authToken}`;
+        if (authHeader !== expectedHeader) {
+          res.writeHead(401, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unauthorized — valid Bearer token required in Authorization header" }));
+          return;
+        }
       }
 
       if (req.url !== "/mcp") {

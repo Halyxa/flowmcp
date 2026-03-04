@@ -2064,7 +2064,22 @@ export function flowValidateRules(input: ValidateRulesInput): ValidateRulesResul
         break;
       }
       case "pattern": {
-        const re = new RegExp(rule.pattern || ".*");
+        const rawPattern = rule.pattern || ".*";
+        // SECURITY: ReDoS prevention
+        if (rawPattern.length > 200) {
+          throw new Error(`Pattern too long (${rawPattern.length} chars, max 200): "${rawPattern.slice(0, 50)}..."`);
+        }
+        // Reject known ReDoS constructs: nested quantifiers like (a+)+, (a*)+, (a+)*, (a*)*, etc.
+        const REDOS_PATTERN = /(\((?:[^()]*[+*])[^()]*\))[+*]/;
+        if (REDOS_PATTERN.test(rawPattern)) {
+          throw new Error(`Pattern rejected: nested quantifiers detected (potential ReDoS). Simplify the pattern: "${rawPattern}"`);
+        }
+        let re: RegExp;
+        try {
+          re = new RegExp(rawPattern);
+        } catch (regexErr: unknown) {
+          throw new Error(`Invalid regex pattern "${rawPattern}": ${regexErr instanceof Error ? regexErr.message : String(regexErr)}`);
+        }
         for (let r = 0; r < rows.length; r++) {
           const val = rows[r][colIdx] || "";
           if (val.trim() !== "" && !re.test(val)) {

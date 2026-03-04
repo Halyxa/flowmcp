@@ -1,16 +1,25 @@
 {
   "name": "flow-immersive-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Flow Immersive 3D visualization — 60 tools for data analysis, network graphs, force layout, geographic mapping, anomaly detection, time series, NLP-to-viz, correlation, clustering, hierarchy, dataset comparison, pivot tables, regression, normalization, deduplication, histogram binning, transpose, sampling, statistics, computed columns, date parsing, string transforms, validation, missing value imputation, column rename/reorder, row filtering, dataset splitting, column selection, sorting, unpivot/melt, SQL-style joins, cross-tabulation, window functions, categorical encoding, cumulative aggregations, percentile ranking, column coalescing, dataset profiling, lag/lead, GROUP BY, row numbering, live data, and direct API integration. Browse 4000+ public flows, upload datasets, export standalone HTML 3D viewers.",
+  "description": "MCP server connecting AI assistants to Flow Immersive 3D spatial visualization — 59 tools for data analysis, transformation, and interactive 3D viz",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "bin": {
     "flow-mcp": "./dist/index.js"
   },
   "files": [
-    "dist",
+    "dist/",
     "README.md",
-    "samples"
+    "LICENSE",
+    "package.json"
   ],
   "scripts": {
     "build": "tsc",
