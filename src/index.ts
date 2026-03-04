@@ -27,8 +27,8 @@ import { flowAnomalyDetect, flowTimeSeriesAnimate, flowMergeDatasets } from "./t
 import type { AnomalyDetectInput, TimeSeriesAnimateInput, MergeDatasetsInput } from "./tools-v2.js";
 import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats, flowComputedColumns, flowParseDates, flowValidateRules, flowFillMissing, flowFilterRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowDescribeDataset, flowLagLead, flowConcatRows, flowOutlierFence, flowStandardize, flowDiscretize, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowStringExtract } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, StandardizeInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats, flowComputedColumns, flowParseDates, flowValidateRules, flowFillMissing, flowFilterRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowDescribeDataset, flowLagLead, flowConcatRows, flowOutlierFence, flowDiscretize, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowRankValues, flowStringExtract } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -1740,7 +1740,7 @@ Output: CSV with _predicted and _residual columns, plus slope, intercept, R², p
       // Tool 33: flow_normalize_data
       {
         name: "flow_normalize_data",
-        description: `Normalize numeric columns using min-max scaling [0,1] or z-score standardization (mean=0, std=1). Adds _normalized suffix columns while preserving originals. Essential for making multi-dimensional data comparable in 3D visualization.
+        description: `Normalize numeric columns using min-max scaling [0,1], z-score standardization (mean=0, std=1), or robust median/MAD normalization. Adds _normalized suffix columns while preserving originals. Robust method resists outlier influence — use when data has extreme values. Essential for making multi-dimensional data comparable in 3D visualization.
 
 INVOKE THIS TOOL WHEN:
 - User asks to "normalize", "scale", "standardize", or "rescale" their data
@@ -1748,8 +1748,9 @@ INVOKE THIS TOOL WHEN:
 - User wants to prepare data for clustering, correlation, or multi-variable 3D visualization
 - User asks to "make columns comparable", "put on same scale", or "equalize ranges"
 - User has values like revenue (millions) and percentages (0-100) that need alignment
+- User asks for "robust scaling", "MAD normalization", or "outlier-resistant standardization"
 
-Input: CSV data, optional column names, normalization method (min_max or z_score).
+Input: CSV data, optional column names, normalization method (min_max, z_score, or robust).
 Output: CSV with original columns plus _normalized columns appended.`,
         inputSchema: {
           type: "object",
@@ -1765,8 +1766,8 @@ Output: CSV with original columns plus _normalized columns appended.`,
             },
             method: {
               type: "string",
-              enum: ["min_max", "z_score"],
-              description: "Normalization method: min_max scales to [0,1], z_score centers around mean=0",
+              enum: ["min_max", "z_score", "robust"],
+              description: "Normalization method: min_max scales to [0,1], z_score centers around mean=0, robust uses median/MAD (outlier-resistant)",
             },
           },
           required: ["csv_content", "method"],
@@ -1997,7 +1998,7 @@ Output: pass/fail, total_rows, valid_rows, invalid_rows, violation details, and 
       // Tool 43: flow_fill_missing
       {
         name: "flow_fill_missing",
-        description: `Fill missing/empty values in CSV columns using smart imputation methods: constant value, column mean, column median, column mode (most frequent), or forward fill (propagate last known value). Essential for handling incomplete data before visualization.
+        description: `Fill missing/empty values in CSV columns using imputation or interpolation. Statistical methods: constant value, column mean, median, mode, forward fill. Interpolation methods: linear (weighted average between neighbors), nearest (closest known value), zero (replace with 0). Handles both categorical and numeric data gaps before visualization.
 
 INVOKE THIS TOOL WHEN:
 - User has missing data, empty cells, or NaN values in their CSV
@@ -2005,6 +2006,8 @@ INVOKE THIS TOOL WHEN:
 - User needs to replace empty cells before uploading to Flow
 - Data has gaps that would create holes in 3D visualization
 - User wants to use mean/median imputation for numeric columns
+- User asks to "interpolate gaps", "bridge gaps", or "estimate missing" values
+- User needs continuous data from discontinuous measurements
 
 Input: CSV data, optional column list, fill method, optional constant fill_value.
 Output: Cleaned CSV with filled_count, row_count, and summary.`,
@@ -2022,8 +2025,8 @@ Output: Cleaned CSV with filled_count, row_count, and summary.`,
             },
             method: {
               type: "string",
-              enum: ["constant", "mean", "median", "mode", "forward"],
-              description: "Fill method: constant (fixed value), mean, median, mode (most frequent), forward (last known value)",
+              enum: ["constant", "mean", "median", "mode", "forward", "linear", "nearest", "zero"],
+              description: "Fill method: constant (fixed value), mean, median, mode (most frequent), forward (last known value), linear (interpolate between neighbors), nearest (closest known value), zero (replace with 0)",
             },
             fill_value: {
               type: "string",
@@ -2430,39 +2433,6 @@ Output: CSV with _is_outlier and _fence_distance columns, outlier_count, fence b
         },
       },
       {
-        name: "flow_standardize",
-        description: `Standardize numeric columns using standard (mean/std) or robust (median/MAD) methods. Appends _standardized suffix columns. Robust method resists outlier influence — use when data has extreme values.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "standardize", "scale features", "normalize for ML", or "center the data"
-- User needs z-scores or robust scaling for machine learning preprocessing
-- User asks for "robust scaling", "MAD normalization", or "outlier-resistant standardization"
-- User wants all numeric features on the same scale for comparison
-
-Input: CSV data, column names, method (standard or robust).
-Output: CSV with appended standardized columns, columns_standardized count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data to standardize",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Column names to standardize",
-            },
-            method: {
-              type: "string",
-              enum: ["standard", "robust"],
-              description: "standard (mean/std) or robust (median/MAD)",
-            },
-          },
-          required: ["csv_content", "columns", "method"],
-        },
-      },
-      {
         name: "flow_discretize",
         description: `Convert a continuous numeric column into categorical bins. Supports equal-width binning, quantile (equal-frequency) binning, or custom breakpoints. Appends a _bin column with labeled ranges. Different from flow_bin_data (which produces histogram counts) — this labels each row.
 
@@ -2603,39 +2573,7 @@ Output: N×N distance matrix CSV, size, summary.`,
           required: ["csv_content", "columns", "id_column"],
         },
       },
-      {
-        name: "flow_interpolate_missing",
-        description: `Fill missing or empty numeric values using interpolation. Methods: linear (weighted average between neighbors), nearest (closest known value), zero (replace with 0). Processes columns in order, preserving all other data. Essential for preparing gapped time-series or incomplete datasets before visualization.
-
-INVOKE THIS TOOL WHEN:
-- User asks to "fill missing values", "interpolate gaps", "fix missing data", or "complete the dataset"
-- User has sparse data with empty cells that need filling before visualization
-- User asks to "fill blanks", "estimate missing", or "bridge gaps in data"
-- User needs continuous data from discontinuous measurements
-
-Input: CSV data, columns to interpolate, method (linear/nearest/zero).
-Output: Filled CSV, row_count, filled_count, summary.`,
-        inputSchema: {
-          type: "object",
-          properties: {
-            csv_content: {
-              type: "string",
-              description: "CSV data with missing values (empty cells)",
-            },
-            columns: {
-              type: "array",
-              items: { type: "string" },
-              description: "Numeric columns to interpolate",
-            },
-            method: {
-              type: "string",
-              enum: ["linear", "nearest", "zero"],
-              description: "Interpolation method: linear, nearest, or zero",
-            },
-          },
-          required: ["csv_content", "columns", "method"],
-        },
-      },
+      // flow_interpolate_missing — MERGED INTO flow_fill_missing
       {
         name: "flow_rank_values",
         description: `Assign rank numbers to rows based on numeric column values. Methods: dense (no gaps: 1,2,2,3), ordinal (unique sequential: 1,2,3,4), min (tied values get lowest rank), max (tied values get highest rank). Supports ascending or descending order. Adds a rank column to the output.
@@ -3260,15 +3198,6 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_standardize": {
-      try {
-        const result = flowStandardize(args as unknown as StandardizeInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
-
     case "flow_discretize": {
       try {
         const result = flowDiscretize(args as unknown as DiscretizeInput);
@@ -3305,14 +3234,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "flow_interpolate_missing": {
-      try {
-        const result = flowInterpolateMissing(args as unknown as InterpolateMissingInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err: unknown) {
-        return errorResponse(err);
-      }
-    }
+    // flow_interpolate_missing — MERGED INTO flow_fill_missing
 
     case "flow_rank_values": {
       try {
@@ -6405,7 +6327,7 @@ async function main() {
       if (req.url !== "/mcp") {
         if (req.url === "/health") {
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "ok", tools: 59, transport: "streamable-http" }));
+          res.end(JSON.stringify({ status: "ok", tools: 57, transport: "streamable-http" }));
           return;
         }
         res.writeHead(404);

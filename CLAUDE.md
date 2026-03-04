@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 59 tools. 841 tests. All green.
+Production TypeScript MCP server. 57 tools. 836 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,8 +29,8 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 841/841 tests green |
-| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 59 tools respond |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 836/836 tests green |
+| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 57 tools respond |
 | L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 878 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 841 (floor never drops).
+     f. Verify test count >= 836 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -115,7 +115,7 @@ ON_CI_FAILURE(stage, error):
         Smoke tests validate the contract AI clients see. Change smoke only if contract changed.
      c. IF fix touches shared code (csv-utils.ts, fetchWithTimeout):
         Run FULL smoke suite → all 15 checks pass.
-        BECAUSE shared code has blast radius across all 59 tools.
+        BECAUSE shared code has blast radius across all 57 tools.
 
   --- STAGE D: FULL PIPELINE (npm run ci) ---
   5. AFTER all individual stages green → run npm run ci end-to-end.
@@ -130,7 +130,7 @@ ON_CI_FAILURE(stage, error):
      Create skills/<pattern>.md → trigger, diagnosis, fix, files affected.
      BECAUSE crystallized patterns compound. Re-diagnosis wastes cycles.
   8. IF fix touched tool interface or shared code:
-     Run MCP Inspector → verify 59 tools respond to list_tools.
+     Run MCP Inspector → verify 57 tools respond to list_tools.
      BECAUSE demo readiness is a loss function. Never ship with broken tool listing.
 ```
 
@@ -194,7 +194,7 @@ ON_API_CHANGE(endpoint, old_behavior, new_behavior):
 ON_DEMO_PREP(audience):
   1. Run npm run ci → all green. Do not demo broken code.
   2. Verify 5 sample CSVs in samples/.
-  3. MCP Inspector: verify 59 tools respond to list_tools.
+  3. MCP Inspector: verify 57 tools respond to list_tools.
   4. Execute 3-tool walkthrough end-to-end:
      analyze_data_for_flow → suggest_flow_visualization → flow_upload_data.
   5. IF audience = Jason:
@@ -216,7 +216,7 @@ ON_RESPOND():
 
   1. Lead with result or action taken. Not reasoning.
   2. IF question → answer first sentence. Explain after.
-  3. IF test results → "841/841 passed" or "840/841 — 1 failure in X".
+  3. IF test results → "836/836 passed" or "840/841 — 1 failure in X".
   4. Three paragraphs max before tool call or action.
   5. Past tense: "Fixed the parser." Not "I will fix the parser."
      BECAUSE announcement without action is cognitive load, not progress.
@@ -268,7 +268,7 @@ VIOLATION: "we could try" or "maybe" → replace with definitive diagnosis + con
 ON_ACTION(predicted_outcome):
   — OBSERVE + ORIENT: Ground the prediction.
   1. PREDICT: State expected outcome before acting. Include confidence (0.0-1.0).
-     "878 tests pass (confidence: 0.95)." "Force layout converges <5s at 500 nodes (confidence: 0.7)."
+     "836 tests pass (confidence: 0.95)." "Force layout converges <5s at 500 nodes (confidence: 0.7)."
      Log to predictions.jsonl: {id, text, confidence, timestamp, category}.
 
   — ACT:
@@ -376,7 +376,7 @@ HOW EVENTS FEED OTHER SPINES:
 BECAUSE session transcripts evaporate. events.jsonl is the permanent record.
 An agent that cannot reconstruct its own history cannot learn from it.
 
-## Tools (59)
+## Tools (57)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -412,14 +412,14 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | 30 | `flow_compare_datasets` | Side-by-side dataset diff with _diff_status |
 | 31 | `flow_pivot_table` | Group by + aggregate (sum/avg/count/min/max) |
 | 32 | `flow_regression_analysis` | Linear regression: R², p-value, predicted/residual |
-| 33 | `flow_normalize_data` | Min-max [0,1] or z-score normalization |
+| 33 | `flow_normalize_data` | Min-max, z-score, or robust (MAD) normalization |
 | 34 | `flow_deduplicate_rows` | Remove duplicates with optional case-insensitive matching |
 | 35 | `flow_bin_data` | Histogram binning (Sturges' rule) |
 | 36 | `flow_column_stats` | Descriptive stats: mean, median, std, quartiles |
 | 37 | `flow_computed_columns` | Add calculated columns via safe formulas |
 | 38 | `flow_parse_dates` | Extract year/month/day/quarter/epoch from dates |
 | 39 | `flow_validate_rules` | Data quality: not_null, min, max, unique, pattern |
-| 40 | `flow_fill_missing` | Impute: constant, mean, median, mode, forward fill |
+| 40 | `flow_fill_missing` | Impute + interpolate: constant, mean, median, mode, forward, linear, nearest, zero |
 | 41 | `flow_filter_rows` | Filter by conditions: equals, contains, greater_than |
 | 42 | `flow_unpivot` | Wide → long format (reverse of pivot) |
 | 43 | `flow_join_datasets` | SQL-style joins (inner/left/right/full) |
@@ -431,14 +431,12 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | 49 | `flow_lag_lead` | Shift values forward/backward for time series |
 | 50 | `flow_concat_rows` | Concatenate datasets vertically |
 | 51 | `flow_outlier_fence` | Tukey fence outlier detection |
-| 52 | `flow_standardize` | Statistical standardization |
-| 53 | `flow_discretize` | Equal-width/equal-frequency discretization |
-| 54 | `flow_string_split` | Split delimited strings into columns |
-| 55 | `flow_pca_reduce` | PCA dimensionality reduction (2D/3D) |
-| 56 | `flow_distance_matrix` | Pairwise distances (euclidean/manhattan/cosine) |
-| 57 | `flow_interpolate_missing` | Linear/nearest/zero interpolation |
-| 58 | `flow_rank_values` | Dense/ordinal/min/max ranking |
-| 59 | `flow_string_extract` | Regex capture group extraction |
+| 52 | `flow_discretize` | Equal-width/equal-frequency discretization |
+| 53 | `flow_string_split` | Split delimited strings into columns |
+| 54 | `flow_pca_reduce` | PCA dimensionality reduction (2D/3D) |
+| 55 | `flow_distance_matrix` | Pairwise distances (euclidean/manhattan/cosine) |
+| 56 | `flow_rank_values` | Dense/ordinal/min/max ranking |
+| 57 | `flow_string_extract` | Regex capture group extraction |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -476,7 +474,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 59 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 57 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |
@@ -502,7 +500,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 ## Commands
 
 ```bash
-npm test             # 878 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + property + edge)
+npm test             # 836 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + property + edge)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 15 standalone checks
 npm run ci           # Full pipeline: build + test + smoke

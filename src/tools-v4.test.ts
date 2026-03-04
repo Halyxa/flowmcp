@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats, flowComputedColumns, flowParseDates, flowValidateRules, flowFillMissing, flowFilterRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowDescribeDataset, flowLagLead, flowConcatRows, flowOutlierFence, flowStandardize, flowDiscretize, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowInterpolateMissing, flowRankValues, flowStringExtract } from "./tools-v4.js";
-import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, StandardizeInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, InterpolateMissingInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
+import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats, flowComputedColumns, flowParseDates, flowValidateRules, flowFillMissing, flowFilterRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowDescribeDataset, flowLagLead, flowConcatRows, flowOutlierFence, flowDiscretize, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowRankValues, flowStringExtract } from "./tools-v4.js";
+import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
 
 // Mock fetch for deterministic tests
 const mockFetch = vi.fn();
@@ -1118,6 +1118,40 @@ describe("flow_normalize_data", () => {
     expect(result.summary).toBeDefined();
     expect(result.summary.length).toBeGreaterThan(0);
   });
+
+  it("robust normalizes using median/MAD (outlier-resistant)", () => {
+    const csv = "x\n1\n2\n3\n4\n100";
+    const result = flowNormalizeData({
+      csv_content: csv,
+      columns: ["x"],
+      method: "robust",
+    });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("x_normalized");
+    expect(normIdx).toBeGreaterThan(-1);
+    // The outlier (100) should have a large normalized value
+    const lastVal = Number(lines[5].split(",")[normIdx]);
+    expect(Math.abs(lastVal)).toBeGreaterThan(2);
+    expect(result.method).toBe("robust");
+    expect(result.summary).toContain("robust");
+  });
+
+  it("robust handles constant column (MAD=0)", () => {
+    const csv = "x\n5\n5\n5";
+    const result = flowNormalizeData({
+      csv_content: csv,
+      columns: ["x"],
+      method: "robust",
+    });
+    const lines = result.csv.split("\n");
+    const headers = lines[0].split(",");
+    const normIdx = headers.indexOf("x_normalized");
+    // All values should be 0 when MAD=0 (all same value)
+    for (let i = 1; i < lines.length; i++) {
+      expect(Number(lines[i].split(",")[normIdx])).toBe(0);
+    }
+  });
 });
 
 // =============================================================================
@@ -1870,6 +1904,68 @@ describe("flowFillMissing", () => {
     });
     const lines = result.csv.trim().split("\n");
     expect(lines[4]).toBe("A"); // mode is A (3 occurrences)
+  });
+
+  // Interpolation methods (merged from flow_interpolate_missing)
+
+  it("linearly interpolates missing values", () => {
+    const csv = "idx,value\n1,10\n2,\n3,30";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "linear",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2].split(",")[1]).toBe("20");
+  });
+
+  it("uses nearest interpolation", () => {
+    const csv = "idx,value\n1,10\n2,\n3,\n4,40";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "nearest",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Row 2 (index 1) is closer to row 1 (value 10)
+    expect(lines[2].split(",")[1]).toBe("10");
+    // Row 3 (index 2) is closer to row 4 (value 40)
+    expect(lines[3].split(",")[1]).toBe("40");
+  });
+
+  it("uses zero fill for interpolation", () => {
+    const csv = "idx,value\n1,10\n2,\n3,30";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "zero",
+    });
+    const lines = result.csv.trim().split("\n");
+    expect(lines[2].split(",")[1]).toBe("0");
+  });
+
+  it("handles leading missing values with linear interpolation", () => {
+    const csv = "idx,value\n1,\n2,\n3,30";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "linear",
+    });
+    const lines = result.csv.trim().split("\n");
+    // Leading missing: forward-fill from first known value
+    expect(lines[1].split(",")[1]).toBe("30");
+    expect(lines[2].split(",")[1]).toBe("30");
+  });
+
+  it("returns filled_count for interpolation methods", () => {
+    const csv = "idx,value\n1,10\n2,\n3,30";
+    const result = flowFillMissing({
+      csv_content: csv,
+      columns: ["value"],
+      method: "linear",
+    });
+    expect(result.filled_count).toBe(1);
+    expect(result.summary).toContain("interpolation");
   });
 });
 
@@ -2928,84 +3024,7 @@ describe("flow_outlier_fence", () => {
 // TOOL 67: flow_entropy
 // ============================================================================
 
-// ============================================================================
-// TOOL 68: flow_standardize
-// ============================================================================
-
-describe("flow_standardize", () => {
-  it("standardizes using robust method (median/MAD)", () => {
-    const csv = "x\n1\n2\n3\n4\n100";
-    const result = flowStandardize({
-      csv_content: csv,
-      columns: ["x"],
-      method: "robust",
-    });
-    const lines = result.csv.trim().split("\n");
-    expect(lines[0]).toContain("x_standardized");
-    // The outlier (100) should have a large standardized value
-    const lastVal = parseFloat(lines[5].split(",").pop()!);
-    expect(Math.abs(lastVal)).toBeGreaterThan(2);
-  });
-
-  it("standardizes using standard method (mean/std)", () => {
-    const csv = "x\n10\n20\n30\n40\n50";
-    const result = flowStandardize({
-      csv_content: csv,
-      columns: ["x"],
-      method: "standard",
-    });
-    const lines = result.csv.trim().split("\n");
-    expect(lines[0]).toContain("x_standardized");
-    // Mean should be ~0 after standardization
-    const vals = lines.slice(1).map(l => parseFloat(l.split(",").pop()!));
-    const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
-    expect(Math.abs(mean)).toBeLessThan(0.01);
-  });
-
-  it("handles multiple columns", () => {
-    const csv = "a,b\n1,10\n2,20\n3,30";
-    const result = flowStandardize({
-      csv_content: csv,
-      columns: ["a", "b"],
-      method: "standard",
-    });
-    expect(result.csv).toContain("a_standardized");
-    expect(result.csv).toContain("b_standardized");
-  });
-
-  it("handles zero variance (all same values)", () => {
-    const csv = "x\n5\n5\n5";
-    const result = flowStandardize({
-      csv_content: csv,
-      columns: ["x"],
-      method: "standard",
-    });
-    const lines = result.csv.trim().split("\n");
-    // All values should be 0 when all inputs are the same
-    expect(lines[1]).toContain("0");
-  });
-
-  it("throws on missing column", () => {
-    const csv = "a\n1";
-    expect(() =>
-      flowStandardize({
-        csv_content: csv,
-        columns: ["missing"],
-        method: "standard",
-      })
-    ).toThrow();
-  });
-
-  it("returns summary", () => {
-    const csv = "x\n1\n2\n3";
-    const result = flowStandardize({
-      csv_content: csv,
-      columns: ["x"],
-      method: "robust",
-    });
-    expect(result.summary).toBeTruthy();
-  });
-});
+// TOOL 68: flow_standardize — MERGED INTO flow_normalize_data
 
 // ============================================================================
 // TOOL 69: flow_ratio_columns
@@ -3322,80 +3341,7 @@ describe("flow_distance_matrix", () => {
   });
 });
 
-// ============================================================================
-// Tool 77: flow_interpolate_missing
-// ============================================================================
-describe("flow_interpolate_missing", () => {
-  it("linearly interpolates missing values", () => {
-    const csv = "idx,value\n1,10\n2,\n3,30";
-    const result = flowInterpolateMissing({
-      csv_content: csv,
-      columns: ["value"],
-      method: "linear",
-    });
-    const lines = result.csv.trim().split("\n");
-    // Row 2 should be interpolated to 20
-    expect(lines[2].split(",")[1]).toBe("20");
-  });
-
-  it("uses nearest interpolation", () => {
-    const csv = "idx,value\n1,10\n2,\n3,\n4,40";
-    const result = flowInterpolateMissing({
-      csv_content: csv,
-      columns: ["value"],
-      method: "nearest",
-    });
-    const lines = result.csv.trim().split("\n");
-    // Row 2 (index 1) is closer to row 1 (value 10)
-    expect(lines[2].split(",")[1]).toBe("10");
-    // Row 3 (index 2) is closer to row 4 (value 40)
-    expect(lines[3].split(",")[1]).toBe("40");
-  });
-
-  it("uses zero fill", () => {
-    const csv = "idx,value\n1,10\n2,\n3,30";
-    const result = flowInterpolateMissing({
-      csv_content: csv,
-      columns: ["value"],
-      method: "zero",
-    });
-    const lines = result.csv.trim().split("\n");
-    expect(lines[2].split(",")[1]).toBe("0");
-  });
-
-  it("handles leading missing values with linear", () => {
-    const csv = "idx,value\n1,\n2,\n3,30";
-    const result = flowInterpolateMissing({
-      csv_content: csv,
-      columns: ["value"],
-      method: "linear",
-    });
-    const lines = result.csv.trim().split("\n");
-    // Leading missing: forward-fill from first known value
-    expect(lines[1].split(",")[1]).toBe("30");
-    expect(lines[2].split(",")[1]).toBe("30");
-  });
-
-  it("throws on missing column", () => {
-    const csv = "a,b\n1,2";
-    expect(() => flowInterpolateMissing({
-      csv_content: csv,
-      columns: ["nonexistent"],
-      method: "linear",
-    })).toThrow();
-  });
-
-  it("returns summary with fill count", () => {
-    const csv = "idx,value\n1,10\n2,\n3,30";
-    const result = flowInterpolateMissing({
-      csv_content: csv,
-      columns: ["value"],
-      method: "linear",
-    });
-    expect(result.summary).toContain("1");
-    expect(result.filled_count).toBe(1);
-  });
-});
+// (Tool 77: flow_interpolate_missing — MERGED INTO flowFillMissing tests above)
 
 // ============================================================================
 // Tool 78: flow_rank_values

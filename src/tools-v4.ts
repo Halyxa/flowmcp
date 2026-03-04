@@ -1348,8 +1348,8 @@ export interface NormalizeDataInput {
   csv_content: string;
   /** Columns to normalize (optional — auto-detects numeric columns if omitted) */
   columns?: string[];
-  /** Normalization method: min_max scales to [0,1], z_score centers around mean=0 */
-  method: "min_max" | "z_score";
+  /** Normalization method: min_max scales to [0,1], z_score centers around mean=0, robust uses median/MAD */
+  method: "min_max" | "z_score" | "robust";
 }
 
 export interface NormalizeDataResult {
@@ -1378,7 +1378,7 @@ export function flowNormalizeData(input: NormalizeDataInput): NormalizeDataResul
   }
 
   // Compute stats per column
-  const colStats = new Map<string, { values: number[]; mean: number; std: number; min: number; max: number }>();
+  const colStats = new Map<string, { values: number[]; mean: number; std: number; min: number; max: number; median: number; mad: number }>();
   for (const col of columns) {
     const idx = headers.indexOf(col);
     const values: number[] = [];
@@ -1391,7 +1391,20 @@ export function flowNormalizeData(input: NormalizeDataInput): NormalizeDataResul
     const std = Math.sqrt(variance);
     const min = values.length > 0 ? Math.min(...values) : 0;
     const max = values.length > 0 ? Math.max(...values) : 0;
-    colStats.set(col, { values, mean, std, min, max });
+    // Robust stats: median and MAD (median absolute deviation)
+    let median = 0;
+    let mad = 0;
+    if (values.length > 0) {
+      const sorted = [...values].sort((a, b) => a - b);
+      median = sorted.length % 2 === 0
+        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+        : sorted[Math.floor(sorted.length / 2)];
+      const deviations = values.map(v => Math.abs(v - median)).sort((a, b) => a - b);
+      mad = deviations.length % 2 === 0
+        ? (deviations[deviations.length / 2 - 1] + deviations[deviations.length / 2]) / 2
+        : deviations[Math.floor(deviations.length / 2)];
+    }
+    colStats.set(col, { values, mean, std, min, max, median, mad });
   }
 
   // Build output CSV with _normalized columns
@@ -1414,6 +1427,8 @@ export function flowNormalizeData(input: NormalizeDataInput): NormalizeDataResul
       if (input.method === "min_max") {
         const range = stats.max - stats.min;
         normalized = range > 0 ? (v - stats.min) / range : 0;
+      } else if (input.method === "robust") {
+        normalized = stats.mad > 0 ? (v - stats.median) / stats.mad : 0;
       } else {
         normalized = stats.std > 0 ? (v - stats.mean) / stats.std : 0;
       }
@@ -1422,7 +1437,12 @@ export function flowNormalizeData(input: NormalizeDataInput): NormalizeDataResul
     outLines.push([...row.map(v => csvEscapeField(v)), ...normalizedValues].join(","));
   }
 
-  const summary = `Normalized ${columns.length} column(s) using ${input.method === "min_max" ? "min-max [0,1]" : "z-score (mean=0, std=1)"} method across ${rows.length} rows. ` +
+  const methodLabels: Record<string, string> = {
+    min_max: "min-max [0,1]",
+    z_score: "z-score (mean=0, std=1)",
+    robust: "robust (median/MAD)",
+  };
+  const summary = `Normalized ${columns.length} column(s) using ${methodLabels[input.method]} method across ${rows.length} rows. ` +
     `Columns: ${columns.join(", ")}.`;
 
   return {
@@ -2140,7 +2160,7 @@ export interface FillMissingInput {
   csv_content: string;
   /** Columns to fill (optional — fills all columns if omitted) */
   columns?: string[];
-  method: "constant" | "mean" | "median" | "mode" | "forward";
+  method: "constant" | "mean" | "median" | "mode" | "forward" | "linear" | "nearest" | "zero";
   /** Value to use for constant fill method */
   fill_value?: string;
 }
@@ -2213,6 +2233,72 @@ export function flowFillMissing(input: FillMissingInput): FillMissingResult {
 
   let filled = 0;
 
+  // Interpolation methods (linear, nearest, zero) operate column-wise on numeric data
+  if (method === "linear" || method === "nearest" || method === "zero") {
+    for (const idx of colIndices) {
+      const values: (number | null)[] = rows.map(r => {
+        const v = (r[idx] || "").trim();
+        if (v === "" || v === undefined || v === null) return null;
+        const n = Number(v);
+        return isNaN(n) ? null : n;
+      });
+
+      if (method === "zero") {
+        for (let i = 0; i < values.length; i++) {
+          if (values[i] === null) {
+            values[i] = 0;
+            filled++;
+          }
+        }
+      } else if (method === "linear") {
+        for (let i = 0; i < values.length; i++) {
+          if (values[i] !== null) continue;
+          let prevIdx = -1;
+          for (let j = i - 1; j >= 0; j--) {
+            if (values[j] !== null) { prevIdx = j; break; }
+          }
+          let nextIdx = -1;
+          for (let j = i + 1; j < values.length; j++) {
+            if (values[j] !== null) { nextIdx = j; break; }
+          }
+          if (prevIdx >= 0 && nextIdx >= 0) {
+            const ratio = (i - prevIdx) / (nextIdx - prevIdx);
+            values[i] = values[prevIdx]! + ratio * (values[nextIdx]! - values[prevIdx]!);
+          } else if (prevIdx >= 0) {
+            values[i] = values[prevIdx]!;
+          } else if (nextIdx >= 0) {
+            values[i] = values[nextIdx]!;
+          }
+          if (values[i] !== null) filled++;
+        }
+      } else if (method === "nearest") {
+        const origValues = [...values];
+        for (let i = 0; i < values.length; i++) {
+          if (origValues[i] !== null) continue;
+          let bestIdx = -1;
+          let bestDist = Infinity;
+          for (let j = 0; j < origValues.length; j++) {
+            if (origValues[j] !== null && Math.abs(j - i) < bestDist) {
+              bestDist = Math.abs(j - i);
+              bestIdx = j;
+            }
+          }
+          if (bestIdx >= 0) {
+            values[i] = origValues[bestIdx]!;
+            filled++;
+          }
+        }
+      }
+
+      // Write back interpolated values
+      for (let i = 0; i < rows.length; i++) {
+        if (values[i] !== null) {
+          rows[i][idx] = String(values[i]);
+        }
+      }
+    }
+  } else {
+  // Standard fill methods (constant, mean, median, mode, forward)
   for (let r = 0; r < rows.length; r++) {
     for (const idx of colIndices) {
       const val = (rows[r][idx] || "").trim();
@@ -2242,14 +2328,16 @@ export function flowFillMissing(input: FillMissingInput): FillMissingResult {
       }
     }
   }
+  }
 
   const resultLines = [headers.map(h => csvEscapeField(h)).join(",")];
   for (const row of rows) {
     resultLines.push(row.map(v => csvEscapeField(v)).join(","));
   }
 
+  const methodLabel = (method === "linear" || method === "nearest" || method === "zero") ? `${method} interpolation` : method;
   const summary = filled > 0
-    ? `Filled ${filled} missing value(s) using ${method} method across ${targetCols.length} column(s).`
+    ? `Filled ${filled} missing value(s) using ${methodLabel} method across ${targetCols.length} column(s).`
     : `No missing values found in ${targetCols.length} column(s) across ${rows.length} rows.`;
 
   return {
@@ -3322,95 +3410,6 @@ export function flowOutlierFence(input: OutlierFenceInput): OutlierFenceResult {
 }
 
 // ============================================================================
-// TOOL 68: flow_standardize — ROBUST AND STANDARD STANDARDIZATION
-// ============================================================================
-
-export interface StandardizeInput {
-  csv_content: string;
-  /** Columns to standardize */
-  columns: string[];
-  /** Method: standard (mean/std) or robust (median/MAD) */
-  method: "standard" | "robust";
-}
-
-export interface StandardizeResult {
-  csv: string;
-  row_count: number;
-  columns_standardized: number;
-  summary: string;
-}
-
-export function flowStandardize(input: StandardizeInput): StandardizeResult {
-  const { csv_content, columns, method } = input;
-
-  const lines = csv_content.trim().split("\n");
-  if (lines.length < 1) throw new Error("CSV content is empty");
-
-  const headers = parseCSVLine(lines[0]);
-  const colIndices: number[] = [];
-  for (const col of columns) {
-    const idx = headers.indexOf(col);
-    if (idx === -1) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
-    colIndices.push(idx);
-  }
-
-  const rows = lines.slice(1).filter(l => l.trim()).map(l => parseCSVLine(l));
-
-  // Extract numeric values per column
-  const colValues: number[][] = colIndices.map(idx =>
-    rows.map(row => Number(row[idx] ?? "")).filter(v => !isNaN(v))
-  );
-
-  // Calculate center and scale per column
-  const params: { center: number; scale: number }[] = colValues.map(vals => {
-    if (vals.length === 0) return { center: 0, scale: 1 };
-
-    if (method === "standard") {
-      const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
-      const variance = vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length;
-      const std = Math.sqrt(variance);
-      return { center: mean, scale: std === 0 ? 1 : std };
-    } else {
-      // Robust: median and MAD
-      const sorted = [...vals].sort((a, b) => a - b);
-      const median = sorted.length % 2 === 0
-        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-        : sorted[Math.floor(sorted.length / 2)];
-      const deviations = vals.map(v => Math.abs(v - median)).sort((a, b) => a - b);
-      const mad = deviations.length % 2 === 0
-        ? (deviations[deviations.length / 2 - 1] + deviations[deviations.length / 2]) / 2
-        : deviations[Math.floor(deviations.length / 2)];
-      return { center: median, scale: mad === 0 ? 1 : mad };
-    }
-  });
-
-  // Build output with standardized columns appended
-  const newHeaders = columns.map(c => `${c}_standardized`);
-  const outHeaders = [...headers, ...newHeaders];
-  const headerLine = outHeaders.map(h => csvEscapeField(h)).join(",");
-
-  const dataLines = rows.map(row => {
-    const standardized = colIndices.map((colIdx, i) => {
-      const val = Number(row[colIdx] ?? "");
-      if (isNaN(val)) return "";
-      const result = (val - params[i].center) / params[i].scale;
-      return String(+result.toFixed(6));
-    });
-    return [...row.map(v => csvEscapeField(v)), ...standardized].join(",");
-  });
-
-  const methodLabel = method === "standard" ? "mean/std" : "median/MAD";
-  const summary = `Standardized ${columns.length} column(s) using ${methodLabel} (${rows.length} rows).`;
-
-  return {
-    csv: [headerLine, ...dataLines].join("\n"),
-    row_count: rows.length,
-    columns_standardized: columns.length,
-    summary,
-  };
-}
-
-// ============================================================================
 // TOOL 70: flow_discretize — CONVERT CONTINUOUS TO CATEGORICAL BINS
 // ============================================================================
 
@@ -3794,127 +3793,10 @@ export function flowDistanceMatrix(input: DistanceMatrixInput): DistanceMatrixRe
   };
 }
 
+// (TOOL 77: flow_interpolate_missing — MERGED INTO flow_fill_missing)
 // ============================================================================
-// TOOL 77: flow_interpolate_missing — FILL GAPS IN NUMERIC DATA
+// TOOL 78: flow_rank_values — RANK NUMERIC VALUES
 // ============================================================================
-
-export interface InterpolateMissingInput {
-  csv_content: string;
-  columns: string[];
-  method: "linear" | "nearest" | "zero";
-}
-
-export interface InterpolateMissingResult {
-  csv: string;
-  row_count: number;
-  filled_count: number;
-  summary: string;
-}
-
-export function flowInterpolateMissing(input: InterpolateMissingInput): InterpolateMissingResult {
-  const lines = input.csv_content.trim().split("\n");
-  if (lines.length < 2) throw new Error("CSV must have header + at least one row");
-
-  const headers = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).map(l => parseCSVLine(l));
-
-  // Validate columns exist
-  for (const col of input.columns) {
-    if (!headers.includes(col)) throw new Error(`Column "${col}" not found. Available: ${headers.join(", ")}`);
-  }
-
-  let totalFilled = 0;
-
-  for (const col of input.columns) {
-    const colIdx = headers.indexOf(col);
-    const values: (number | null)[] = rows.map(r => {
-      const v = r[colIdx]?.trim();
-      if (v === "" || v === undefined || v === null) return null;
-      const n = Number(v);
-      return isNaN(n) ? null : n;
-    });
-
-    if (input.method === "zero") {
-      for (let i = 0; i < values.length; i++) {
-        if (values[i] === null) {
-          values[i] = 0;
-          totalFilled++;
-        }
-      }
-    } else if (input.method === "linear") {
-      // Linear interpolation between known values
-      // Leading/trailing nulls: fill with nearest known value
-      for (let i = 0; i < values.length; i++) {
-        if (values[i] !== null) continue;
-
-        // Find previous known
-        let prevIdx = -1;
-        for (let j = i - 1; j >= 0; j--) {
-          if (values[j] !== null) { prevIdx = j; break; }
-        }
-
-        // Find next known
-        let nextIdx = -1;
-        for (let j = i + 1; j < values.length; j++) {
-          if (values[j] !== null) { nextIdx = j; break; }
-        }
-
-        if (prevIdx >= 0 && nextIdx >= 0) {
-          // Interpolate
-          const ratio = (i - prevIdx) / (nextIdx - prevIdx);
-          values[i] = values[prevIdx]! + ratio * (values[nextIdx]! - values[prevIdx]!);
-        } else if (prevIdx >= 0) {
-          values[i] = values[prevIdx]!;
-        } else if (nextIdx >= 0) {
-          values[i] = values[nextIdx]!;
-        }
-        // else: all null, leave as null (won't count as filled)
-
-        if (values[i] !== null) totalFilled++;
-      }
-    } else if (input.method === "nearest") {
-      // Use original values snapshot so filled values don't contaminate
-      const origValues = [...values];
-      for (let i = 0; i < values.length; i++) {
-        if (origValues[i] !== null) continue;
-
-        // Find nearest known value by distance (from originals only)
-        let bestIdx = -1;
-        let bestDist = Infinity;
-        for (let j = 0; j < origValues.length; j++) {
-          if (origValues[j] !== null && Math.abs(j - i) < bestDist) {
-            bestDist = Math.abs(j - i);
-            bestIdx = j;
-          }
-        }
-
-        if (bestIdx >= 0) {
-          values[i] = origValues[bestIdx]!;
-          totalFilled++;
-        }
-      }
-    }
-
-    // Write back
-    for (let i = 0; i < rows.length; i++) {
-      if (values[i] !== null) {
-        rows[i][colIdx] = String(values[i]);
-      }
-    }
-  }
-
-  const headerLine = headers.map(h => csvEscapeField(h)).join(",");
-  const dataLines = rows.map(r => r.map(v => csvEscapeField(v)).join(","));
-
-  const summary = `Interpolated ${totalFilled} missing value(s) across ${input.columns.length} column(s) using ${input.method} method.`;
-
-  return {
-    csv: [headerLine, ...dataLines].join("\n"),
-    row_count: rows.length,
-    filled_count: totalFilled,
-    summary,
-  };
-}
 
 // ============================================================================
 // TOOL 78: flow_rank_values — RANK NUMERIC VALUES
