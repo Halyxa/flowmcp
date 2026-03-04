@@ -1,0 +1,29 @@
+id,connections,relationship_type,category,collaboration_count,year_connected,influence_score,genre,notable_work
+Taylor Swift,,center,music,0,2006,100,Pop/Country,Fearless + 1989 + Folklore
+Jack Antonoff,Taylor Swift,collaborator,music,45,2014,88,Pop/Indie,Bleachers producer
+Max Martin,Taylor Swift,collaborator,music,22,2014,92,Pop,Shake It Off + Blank Space
+Ed Sheeran,Taylor Swift,collaborator,music,8,2012,90,Pop/Folk,Everything Has Changed
+Selena Gomez,Taylor Swift,best_friend,personal,3,2008,78,Pop,Bad Blood squad
+Lana Del Rey,Taylor Swift,collaborator,music,5,2023,82,Indie/Pop,Snow On The Beach
+Travis Kelce,Taylor Swift,partner,personal,0,2023,75,Sports,NFL tight end
+Joe Alwyn,Taylor Swift,ex_partner,personal,6,2017,45,Film,William Bowery co-writes
+Tom Hiddleston,Taylor Swift,ex_partner,personal,0,2016,40,Film,Summer 2016
+Calvin Harris,Taylor Swift,ex_partner,personal,1,2015,55,EDM,This Is What You Came For
+Beyonce,Taylor Swift,industry_peer,industry,0,2009,98,R&B/Pop,2009 VMAs moment
+Drake,Taylor Swift,industry_peer,industry,0,2016,88,Hip-Hop/Rap,Streaming era rivalry
+The Weeknd,Taylor Swift,industry_peer,industry,1,2021,85,R&B/Pop,Chart competition
+Billie Eilish,Taylor Swift,industry_peer,industry,0,2020,80,Alt-Pop,Gen Z crossover
+Aaron Dessner,Taylor Swift,collaborator,music,35,2020,78,Indie/Folk,Folklore + Evermore
+Joel Little,Taylor Swift,collaborator,music,8,2022,65,Pop,Midnights co-producer
+Phoebe Bridgers,Taylor Swift,collaborator,music,2,2021,60,Indie,Nothing New duet
+Ice Spice,Taylor Swift,collaborator,music,2,2023,58,Hip-Hop,Karma remix
+Sabrina Carpenter,Taylor Swift,mentee,industry,0,2023,55,Pop,Eras Tour opener
+Gracie Abrams,Taylor Swift,mentee,industry,1,2024,52,Indie Pop,Eras Tour opener
+Scott Borchetta,Taylor Swift,former_label,industry,0,2006,30,Business,Big Machine Records
+Scooter Braun,Taylor Swift,adversary,industry,0,2019,25,Business,Masters acquisition
+Andrea Swift,Taylor Swift,family,personal,0,1989,70,Family,Mother and manager
+Austin Swift,Taylor Swift,family,personal,0,1989,35,Family/Film,Brother
+Tree Paine,Taylor Swift,publicist,industry,0,2014,60,PR,Long-time publicist
+Patrick Mahomes,Travis Kelce,teammate,sports,0,2017,72,Sports,Chiefs QB
+Jason Kelce,Travis Kelce,family,personal,0,1989,65,Sports,Brother + Eagles
+Brittany Mahomes,Travis Kelce|Selena Gomez,friend,personal,0,2023,48,Sports,Chiefs WAG circle

@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 60 tools. 875 tests. All green.
+Production TypeScript MCP server. 70 tools. 1186 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,9 +29,9 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 875/875 tests green |
-| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 60 tools respond |
-| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 875 |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 1186/1186 tests green |
+| L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 70 tools respond |
+| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 1186 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
 | L6: Tool Descriptions | HIGH | Descriptions ARE AI training | Trigger language > implementation docs |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 875 (floor never drops).
+     f. Verify test count >= 1186 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -115,7 +115,7 @@ ON_CI_FAILURE(stage, error):
         Smoke tests validate the contract AI clients see. Change smoke only if contract changed.
      c. IF fix touches shared code (csv-utils.ts, fetchWithTimeout):
         Run FULL smoke suite → all 15 checks pass.
-        BECAUSE shared code has blast radius across all 57 tools.
+        BECAUSE shared code has blast radius across all 70 tools.
 
   --- STAGE D: FULL PIPELINE (npm run ci) ---
   5. AFTER all individual stages green → run npm run ci end-to-end.
@@ -130,7 +130,7 @@ ON_CI_FAILURE(stage, error):
      Create skills/<pattern>.md → trigger, diagnosis, fix, files affected.
      BECAUSE crystallized patterns compound. Re-diagnosis wastes cycles.
   8. IF fix touched tool interface or shared code:
-     Run MCP Inspector → verify 57 tools respond to list_tools.
+     Run MCP Inspector → verify 70 tools respond to list_tools.
      BECAUSE demo readiness is a loss function. Never ship with broken tool listing.
 ```
 
@@ -194,7 +194,7 @@ ON_API_CHANGE(endpoint, old_behavior, new_behavior):
 ON_DEMO_PREP(audience):
   1. Run npm run ci → all green. Do not demo broken code.
   2. Verify 5 sample CSVs in samples/.
-  3. MCP Inspector: verify 57 tools respond to list_tools.
+  3. MCP Inspector: verify 70 tools respond to list_tools.
   4. Execute 3-tool walkthrough end-to-end:
      analyze_data_for_flow → suggest_flow_visualization → flow_upload_data.
   5. IF audience = Jason:
@@ -376,7 +376,7 @@ HOW EVENTS FEED OTHER SPINES:
 BECAUSE session transcripts evaporate. events.jsonl is the permanent record.
 An agent that cannot reconstruct its own history cannot learn from it.
 
-## Tools (60)
+## Tools (70)
 
 | # | Tool | Purpose |
 |---|------|---------|
@@ -440,6 +440,16 @@ An agent that cannot reconstruct its own history cannot learn from it.
 | 58 | `flow_narrate_data` | CSV → NarrativeArc with statistical characters, outlier/correlation/trend detection, 3 styles (explorer/executive/journalist) |
 | 59 | `flow_guided_tour` | CSV → TourStop sequence with camera hints, narration, 5 focus strategies (outliers/clusters/connections/trends/overview) |
 | 60 | `flow_famous_network` | Person name → Wikidata SPARQL → celebrity network CSV with relationships (zero-cost, no API key) |
+| 61 | `flow_quest_generator` | Procedural exploration quests from dataset topology (5 types: anomaly, comparison, trend, hypothesis, connection) |
+| 62 | `flow_near_miss_detector` | Patterns that ALMOST hold — correlations with exceptions, cluster boundaries, trend breaks |
+| 63 | `flow_progressive_disclosure` | Fog-of-war layers on any dataset — surface to deep, like a JPG drawing in |
+| 64 | `flow_anomaly_explain` | Detective-story narratives explaining WHY data points are anomalous (3 styles) |
+| 65 | `flow_insight_scorer` | Statistical peer review — significance, effect size, novelty, bootstrap robustness |
+| 66 | `flow_waypoint_map` | GPS for data worlds — cluster cities, outlier peaks, crossroads, camera paths |
+| 67 | `flow_visor_mode` | Metroid Prime scan visor — 5 analytical lenses on same data |
+| 68 | `flow_data_world_builder` | THE synthesis — orchestrates all tools into one "enter the world" call |
+| 69 | `flow_sparkle_engine` | Progressive intelligence — deeper insights the longer you dwell |
+| 70 | `flow_exploration_dna` | Dataset personality fingerprinting — 8 archetypes, exploration style guide |
 
 3 prompts: `flow_recommendation`, `flow_data_prep`, `flow_getting_started`.
 5 resources: overview, csv-format, network-graphs, python-client, viz-types.
@@ -477,13 +487,29 @@ An agent that cannot reconstruct its own history cannot learn from it.
 
 | Path | Contents |
 |------|----------|
-| `src/index.ts` | Main server, 60 tools, stdio + HTTP transport |
+| `src/index.ts` | Main server, 70 tools, stdio + HTTP transport |
 | `src/tools-search.ts` | Semantic search (tool 19) |
 | `src/tools-v2.ts` | Anomaly, time series, merge (tools 20-22) |
 | `src/tools-v3.ts` | NLP-to-viz, geo enhance, export (tools 23-25) |
 | `src/tools-v4.ts` | Tools 26-50: live data, cluster, graph, data wrangling, joins |
 | `src/tools-narrative.ts` | Narrative intelligence: narrate, guided tour, famous network (tools 58-60) |
 | `src/tools-narrative.test.ts` | Tests for narrative intelligence tools |
+| `src/tools-v5.ts` | Holodeck Intelligence tools 61-66 (quest, near-miss, disclosure, anomaly explain, insight, waypoint) |
+| `src/tools-v5.test.ts` | Quest generator tests (24 tests) |
+| `src/tools-v5-anomaly.test.ts` | Anomaly explain tests (15 tests) |
+| `src/tools-v5-nearmiss.test.ts` | Near-miss detector tests (15 tests) |
+| `src/tools-v5-disclosure.test.ts` | Progressive disclosure tests (14 tests) |
+| `src/tools-v5-insight.test.ts` | Insight scorer tests (19 tests) |
+| `src/tools-v5-waypoint.test.ts` | Waypoint map tests (16 tests) |
+| `src/tools-v6.ts` | Visor mode tool 67 |
+| `src/tools-v6.test.ts` | Visor mode tests (16 tests) |
+| `src/tools-sparkle.ts` | Sparkle engine tool 69 |
+| `src/tools-sparkle.test.ts` | Sparkle engine tests (23 tests) |
+| `src/tools-dna.ts` | Exploration DNA tool 70 |
+| `src/tools-dna.test.ts` | Exploration DNA tests (18 tests) |
+| `src/tools-world.ts` | Data world builder tool 68 |
+| `src/tools-world.test.ts` | Data world builder tests (18 tests) |
+| `src/tools-genetic.test.ts` | Genetic/property/fuzz/stress tests (133 tests) |
 | `src/csv-utils.ts` | Shared CSV parser + escape |
 | `src/index.test.ts` | 135 unit tests |
 | `src/integration.test.ts` | 28 MCP protocol tests |
@@ -505,7 +531,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 ## Commands
 
 ```bash
-npm test             # 875 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + narrative + property + edge)
+npm test             # 1186 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + v5 + v6 + narrative + sparkle + dna + world + genetic + property + edge)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 15 standalone checks
 npm run ci           # Full pipeline: build + test + smoke

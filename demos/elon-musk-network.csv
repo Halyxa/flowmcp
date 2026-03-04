@@ -1,0 +1,31 @@
+id,connections,relationship_type,domain,funding_billions,year_started,risk_score,status,headquarters
+Elon Musk,,founder,multi,0,1995,100,active,Austin TX
+Tesla,Elon Musk,company,automotive,12.5,2004,85,public,Austin TX
+SpaceX,Elon Musk,company,space,10.2,2002,95,private,Hawthorne CA
+Neuralink,Elon Musk,company,biotech,0.7,2016,90,private,Fremont CA
+Boring Company,Elon Musk,company,infrastructure,0.9,2016,60,private,Las Vegas NV
+xAI,Elon Musk,company,ai,6.0,2023,80,private,San Francisco CA
+X/Twitter,Elon Musk,company,social_media,44.0,2022,75,private,San Francisco CA
+Gwynne Shotwell,SpaceX,executive,space,0,2002,30,active,Hawthorne CA
+JB Straubel,Tesla,co_founder,automotive,0,2004,25,departed,Redwood Materials
+Kimbal Musk,Elon Musk,family,food,0.2,1995,20,active,Boulder CO
+Grimes,Elon Musk,ex_partner,music,0,2018,40,personal,Los Angeles CA
+Justine Musk,Elon Musk,ex_spouse,writing,0,2000,15,personal,Los Angeles CA
+Shivon Zilis,Elon Musk|Neuralink,associate,ai,0,2017,35,active,San Francisco CA
+Jeff Bezos,Elon Musk,rival,space,10.0,2000,70,active,Seattle WA
+Mark Zuckerberg,Elon Musk,rival,social_media,0,2004,65,active,Menlo Park CA
+Jensen Huang,Elon Musk,partner_rival,ai,0,1993,80,active,Santa Clara CA
+Sam Altman,Elon Musk|xAI,rival,ai,13.0,2015,85,active,San Francisco CA
+Peter Thiel,Elon Musk,co_founder,finance,0,1998,50,active,Los Angeles CA
+Larry Page,Elon Musk,friend_rival,ai,0,1998,60,active,Palo Alto CA
+Starlink,SpaceX,subsidiary,telecom,0,2015,70,active,Hawthorne CA
+Blue Origin,Jeff Bezos,company,space,5.0,2000,75,active,Kent WA
+OpenAI,Sam Altman|Elon Musk,org,ai,13.0,2015,90,active,San Francisco CA
+NVIDIA,Jensen Huang,company,ai,0,1993,50,public,Santa Clara CA
+Meta,Mark Zuckerberg,company,social_media,0,2004,55,public,Menlo Park CA
+Starship,SpaceX,vehicle,space,5.0,2012,95,development,Boca Chica TX
+Cybertruck,Tesla,product,automotive,2.0,2019,80,production,Austin TX
+Optimus,Tesla,product,robotics,1.0,2021,90,development,Palo Alto CA
+Mars Colony,SpaceX|Starship,mission,space,0,2016,99,concept,Mars
+Tom Mueller,SpaceX,co_founder,space,0,2002,30,departed,Hawthorne CA
+Franz von Holzhausen,Tesla,executive,automotive,0,2008,25,active,Los Angeles CA

@@ -1,0 +1,26 @@
+id,connections,relationship_type,domain,era,collaboration_depth,impact_score,field,key_contribution
+Albert Einstein,,center,physics,peak,0,100,theoretical_physics,General Relativity + E=mc2
+Niels Bohr,Albert Einstein,rival_collaborator,physics,peak,85,95,quantum_mechanics,Copenhagen Interpretation
+Max Planck,Albert Einstein,mentor,physics,early,70,92,quantum_mechanics,Quantum Theory founder
+Marie Curie,Albert Einstein,peer,physics,peak,40,90,radioactivity,Radium discovery + 2 Nobels
+Werner Heisenberg,Albert Einstein|Niels Bohr,rival,physics,peak,30,88,quantum_mechanics,Uncertainty Principle
+Erwin Schrodinger,Albert Einstein|Niels Bohr,ally,physics,peak,45,86,quantum_mechanics,Wave Equation
+Wolfgang Pauli,Albert Einstein|Niels Bohr|Werner Heisenberg,peer,physics,peak,35,84,quantum_mechanics,Exclusion Principle
+Max Born,Albert Einstein,friend,physics,peak,55,82,quantum_mechanics,Probability interpretation
+Paul Dirac,Albert Einstein|Niels Bohr,peer,physics,peak,20,80,quantum_mechanics,Dirac Equation
+Mileva Maric,Albert Einstein,first_wife,personal,early,60,45,mathematics,Annus Mirabilis collaborator
+Elsa Einstein,Albert Einstein,second_wife,personal,peak,15,20,personal,Cousin + second wife
+Hans Albert Einstein,Albert Einstein,son,personal,early,10,30,engineering,Hydraulic engineering
+Marcel Grossmann,Albert Einstein,collaborator,physics,early,80,65,mathematics,Tensor calculus for GR
+Michele Besso,Albert Einstein,best_friend,physics,early,75,50,physics,Sounding board for SR
+David Hilbert,Albert Einstein,rival,mathematics,peak,25,85,mathematics,GR field equations race
+ETH Zurich,Albert Einstein|Marcel Grossmann|Mileva Maric,institution,institution,early,90,70,education,Student + Professor
+Princeton IAS,Albert Einstein|Kurt Godel,institution,institution,late,95,75,research,Final home 1933-1955
+Kaiser Wilhelm Institute,Albert Einstein|Max Planck,institution,institution,peak,60,65,research,Director 1914-1933
+Kurt Godel,Albert Einstein,close_friend,mathematics,late,70,78,logic,Incompleteness theorems
+Leo Szilard,Albert Einstein,collaborator,physics,late,50,72,nuclear_physics,Einstein-Szilard letter
+J Robert Oppenheimer,Albert Einstein|Leo Szilard,colleague,physics,late,30,80,nuclear_physics,Manhattan Project
+Hendrik Lorentz,Albert Einstein,mentor,physics,early,55,75,electrodynamics,Lorentz transformations
+Emmy Noether,Albert Einstein|David Hilbert,peer,mathematics,peak,25,82,mathematics,Noether theorem
+Solvay Conference,Albert Einstein|Niels Bohr|Marie Curie|Max Planck|Werner Heisenberg|Erwin Schrodinger|Wolfgang Pauli|Paul Dirac|Max Born|Hendrik Lorentz,event,physics,peak,100,90,conference,1927 quantum debates
+Annalen der Physik,Albert Einstein|Max Planck,publication,physics,early,80,85,journal,Annus Mirabilis papers
