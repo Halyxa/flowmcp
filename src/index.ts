@@ -31,8 +31,16 @@ import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalD
 import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
 import { flowNarrateData, flowFamousNetwork, flowGuidedTour } from "./tools-narrative.js";
 import type { NarrateDataInput, FamousNetworkInput, GuidedTourInput } from "./tools-narrative.js";
-import { flowQuestGenerator, flowAnomalyExplain } from "./tools-v5.js";
-import type { QuestGeneratorInput, AnomalyExplainInput } from "./tools-v5.js";
+import { flowQuestGenerator, flowAnomalyExplain, flowNearMissDetector, flowProgressiveDisclosure, flowInsightScorer, flowWaypointMap } from "./tools-v5.js";
+import type { QuestGeneratorInput, AnomalyExplainInput, NearMissDetectorInput, ProgressiveDisclosureInput, InsightScorerInput, WaypointMapInput } from "./tools-v5.js";
+import { flowVisorMode } from "./tools-v6.js";
+import type { VisorModeInput } from "./tools-v6.js";
+import { flowSparkleEngine } from "./tools-sparkle.js";
+import type { SparkleEngineInput } from "./tools-sparkle.js";
+import { flowExplorationDna } from "./tools-dna.js";
+import type { ExplorationDnaInput } from "./tools-dna.js";
+import { flowDataWorldBuilder } from "./tools-world.js";
+import type { DataWorldBuilderInput } from "./tools-world.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2886,6 +2894,246 @@ OUTPUT: Explanations array (each with surprise_score, driving_features with cont
           required: ["csv_data", "target_rows"],
         },
       },
+      {
+        name: "flow_near_miss_detector",
+        description: `Find patterns that ALMOST hold in your data — correlations with exceptions, cluster boundary points, trend breaks. The near-miss is more compelling than the pattern itself.
+
+INVOKE THIS TOOL WHEN:
+- User asks "what patterns almost work" or "what nearly correlates"
+- User says "find interesting exceptions" or "what breaks the pattern"
+- User wants to find the most compelling investigation leads in their data
+- User asks "what's almost true" or "where do rules break down"
+- User wants to understand why a pattern isn't quite perfect
+- After running correlation or clustering and wanting to find edge cases
+
+NEAR-MISS TYPES:
+- correlation: Strong relationship that breaks for 1-2 rows — "Why is THIS row different?"
+- cluster_boundary: Points that almost belong to a different group
+- trend_break: Monotonic trend that reverses at specific points — "What happened in July?"
+
+OUTPUT: Near-misses array (each with intrigue_score, narrative, investigation_question, exception_rows, statistical_basis), highlighted CSV with _near_miss_role column, dataset summary.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: {
+              type: "string",
+              description: "CSV data to scan for near-miss patterns",
+            },
+            max_near_misses: {
+              type: "number",
+              description: "Maximum near-misses to return (default 10, max 30)",
+            },
+            types: {
+              type: "array",
+              items: { type: "string", enum: ["correlation", "cluster_boundary", "trend_break"] },
+              description: "Filter to specific near-miss types",
+            },
+          },
+          required: ["csv_data"],
+        },
+      },
+      {
+        name: "flow_progressive_disclosure",
+        description: `Apply fog-of-war layers to any dataset — reveal columns progressively from surface identity to deep derived features. Like a JPG drawing in: the longer you dwell, the smarter the world gets.
+
+INVOKE THIS TOOL WHEN:
+- User asks "simplify this dataset" or "show me the important columns first"
+- User says "progressive disclosure" or "reveal data in layers"
+- User wants to reduce overwhelm from wide datasets
+- User asks "what should I look at first" or "prioritize columns"
+- User has a dataset with many columns and needs a guided exploration path
+- User wants to create a layered data exploration experience
+
+LAYERS:
+- Layer 0: Identity (names, IDs, categories) — who/what are these data points?
+- Layer 1: Primary metrics (high-variance numerics) — what makes them different?
+- Layer 2: Secondary features (lower-variance, categorical) — context and grouping
+- Layer 3+: Derived/computed (ratios, scores, indices) — deep analysis features
+
+OUTPUT: Array of cumulative layer CSVs (each layer includes all previous columns), reveal manifest with unlock hints, full CSV with _visibility_layer column.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: {
+              type: "string",
+              description: "CSV data to apply progressive disclosure to",
+            },
+            column_layers: {
+              type: "object",
+              description: "Manual column-to-layer assignment (column_name: layer_number)",
+            },
+            always_visible: {
+              type: "array",
+              items: { type: "string" },
+              description: "Columns that appear in every layer",
+            },
+            max_layers: {
+              type: "number",
+              description: "Maximum number of layers (default 4, max 8)",
+            },
+          },
+          required: ["csv_data"],
+        },
+      },
+      {
+        name: "flow_insight_scorer",
+        description: `Score whether a data insight is a genuine discovery or noise. The peer review system for data exploration — tests significance, effect size, novelty, and bootstrap robustness.
+
+INVOKE THIS TOOL WHEN:
+- User claims "X correlates with Y" and wants to know if it's real
+- User asks "is this pattern significant" or "is this finding robust"
+- User says "validate this insight" or "score this discovery"
+- User wants to distinguish genuine patterns from noise in their data
+- After finding a pattern and wanting statistical validation
+- User asks "would this hold up" or "is this just a coincidence"
+
+INSIGHT TYPES: correlation, group_difference, trend, outlier, threshold
+
+VERDICTS: genuine_discovery (score>=0.7) | interesting_but_fragile (low robustness) | trivial (obvious) | likely_noise (score<0.4)
+
+OUTPUT: Composite discovery_score (0-1), significance/effect_size/novelty/robustness sub-scores, verdict, evidence (test used, p-value, bootstrap hold rate), narrative assessment, recommendations.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data containing the dataset" },
+            insight: { type: "string", description: "The insight to evaluate (natural language)" },
+            insight_type: { type: "string", enum: ["correlation", "group_difference", "trend", "outlier", "threshold"], description: "Type of insight to test" },
+            columns: { type: "array", items: { type: "string" }, description: "Column(s) involved in the insight" },
+            group_column: { type: "string", description: "For group_difference: which column defines the groups" },
+          },
+          required: ["csv_data", "insight", "insight_type", "columns"],
+        },
+      },
+      {
+        name: "flow_waypoint_map",
+        description: `Generate named spatial waypoints from any dataset — the GPS for data worlds. Cluster centers become cities, outliers become mountain peaks, trend inflections become crossroads, network hubs become capitals.
+
+INVOKE THIS TOOL WHEN:
+- User asks "what are the landmarks in this data" or "map this dataset"
+- User says "generate waypoints" or "create a tour of the data"
+- User wants to create a spatial navigation experience for their dataset
+- User asks "where should I look" or "what are the key points"
+- User wants a camera path through their data for presentation
+- User wants to create a 3D data exploration map
+
+WAYPOINT TYPES:
+- cluster_center: Where most data concentrates — the cities
+- outlier: Extreme points that stand alone — the mountain peaks
+- inflection: Where trends change direction — the crossroads
+- hub: High-degree network nodes — the capitals
+
+OUTPUT: Waypoints array (each with name, coordinates, importance, description), camera path with narration, Flow-compatible CSV (id,connections,x,y,z,label,type,importance).`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data to generate waypoints from" },
+            max_waypoints: { type: "number", description: "Maximum waypoints (default 10, max 30)" },
+            types: { type: "array", items: { type: "string", enum: ["cluster_center", "outlier", "inflection", "hub"] }, description: "Waypoint types to include" },
+          },
+          required: ["csv_data"],
+        },
+      },
+      {
+        name: "flow_visor_mode",
+        description: `Switch analytical lenses on the same dataset — like Metroid Prime's scan visor. Five different intelligence overlays reveal different patterns in the same data.
+
+INVOKE THIS TOOL WHEN:
+- User asks "analyze this data from different angles" or "what else is hidden"
+- User says "switch perspective" or "look at this differently"
+- User wants statistical, relational, temporal, anomaly, or geographic analysis
+- User asks "what correlations exist" (relational visor)
+- User asks "are there outliers" (anomaly visor)
+- User asks "what's the trend" (temporal visor)
+
+VISORS: statistical (z-scores, outliers) | relational (correlations) | temporal (trends, changes) | anomaly (multi-dimensional surprise) | geographic (spatial clusters)
+
+OUTPUT: Annotations array, annotated CSV with visor-specific computed columns, summary with top finding, recommended next visor.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data to analyze" },
+            visor: { type: "string", enum: ["statistical", "relational", "temporal", "anomaly", "geographic"], description: "Which analytical lens to apply" },
+            focus_columns: { type: "array", items: { type: "string" }, description: "Columns to focus on (auto-selects if omitted)" },
+          },
+          required: ["csv_data", "visor"],
+        },
+      },
+      {
+        name: "flow_sparkle_engine",
+        description: `Progressive intelligence engine — like a JPG drawing in. The longer you dwell on data, the deeper the insights become. First second = shape. 10 seconds = correlations. 60 seconds = deep patterns. 5 minutes = epiphanies.
+
+INVOKE THIS TOOL WHEN:
+- User asks "what can you tell me about this data" (start at dwell=1, increase)
+- User says "go deeper" or "tell me more" (increase dwell_seconds)
+- User wants progressive layers of insight, not all-at-once analysis
+- User asks "what's interesting here" or "surprise me"
+- User wants to simulate exploring data over time
+- User says "sparkle" or "find epiphanies" or "what's hiding in this data"
+
+LAYERS: 0=instant shape | 1=surface stats | 2=correlations | 3=deep patterns | 4=epiphanies
+
+OUTPUT: Sparkles array (each with intensity, title using actual data values, child_sparkle_hints), progressive CSV with _sparkle_layer column, next_dwell_preview teasing what comes next.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data to progressively analyze" },
+            dwell_seconds: { type: "number", description: "Simulated dwell time (default 1, max 300). Higher = deeper insights." },
+            focus_columns: { type: "array", items: { type: "string" }, description: "Columns to concentrate intelligence on" },
+            focus_rows: { type: "array", items: { type: "number" }, description: "Row indices to focus on" },
+          },
+          required: ["csv_data"],
+        },
+      },
+      {
+        name: "flow_exploration_dna",
+        description: `Generate a unique fingerprint for any dataset — its personality, character, and how it wants to be explored. Is it an archipelago (clusters), a highway (trends), a mystery (anomalies), or a web (correlations)?
+
+INVOKE THIS TOOL WHEN:
+- User asks "what kind of data is this" or "characterize this dataset"
+- User says "how should I explore this" or "where do I start"
+- User wants to understand a dataset's personality before diving in
+- User asks "what tools should I use on this data"
+- User has a new dataset and needs orientation
+
+ARCHETYPES: The Archipelago (clusters) | The Highway (trends) | The Mystery (anomalies) | The Web (correlations) | The Forest (complex) | The Network (graphs) | The Timeline (temporal) | The Mosaic (mixed)
+
+OUTPUT: DNA code, archetype name, 8 trait scores, exploration style guide, recommended FlowMCP tools, personality CSV with _dna_role column.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data to fingerprint" },
+          },
+          required: ["csv_data"],
+        },
+      },
+      {
+        name: "flow_data_world_builder",
+        description: `Build a complete data world from any CSV — one call that orchestrates DNA fingerprinting, sparkle intelligence, quests, near-misses, and progressive disclosure into a living, explorable world.
+
+INVOKE THIS TOOL WHEN:
+- User says "build a world from this data" or "make this data come alive"
+- User asks "explore this dataset" or "what's in this data" (the ALL-IN-ONE answer)
+- User says "create a data experience" or "turn this into something explorable"
+- User has a new CSV and wants the FULL treatment, not just one analysis
+- User asks for a demo or showcase of FlowMCP's capabilities
+- This is the RECOMMENDED first tool for any new dataset
+
+DEPTH MODES:
+- quick: DNA + surface sparkles + layers (fast overview, <1 second)
+- standard (default): + quests + near-misses + correlation sparkles (full analysis)
+- deep: + epiphany sparkles at 3-minute dwell (maximum intelligence)
+
+OUTPUT: World name, archetype, DNA code, layered CSVs (surface to full), sparkles grouped by layer, quests, near-misses, exploration guide narrative, recommended sequence, world stats with exploration richness score.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv_data: { type: "string", description: "CSV data to build a world from" },
+            depth: { type: "string", enum: ["quick", "standard", "deep"], description: "World complexity (default: standard)" },
+            user_goal: { type: "string", description: "Optional: user's goal or question about the data" },
+          },
+          required: ["csv_data"],
+        },
+      },
     ],
   };
 });
@@ -3530,6 +3778,78 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_anomaly_explain": {
       try {
         const result = flowAnomalyExplain(args as unknown as AnomalyExplainInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_near_miss_detector": {
+      try {
+        const result = await flowNearMissDetector(args as unknown as NearMissDetectorInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_progressive_disclosure": {
+      try {
+        const result = await flowProgressiveDisclosure(args as unknown as ProgressiveDisclosureInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_insight_scorer": {
+      try {
+        const result = await flowInsightScorer(args as unknown as InsightScorerInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_waypoint_map": {
+      try {
+        const result = await flowWaypointMap(args as unknown as WaypointMapInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_visor_mode": {
+      try {
+        const result = await flowVisorMode(args as unknown as VisorModeInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_sparkle_engine": {
+      try {
+        const result = flowSparkleEngine(args as unknown as SparkleEngineInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_exploration_dna": {
+      try {
+        const result = flowExplorationDna(args as unknown as ExplorationDnaInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_data_world_builder": {
+      try {
+        const result = await flowDataWorldBuilder(args as unknown as DataWorldBuilderInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);

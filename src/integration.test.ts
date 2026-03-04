@@ -41,7 +41,7 @@ describe("MCP Protocol Integration", () => {
   // ====================================================================
   it("lists all 36 tools", async () => {
     const result = await client.listTools();
-    expect(result.tools.length).toBe(62);
+    expect(result.tools.length).toBe(70);
   });
   it("includes all expected tool names", async () => {
     const result = await client.listTools();
@@ -109,6 +109,14 @@ describe("MCP Protocol Integration", () => {
       "flow_famous_network",
       "flow_quest_generator",
       "flow_anomaly_explain",
+      "flow_near_miss_detector",
+      "flow_progressive_disclosure",
+      "flow_insight_scorer",
+      "flow_waypoint_map",
+      "flow_visor_mode",
+      "flow_sparkle_engine",
+      "flow_exploration_dna",
+      "flow_data_world_builder",
     ];
     for (const name of expected) {
       expect(names).toContain(name);
