@@ -29,6 +29,8 @@ import { flowNlpToViz, flowGeoEnhance, flowExportFormats } from "./tools-v3.js";
 import type { NlpToVizInput, GeoEnhanceInput, ExportFormatsInput } from "./tools-v3.js";
 import { flowLiveData, flowCorrelationMatrix, flowClusterData, flowHierarchicalData, flowCompareDatasets, flowPivotTable, flowRegressionAnalysis, flowNormalizeData, flowDeduplicateRows, flowBinData, flowColumnStats, flowComputedColumns, flowParseDates, flowValidateRules, flowFillMissing, flowFilterRows, flowUnpivot, flowJoinDatasets, flowCrossTabulate, flowWindowFunctions, flowEncodeCategorical, flowCumulative, flowDescribeDataset, flowLagLead, flowConcatRows, flowOutlierFence, flowDiscretize, flowStringSplit, flowPcaReduce, flowDistanceMatrix, flowRankValues, flowStringExtract } from "./tools-v4.js";
 import type { LiveDataInput, CorrelationMatrixInput, ClusterDataInput, HierarchicalDataInput, CompareDataInput, PivotTableInput, RegressionAnalysisInput, NormalizeDataInput, DeduplicateRowsInput, BinDataInput, ColumnStatsInput, ComputedColumnsInput, ParseDatesInput, ValidateRulesInput, FillMissingInput, FilterRowsInput, UnpivotInput, JoinDatasetsInput, CrossTabulateInput, WindowFunctionsInput, EncodeCategoricalInput, CumulativeInput, DescribeDatasetInput, LagLeadInput, ConcatRowsInput, OutlierFenceInput, DiscretizeInput, StringSplitInput, PcaReduceInput, DistanceMatrixInput, RankValuesInput, StringExtractInput } from "./tools-v4.js";
+import { flowNarrateData, flowFamousNetwork, flowGuidedTour } from "./tools-narrative.js";
+import type { NarrateDataInput, FamousNetworkInput, GuidedTourInput } from "./tools-narrative.js";
 
 // Flow Immersive MCP Server
 // Your data has spatial structure that's invisible in 2D — Flow reveals it.
@@ -2649,6 +2651,141 @@ Output: CSV with extracted column, row_count, matched_count, summary.`,
           required: ["csv_content", "column", "pattern", "output_column"],
         },
       },
+
+      // ====================================================================
+      // NARRATIVE TOOLS: Intelligence layer — story, networks, insight
+      // ====================================================================
+
+      {
+        name: "flow_narrate_data",
+        description: `Transform raw data into a narrative story — find the characters, the plot, the climax, and the cliffhanger. Uses statistical analysis to identify outliers, correlations, trends, and surprises, then weaves them into a story arc. Like having a data journalist analyze your dataset. Returns a complete narrative with hook, setting, characters (outliers, protagonists, antagonists), rising action (patterns and correlations), climax (biggest insight), resolution (what to do), and cliffhanger (open question). TRIGGER: narrate data, tell me the story, what's interesting, data narrative, explain this data, what does this mean, data insights, story in the data, what's happening in this data, summarize insights
+
+INVOKE THIS TOOL WHEN:
+- User asks "what's the story in this data" or "narrate this dataset"
+- User asks "what's interesting" or "what should I know about this data"
+- User wants insights, not just statistics
+- User asks "explain this data" or "what does this data mean"
+- User wants a narrative summary before diving into analysis
+
+Input: CSV data, optional focus_columns array, optional style (executive/explorer/journalist).
+Output: Complete narrative arc with characters, suggested next explorations, data summary, and viz recommendation.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv: {
+              type: "string",
+              description: "CSV data to narrate",
+            },
+            focus_columns: {
+              type: "array",
+              items: { type: "string" },
+              description: "Optional: specific columns to focus the narrative on",
+            },
+            style: {
+              type: "string",
+              enum: ["executive", "explorer", "journalist"],
+              description: "Narrative style: executive (brief, numbers-first), explorer (curious, discovery-oriented), journalist (who-what-where-why). Default: explorer",
+            },
+          },
+          required: ["csv"],
+        },
+      },
+      {
+        name: "flow_famous_network",
+        description: `Build an instant 3D network of any famous person — explore their relationships, influences, colleagues, and connections pulled live from Wikidata. Enter any name and get a Flow-ready network CSV with narrative context. Works for historical figures, celebrities, scientists, politicians, athletes, musicians. TRIGGER: famous person network, celebrity connections, who knows who, relationship map, influence network, build network for, explore connections of
+
+INVOKE THIS TOOL WHEN:
+- User mentions any famous person and wants to see their connections or relationships
+- User asks "build a network for Einstein", "show me who knew who", "explore connections of"
+- User wants to visualize a person's influence, collaborations, family, or professional network
+- User mentions "relationship map", "influence network", "celebrity connections"
+- User wants to explore historical or contemporary social networks
+- User asks about connections between famous people
+
+RELATIONSHIP TYPES:
+- spouse: marriages and partnerships (Wikidata P26)
+- child: parent-child relationships (P40, P22, P25)
+- colleague: shared employers and business partners (P108, P1327)
+- influenced: intellectual influence and notable works (P737, P800)
+- educated_with: shared educational institutions (P69)
+- all: query all relationship types (default)
+
+DEPTH:
+- 1: direct connections only (default, fast)
+- 2: connections of connections (larger network, slower)
+
+Returns Flow-compatible network CSV with id, connections (pipe-delimited), label, type, description, and relationship columns. Includes narrative hook, relationship breakdown, and notable connections list.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            person: {
+              type: "string",
+              description: "Name of the famous person to build network around (e.g., 'Albert Einstein', 'Marie Curie', 'Leonardo da Vinci')",
+            },
+            depth: {
+              type: "number",
+              enum: [1, 2],
+              description: "How many hops from the center person: 1 = direct connections (default), 2 = connections of connections",
+            },
+            relationship_types: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["spouse", "child", "colleague", "influenced", "educated_with", "all"],
+              },
+              description: "Types of relationships to include. Default: all types. Options: spouse, child, colleague, influenced, educated_with, all",
+            },
+            max_nodes: {
+              type: "number",
+              description: "Maximum number of nodes in the network (default 50, max 200)",
+            },
+          },
+          required: ["person"],
+        },
+      },
+      {
+        name: "flow_guided_tour",
+        description: `Generate a narrated walkthrough of your data as a 3D exploration — like a museum audio guide for your visualization. Creates tour stops at outliers, cluster centers, trend inflection points, or network bridges with creative titles, narration, and camera movement hints. TRIGGER: guided tour, walkthrough, explore my data, tour of the data, narrated exploration, step by step, show me around, data tour
+
+INVOKE THIS TOOL WHEN:
+- User asks for a "guided tour", "walkthrough", or "narrated exploration" of their data
+- User says "explore my data", "show me around", "tour of the data", or "step by step"
+- User wants a scripted presentation or story-driven exploration of a dataset
+- User wants to understand what's interesting or notable in their data before visualizing
+- User asks "what should I look at?" or "where are the interesting parts?"
+
+FOCUS MODES:
+- outliers: Visit data points with extreme z-scores — the statistical rebels
+- clusters: Visit natural groupings and their centers — where data congregates
+- connections: Visit hub nodes, bridge nodes, and isolated nodes in network data
+- trends: Visit inflection points — peaks, valleys, steepest rises and falls
+- overview (default): A mix of all above for a comprehensive tour
+
+OUTPUT: Tour title, introduction narration, sequenced stops (each with creative title, target row, narration text, camera hint, highlight columns, transition text), conclusion with cliffhanger, duration estimate, and suggested Flow template.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            csv: {
+              type: "string",
+              description: "CSV data to generate a guided tour for",
+            },
+            id_column: {
+              type: "string",
+              description: "Column to use as node/row identifier (auto-detected if not specified)",
+            },
+            stops: {
+              type: "number",
+              description: "Number of tour stops (default 5, max 10)",
+            },
+            focus: {
+              type: "string",
+              enum: ["outliers", "clusters", "connections", "trends", "overview"],
+              description: "Tour focus: what aspect to explore (default: overview)",
+            },
+          },
+          required: ["csv"],
+        },
+      },
     ],
   };
 });
@@ -3248,6 +3385,33 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_string_extract": {
       try {
         const result = flowStringExtract(args as unknown as StringExtractInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_narrate_data": {
+      try {
+        const result = flowNarrateData(args as unknown as NarrateDataInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_famous_network": {
+      try {
+        const result = await flowFamousNetwork(args as unknown as FamousNetworkInput);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return errorResponse(err);
+      }
+    }
+
+    case "flow_guided_tour": {
+      try {
+        const result = flowGuidedTour(args as unknown as GuidedTourInput);
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err: unknown) {
         return errorResponse(err);
