@@ -76,7 +76,7 @@ function buildAdjacencyMap(
 
 function errorResponse(errOrMsg: unknown): { content: [{ type: "text"; text: string }] } {
   const msg = typeof errOrMsg === "string" ? errOrMsg : getErrorMessage(errOrMsg);
-  return { content: [{ type: "text", text: JSON.stringify({ error: msg }, null, 2) }] };
+  return { content: [{ type: "text", text: JSON.stringify({ error: msg }) }] };
 }
 
 function getErrorName(err: unknown): string {
@@ -3149,7 +3149,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "analyze_data_for_flow": {
       try {
         const analysis = analyzeDataForFlow(args as unknown as AnalysisInput);
-        return { content: [{ type: "text", text: JSON.stringify(analysis, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(analysis) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3158,7 +3158,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "validate_csv_for_flow": {
       try {
         const validation = validateCsvForFlow(args as unknown as ValidationInput);
-        return { content: [{ type: "text", text: JSON.stringify(validation, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(validation) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3185,7 +3185,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "suggest_flow_visualization": {
       try {
         const suggestion = suggestFlowVisualization(args as unknown as VisualizationInput);
-        return { content: [{ type: "text", text: JSON.stringify(suggestion, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(suggestion) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3194,7 +3194,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "get_flow_template": {
       try {
         const template = getFlowTemplate(args as unknown as TemplateInput);
-        return { content: [{ type: "text", text: JSON.stringify(template, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(template) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3203,7 +3203,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_extract_from_text": {
       try {
         const extraction = extractFromText(args as unknown as TextExtractionInput);
-        return { content: [{ type: "text", text: JSON.stringify(extraction, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(extraction) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3212,7 +3212,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_extract_from_url": {
       try {
         const result = await extractFromUrl(args as unknown as UrlExtractionInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3221,10 +3221,10 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_authenticate": {
       const { email, password } = args as { email: string; password: string };
       if (!email || typeof email !== "string" || email.trim().length === 0) {
-        return { content: [{ type: "text", text: JSON.stringify({ authenticated: false, error: "email is required and must be a non-empty string" }, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify({ authenticated: false, error: "email is required and must be a non-empty string" }) }] };
       }
       if (!password || typeof password !== "string" || password.length === 0) {
-        return { content: [{ type: "text", text: JSON.stringify({ authenticated: false, error: "password is required and must be a non-empty string" }, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify({ authenticated: false, error: "password is required and must be a non-empty string" }) }] };
       }
       const authResult = await flowAuthenticate(email, password);
       if (authResult.success) {
@@ -3235,7 +3235,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
               authenticated: true,
               email,
               message: "Successfully authenticated with Flow Immersive. You can now upload data using flow_upload_data.",
-            }, null, 2),
+            }),
           }],
         };
       }
@@ -3246,7 +3246,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
             authenticated: false,
             error: authResult.error,
             help: "Check your credentials at https://a.flow.gl. Make sure you're using the email and password from your Flow account.",
-          }, null, 2),
+          }),
         }],
       };
     }
@@ -3265,7 +3265,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
             text: JSON.stringify({
               success: false,
               error: "csv_content is required and must be a non-empty string",
-            }, null, 2),
+            }),
           }],
         };
       }
@@ -3278,7 +3278,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
             text: JSON.stringify({
               success: false,
               error: "Not authenticated. Call flow_authenticate first with your Flow Immersive credentials.",
-            }, null, 2),
+            }),
           }],
         };
       }
@@ -3290,7 +3290,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
             text: JSON.stringify({
               success: false,
               error: "Either dataset_title (for new datasets) or dataset_id (for updates) is required.",
-            }, null, 2),
+            }),
           }],
         };
       }
@@ -3302,7 +3302,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
           text: JSON.stringify({
             ...uploadResult,
             viewUrl: uploadResult.success ? "https://a.flow.gl" : undefined,
-          }, null, 2),
+          }),
         }],
       };
     }
@@ -3316,7 +3316,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
       try {
         const result = await flowBrowseFlows({ user_id, discoverable, selector, offset });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3329,7 +3329,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       try {
         const flow = await flowGetFlow(sel.trim());
-        return { content: [{ type: "text", text: JSON.stringify(flow, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(flow) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3338,7 +3338,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_list_templates": {
       try {
         const templates = await flowListTemplates();
-        return { content: [{ type: "text", text: JSON.stringify({ templates, count: templates.length }, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify({ templates, count: templates.length }) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3347,7 +3347,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_list_categories": {
       try {
         const categories = await flowListCategories();
-        return { content: [{ type: "text", text: JSON.stringify({ categories, count: categories.length }, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify({ categories, count: categories.length }) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3356,7 +3356,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_precompute_force_layout": {
       try {
         const result = precomputeForceLayout(args as unknown as ForceLayoutInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3365,7 +3365,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_scale_dataset": {
       try {
         const result = scaleDataset(args as unknown as ScaleDatasetInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3374,7 +3374,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_compute_graph_metrics": {
       try {
         const result = computeGraphMetrics(args as unknown as GraphMetricsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3383,7 +3383,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_query_graph": {
       try {
         const result = await queryGraph(args as unknown as GraphQueryInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3392,7 +3392,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_semantic_search": {
       try {
         const result = await flowSemanticSearch(args as unknown as SemanticSearchInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3401,7 +3401,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_time_series_animate": {
       try {
         const result = flowTimeSeriesAnimate(args as unknown as TimeSeriesAnimateInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3410,7 +3410,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_merge_datasets": {
       try {
         const result = flowMergeDatasets(args as unknown as MergeDatasetsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3419,7 +3419,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_anomaly_detect": {
       try {
         const result = flowAnomalyDetect(args as unknown as AnomalyDetectInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3428,7 +3428,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_geo_enhance": {
       try {
         const result = flowGeoEnhance(args as unknown as GeoEnhanceInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3437,7 +3437,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_nlp_to_viz": {
       try {
         const result = flowNlpToViz(args as unknown as NlpToVizInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3446,7 +3446,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_export_formats": {
       try {
         const result = flowExportFormats(args as unknown as ExportFormatsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3455,7 +3455,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_live_data": {
       try {
         const result = await flowLiveData(args as unknown as LiveDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3464,7 +3464,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_correlation_matrix": {
       try {
         const result = flowCorrelationMatrix(args as unknown as CorrelationMatrixInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3473,7 +3473,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_cluster_data": {
       try {
         const result = flowClusterData(args as unknown as ClusterDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3482,7 +3482,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_hierarchical_data": {
       try {
         const result = flowHierarchicalData(args as unknown as HierarchicalDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3491,7 +3491,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_compare_datasets": {
       try {
         const result = flowCompareDatasets(args as unknown as CompareDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3500,7 +3500,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_pivot_table": {
       try {
         const result = flowPivotTable(args as unknown as PivotTableInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3509,7 +3509,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_regression_analysis": {
       try {
         const result = flowRegressionAnalysis(args as unknown as RegressionAnalysisInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3518,7 +3518,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_normalize_data": {
       try {
         const result = flowNormalizeData(args as unknown as NormalizeDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3527,7 +3527,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_deduplicate_rows": {
       try {
         const result = flowDeduplicateRows(args as unknown as DeduplicateRowsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3536,7 +3536,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_bin_data": {
       try {
         const result = flowBinData(args as unknown as BinDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3545,7 +3545,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_column_stats": {
       try {
         const result = flowColumnStats(args as unknown as ColumnStatsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3554,7 +3554,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_computed_columns": {
       try {
         const result = flowComputedColumns(args as unknown as ComputedColumnsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3563,7 +3563,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_parse_dates": {
       try {
         const result = flowParseDates(args as unknown as ParseDatesInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3572,7 +3572,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_validate_rules": {
       try {
         const result = flowValidateRules(args as unknown as ValidateRulesInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3581,7 +3581,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_fill_missing": {
       try {
         const result = flowFillMissing(args as unknown as FillMissingInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3590,7 +3590,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_filter_rows": {
       try {
         const result = flowFilterRows(args as unknown as FilterRowsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3599,7 +3599,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_unpivot": {
       try {
         const result = flowUnpivot(args as unknown as UnpivotInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3608,7 +3608,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_join_datasets": {
       try {
         const result = flowJoinDatasets(args as unknown as JoinDatasetsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3617,7 +3617,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_cross_tabulate": {
       try {
         const result = flowCrossTabulate(args as unknown as CrossTabulateInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3626,7 +3626,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_window_functions": {
       try {
         const result = flowWindowFunctions(args as unknown as WindowFunctionsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3635,7 +3635,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_encode_categorical": {
       try {
         const result = flowEncodeCategorical(args as unknown as EncodeCategoricalInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3644,7 +3644,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_cumulative": {
       try {
         const result = flowCumulative(args as unknown as CumulativeInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3653,7 +3653,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_describe_dataset": {
       try {
         const result = flowDescribeDataset(args as unknown as DescribeDatasetInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3662,7 +3662,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_lag_lead": {
       try {
         const result = flowLagLead(args as unknown as LagLeadInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3671,7 +3671,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_concat_rows": {
       try {
         const result = flowConcatRows(args as unknown as ConcatRowsInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3680,7 +3680,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_outlier_fence": {
       try {
         const result = flowOutlierFence(args as unknown as OutlierFenceInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3689,7 +3689,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_discretize": {
       try {
         const result = flowDiscretize(args as unknown as DiscretizeInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3698,7 +3698,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_string_split": {
       try {
         const result = flowStringSplit(args as unknown as StringSplitInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3707,7 +3707,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_pca_reduce": {
       try {
         const result = flowPcaReduce(args as unknown as PcaReduceInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3716,7 +3716,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_distance_matrix": {
       try {
         const result = flowDistanceMatrix(args as unknown as DistanceMatrixInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3727,7 +3727,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_rank_values": {
       try {
         const result = flowRankValues(args as unknown as RankValuesInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3736,7 +3736,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_string_extract": {
       try {
         const result = flowStringExtract(args as unknown as StringExtractInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3745,7 +3745,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_narrate_data": {
       try {
         const result = flowNarrateData(args as unknown as NarrateDataInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3754,7 +3754,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_famous_network": {
       try {
         const result = await flowFamousNetwork(args as unknown as FamousNetworkInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3763,7 +3763,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_guided_tour": {
       try {
         const result = flowGuidedTour(args as unknown as GuidedTourInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3772,7 +3772,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_quest_generator": {
       try {
         const result = flowQuestGenerator(args as unknown as QuestGeneratorInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3781,7 +3781,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_anomaly_explain": {
       try {
         const result = flowAnomalyExplain(args as unknown as AnomalyExplainInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3790,7 +3790,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_near_miss_detector": {
       try {
         const result = await flowNearMissDetector(args as unknown as NearMissDetectorInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3799,7 +3799,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_progressive_disclosure": {
       try {
         const result = await flowProgressiveDisclosure(args as unknown as ProgressiveDisclosureInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3808,7 +3808,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_insight_scorer": {
       try {
         const result = await flowInsightScorer(args as unknown as InsightScorerInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3817,7 +3817,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_waypoint_map": {
       try {
         const result = await flowWaypointMap(args as unknown as WaypointMapInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3826,7 +3826,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_visor_mode": {
       try {
         const result = await flowVisorMode(args as unknown as VisorModeInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3835,7 +3835,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_sparkle_engine": {
       try {
         const result = flowSparkleEngine(args as unknown as SparkleEngineInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3844,7 +3844,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_exploration_dna": {
       try {
         const result = flowExplorationDna(args as unknown as ExplorationDnaInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
@@ -3853,7 +3853,7 @@ s.setRequestHandler(CallToolRequestSchema, async (request) => {
     case "flow_data_world_builder": {
       try {
         const result = await flowDataWorldBuilder(args as unknown as DataWorldBuilderInput);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       } catch (err: unknown) {
         return errorResponse(err);
       }
