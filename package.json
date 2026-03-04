@@ -1,7 +1,7 @@
 {
   "name": "flow-immersive-mcp",
   "version": "1.0.0",
-  "description": "MCP server connecting AI assistants to Flow Immersive 3D spatial visualization — 59 tools for data analysis, transformation, and interactive 3D viz",
+  "description": "MCP server connecting AI assistants to Flow Immersive 3D spatial visualization — 70 tools for data analysis, transformation, narrative intelligence, and interactive 3D viz",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
