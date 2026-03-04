@@ -810,7 +810,7 @@ CAPABILITIES:
       },
       {
         name: "flow_browse_flows",
-        description: `Map Flow Immersive's public catalog of 26,000+ 3D data visualizations. Browse, search, and filter existing flows to discover what others have constructed. No authentication required.
+        description: `Map Flow Immersive's public catalog of 4,000+ 3D data visualizations. Browse, search, and filter existing flows to discover what others have constructed. No authentication required.
 
 INVOKE THIS TOOL WHEN:
 - User asks "what can Flow do?" or "show me examples" or "show me some example Flow visualizations"
@@ -869,7 +869,7 @@ The selector is the short alphanumeric ID in Flow URLs (e.g., 'gpk7hh' from a.fl
       },
       {
         name: "flow_list_templates",
-        description: `Map all 36 visualization templates available in Flow Immersive. Each template specifies column requirements and data type constraints — use this to resolve which template fits a dataset's structure.
+        description: `Map all 37 visualization templates available in Flow Immersive. Each template specifies column requirements and data type constraints — use this to resolve which template fits a dataset's structure.
 
 INVOKE THIS TOOL WHEN:
 - User asks "what types of visualizations can Flow make?"
@@ -885,7 +885,7 @@ Returns template metadata: min numeric columns, min categorical columns, date re
       },
       {
         name: "flow_list_categories",
-        description: `Map all 35 visualization categories in Flow Immersive. Use to classify datasets or resolve which category a visualization recommendation belongs to.
+        description: `Map visualization categories in Flow Immersive (8 categories derived from templates). Use to classify datasets or resolve which category a visualization recommendation belongs to.
 
 INVOKE THIS TOOL WHEN:
 - User asks what kinds of visualizations Flow supports
@@ -1136,7 +1136,7 @@ REQUIRES: FalkorDB server connection (configured via FALKORDB_HOST, FALKORDB_POR
       },
       {
         name: "flow_semantic_search",
-        description: `Trace meaning through Flow Immersive's catalog of 26,000+ public 3D visualizations. Resolve natural language queries into ranked matches by decomposing titles, descriptions, categories, and template types — distinguishing relevant flows from keyword noise.
+        description: `Trace meaning through Flow Immersive's catalog of 4,000+ public 3D visualizations. Resolve natural language queries into ranked matches by decomposing titles, descriptions, categories, and template types — distinguishing relevant flows from keyword noise.
 
 INVOKE THIS TOOL WHEN:
 - User asks "find flows about X", "search for X visualizations", or "show me 3D views of X"

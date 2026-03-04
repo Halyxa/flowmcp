@@ -164,6 +164,107 @@ async function main() {
     check("Text extraction", false, e.message);
   }
 
+  // --- Holodeck Intelligence Layer (tools 61-70) ---
+  const SAMPLE_CSV = "name,value,category,score\nAlice,100,A,85\nBob,200,B,72\nCarol,300,A,91\nDave,150,C,68\nEve,250,B,95";
+
+  // 8. Quest Generator
+  console.log("\n8. Tool Execution (flow_quest_generator)");
+  try {
+    const result = await client.callTool({
+      name: "flow_quest_generator",
+      arguments: { csv_data: SAMPLE_CSV, max_quests: 3 },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Quest generator returns quests array", Array.isArray(parsed.quests));
+    check("Quests have title and difficulty", parsed.quests.length > 0 && parsed.quests[0].title && parsed.quests[0].difficulty);
+  } catch (e) {
+    check("Quest generator", false, e.message);
+  }
+
+  // 9. Near-miss Detector
+  console.log("\n9. Tool Execution (flow_near_miss_detector)");
+  try {
+    const result = await client.callTool({
+      name: "flow_near_miss_detector",
+      arguments: { csv_data: SAMPLE_CSV, max_near_misses: 5 },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Near-miss returns near_misses array", Array.isArray(parsed.near_misses));
+    check("Near-miss has dataset_summary", typeof parsed.dataset_summary === "object" && parsed.dataset_summary.rows > 0);
+  } catch (e) {
+    check("Near-miss detector", false, e.message);
+  }
+
+  // 10. Progressive Disclosure
+  console.log("\n10. Tool Execution (flow_progressive_disclosure)");
+  try {
+    const result = await client.callTool({
+      name: "flow_progressive_disclosure",
+      arguments: { csv_data: SAMPLE_CSV },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Progressive disclosure returns layers", Array.isArray(parsed.layers) && parsed.layers.length > 0);
+    check("Layers have CSV content", typeof parsed.layers[0].csv === "string");
+  } catch (e) {
+    check("Progressive disclosure", false, e.message);
+  }
+
+  // 11. Exploration DNA
+  console.log("\n11. Tool Execution (flow_exploration_dna)");
+  try {
+    const result = await client.callTool({
+      name: "flow_exploration_dna",
+      arguments: { csv_data: SAMPLE_CSV },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("DNA returns traits array", Array.isArray(parsed.traits) && parsed.traits.length > 0);
+    check("DNA returns archetype", typeof parsed.archetype === "string" && parsed.archetype.length > 0);
+  } catch (e) {
+    check("Exploration DNA", false, e.message);
+  }
+
+  // 12. Sparkle Engine
+  console.log("\n12. Tool Execution (flow_sparkle_engine)");
+  try {
+    const result = await client.callTool({
+      name: "flow_sparkle_engine",
+      arguments: { csv_data: SAMPLE_CSV, dwell_seconds: 5 },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Sparkle engine returns sparkles", Array.isArray(parsed.sparkles) && parsed.sparkles.length > 0);
+    check("Sparkles have layer and title", parsed.sparkles[0].layer !== undefined && parsed.sparkles[0].title);
+  } catch (e) {
+    check("Sparkle engine", false, e.message);
+  }
+
+  // 13. Visor Mode
+  console.log("\n13. Tool Execution (flow_visor_mode)");
+  try {
+    const result = await client.callTool({
+      name: "flow_visor_mode",
+      arguments: { csv_data: SAMPLE_CSV, visor: "statistical" },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("Visor mode returns annotations", Array.isArray(parsed.annotations) && parsed.annotations.length > 0);
+    check("Visor identifies correct mode", parsed.visor === "statistical");
+  } catch (e) {
+    check("Visor mode", false, e.message);
+  }
+
+  // 14. Data World Builder
+  console.log("\n14. Tool Execution (flow_data_world_builder)");
+  try {
+    const result = await client.callTool({
+      name: "flow_data_world_builder",
+      arguments: { csv_data: SAMPLE_CSV, depth: "quick" },
+    });
+    const parsed = JSON.parse(result.content[0].text);
+    check("World builder returns archetype", typeof parsed.archetype === "string" && parsed.archetype.length > 0);
+    check("World builder returns sparkles", typeof parsed.sparkles === "object" && Array.isArray(parsed.sparkles.instant));
+  } catch (e) {
+    check("Data world builder", false, e.message);
+  }
+
   // Cleanup
   await client.close();
 
