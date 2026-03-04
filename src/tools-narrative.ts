@@ -1,4 +1,4 @@
-import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { parseCSVLine, csvEscapeField, parseCsvToRows, isDateLike, isIdLike } from "./csv-utils.js";
 
 // ============================================================================
 // NARRATIVE INTELLIGENCE TOOLS
@@ -72,36 +72,7 @@ interface NarrFinding {
   detail: string;
 }
 
-function narrParseCsvToRows(csvContent: string): { headers: string[]; rows: string[][] } {
-  const lines = csvContent.trim().split("\n");
-  if (lines.length < 2) {
-    return { headers: parseCSVLine(lines[0] || ""), rows: [] };
-  }
-  const headers = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).map((line) => parseCSVLine(line));
-  return { headers, rows };
-}
-
-function narrIsDateLike(val: string): boolean {
-  if (!val || val.trim() === "") return false;
-  const datePatterns = [
-    /^\d{4}-\d{2}-\d{2}$/,
-    /^\d{1,2}\/\d{1,2}\/\d{2,4}$/,
-    /^\d{4}\/\d{2}\/\d{2}$/,
-    /^\d{4}-\d{2}-\d{2}T/,
-    /^[A-Z][a-z]{2}\s+\d{1,2},?\s+\d{4}$/,
-  ];
-  return datePatterns.some((p) => p.test(val.trim()));
-}
-
-function narrIsIdLike(name: string, values: string[], totalRows: number): boolean {
-  const nameLower = name.toLowerCase();
-  if (nameLower === "id" || nameLower.endsWith("_id") || nameLower === "key" || nameLower === "name") {
-    return true;
-  }
-  const uniqueSet = new Set(values.filter((v) => v.trim() !== ""));
-  return uniqueSet.size === totalRows && totalRows > 1;
-}
+// parseCsvToRows, isDateLike, isIdLike imported from csv-utils.ts
 
 function narrComputeStd(values: number[], mean: number): number {
   if (values.length < 2) return 0;
@@ -185,7 +156,7 @@ function narrProfileColumn(
 
   // Check if date column
   const dateSample = nonEmpty.slice(0, Math.min(5, nonEmpty.length));
-  const dateRatio = dateSample.filter(narrIsDateLike).length / Math.max(dateSample.length, 1);
+  const dateRatio = dateSample.filter(isDateLike).length / Math.max(dateSample.length, 1);
 
   // Check if numeric
   let numericCount = 0;
@@ -204,7 +175,7 @@ function narrProfileColumn(
     type = "date";
   } else if (numericRatio > 0.5) {
     type = "numeric";
-  } else if (narrIsIdLike(name, nonEmpty, rows.length)) {
+  } else if (isIdLike(name, nonEmpty, rows.length)) {
     type = "id";
   } else {
     type = "categorical";
@@ -810,7 +781,7 @@ function narrSuggestExplorations(
 
 export function flowNarrateData(input: NarrateDataInput): NarrateDataResult {
   const style = input.style ?? "explorer";
-  const { headers, rows } = narrParseCsvToRows(input.csv);
+  const { headers, rows } = parseCsvToRows(input.csv);
 
   // Profile every column
   let profiles = headers.map((h, i) => narrProfileColumn(h, i, rows));

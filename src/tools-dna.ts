@@ -7,7 +7,7 @@
  * "The Archipelago", "The Highway", "The Mystery", etc.
  */
 
-import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { parseCSVLine, csvEscapeField, parseCsvToRows } from "./csv-utils.js";
 
 // ============================================================================
 // Public interfaces
@@ -48,15 +48,7 @@ interface DnaColumnProfile {
   std: number;
 }
 
-function dna_parseCsv(csvData: string): { headers: string[]; rows: string[][] } {
-  const lines = csvData.trim().split("\n");
-  if (lines.length < 1) {
-    return { headers: [], rows: [] };
-  }
-  const headers = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).map((line) => parseCSVLine(line));
-  return { headers, rows };
-}
+// parseCsvToRows imported from csv-utils.ts
 
 function dna_profileColumns(headers: string[], rows: string[][]): DnaColumnProfile[] {
   return headers.map((name, index) => {
@@ -918,7 +910,7 @@ function dna_traitDescription(trait: string, score: number): string {
 // ============================================================================
 
 export function flowExplorationDna(input: ExplorationDnaInput): ExplorationDnaResult {
-  const { headers, rows } = dna_parseCsv(input.csv_data);
+  const { headers, rows } = parseCsvToRows(input.csv_data);
 
   if (headers.length === 0) {
     throw new Error("No headers found in CSV data");

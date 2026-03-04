@@ -11,7 +11,7 @@
  * One call. Data comes alive. The "enter the world" button.
  */
 
-import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { parseCSVLine, csvEscapeField, parseCsvToRows } from "./csv-utils.js";
 import { flowExplorationDna } from "./tools-dna.js";
 import type { ExplorationDnaResult } from "./tools-dna.js";
 import { flowSparkleEngine } from "./tools-sparkle.js";
@@ -65,18 +65,7 @@ export interface DataWorldBuilderResult {
 // Internal helpers — all prefixed with wb_
 // ============================================================================
 
-/**
- * Parse CSV to extract headers and rows.
- */
-function wb_parseCsv(csvData: string): { headers: string[]; rows: string[][] } {
-  const lines = csvData.trim().split("\n");
-  if (lines.length < 1) {
-    return { headers: [], rows: [] };
-  }
-  const headers = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).filter((l) => l.trim() !== "").map((line) => parseCSVLine(line));
-  return { headers, rows };
-}
+// parseCsvToRows imported from csv-utils.ts
 
 /**
  * Find the "dominant column" — the most interesting numeric column name
@@ -298,7 +287,7 @@ export async function flowDataWorldBuilder(
   input: DataWorldBuilderInput
 ): Promise<DataWorldBuilderResult> {
   const depth = input.depth ?? "standard";
-  const { headers, rows } = wb_parseCsv(input.csv_data);
+  const { headers, rows } = parseCsvToRows(input.csv_data);
 
   // Step 1: Exploration DNA — always runs
   const dnaResult = flowExplorationDna({ csv_data: input.csv_data });

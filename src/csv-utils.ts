@@ -54,3 +54,40 @@ export function csvEscapeField(val: string): string {
   }
   return val;
 }
+
+/** Parse CSV content into headers and rows arrays. Handles empty content and blank lines. */
+export function parseCsvToRows(csvContent: string): { headers: string[]; rows: string[][] } {
+  const lines = csvContent.trim().split("\n");
+  if (lines.length < 1 || (lines.length === 1 && lines[0].trim() === "")) {
+    return { headers: [], rows: [] };
+  }
+  const headers = parseCSVLine(lines[0]);
+  if (lines.length < 2) {
+    return { headers, rows: [] };
+  }
+  const rows = lines.slice(1).filter((l) => l.trim() !== "").map((line) => parseCSVLine(line));
+  return { headers, rows };
+}
+
+/** Detect if a string value looks like a date (YYYY-MM-DD, M/D/YYYY, ISO 8601, etc.). */
+export function isDateLike(val: string): boolean {
+  if (!val || val.trim() === "") return false;
+  const datePatterns = [
+    /^\d{4}-\d{2}-\d{2}$/,
+    /^\d{1,2}\/\d{1,2}\/\d{2,4}$/,
+    /^\d{4}\/\d{2}\/\d{2}$/,
+    /^\d{4}-\d{2}-\d{2}T/,
+    /^[A-Z][a-z]{2}\s+\d{1,2},?\s+\d{4}$/,
+  ];
+  return datePatterns.some((p) => p.test(val.trim()));
+}
+
+/** Detect if a column is an ID-like column based on name or uniqueness of values. */
+export function isIdLike(name: string, values: string[], totalRows: number): boolean {
+  const nameLower = name.toLowerCase();
+  if (nameLower === "id" || nameLower.endsWith("_id") || nameLower === "key" || nameLower === "name") {
+    return true;
+  }
+  const uniqueSet = new Set(values.filter((v) => v.trim() !== ""));
+  return uniqueSet.size === totalRows && totalRows > 1;
+}

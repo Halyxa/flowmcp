@@ -1,4 +1,4 @@
-import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { parseCSVLine, csvEscapeField, parseCsvToRows, isDateLike, isIdLike } from "./csv-utils.js";
 
 // ============================================================================
 // TOOL 69: flow_sparkle_engine — PROGRESSIVE INTELLIGENCE ENGINE
@@ -69,36 +69,7 @@ interface SEColumnProfile {
 // Sparkle Engine helpers — all prefixed with se_
 // ============================================================================
 
-function se_parseCsv(csvContent: string): { headers: string[]; rows: string[][] } {
-  const lines = csvContent.trim().split("\n");
-  if (lines.length < 1) {
-    return { headers: [], rows: [] };
-  }
-  const headers = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).map((line) => parseCSVLine(line));
-  return { headers, rows };
-}
-
-function se_isDateLike(val: string): boolean {
-  if (!val || val.trim() === "") return false;
-  const datePatterns = [
-    /^\d{4}-\d{2}-\d{2}$/,
-    /^\d{1,2}\/\d{1,2}\/\d{2,4}$/,
-    /^\d{4}\/\d{2}\/\d{2}$/,
-    /^\d{4}-\d{2}-\d{2}T/,
-    /^[A-Z][a-z]{2}\s+\d{1,2},?\s+\d{4}$/,
-  ];
-  return datePatterns.some((p) => p.test(val.trim()));
-}
-
-function se_isIdLike(name: string, values: string[], totalRows: number): boolean {
-  const nameLower = name.toLowerCase();
-  if (nameLower === "id" || nameLower.endsWith("_id") || nameLower === "key" || nameLower === "name") {
-    return true;
-  }
-  const uniqueSet = new Set(values.filter((v) => v.trim() !== ""));
-  return uniqueSet.size === totalRows && totalRows > 1;
-}
+// parseCsvToRows, isDateLike, isIdLike imported from csv-utils.ts
 
 function se_computeStd(values: number[], mean: number): number {
   if (values.length < 2) return 0;
@@ -202,7 +173,7 @@ function se_profileColumn(
 
   // Detect type
   const dateSample = nonEmpty.slice(0, Math.min(5, nonEmpty.length));
-  const dateRatio = dateSample.length > 0 ? dateSample.filter(se_isDateLike).length / dateSample.length : 0;
+  const dateRatio = dateSample.length > 0 ? dateSample.filter(isDateLike).length / dateSample.length : 0;
 
   let numericCount = 0;
   const numericValues: number[] = [];
@@ -220,7 +191,7 @@ function se_profileColumn(
     type = "date";
   } else if (numericRatio > 0.5) {
     type = "numeric";
-  } else if (se_isIdLike(name, nonEmpty, rows.length)) {
+  } else if (isIdLike(name, nonEmpty, rows.length)) {
     type = "id";
   } else {
     type = "categorical";
@@ -774,7 +745,7 @@ export function flowSparkleEngine(input: SparkleEngineInput): SparkleEngineResul
   const dwell = Math.max(0, Math.min(input.dwell_seconds ?? 1, 300));
   const maxLayer = se_dwellToMaxLayer(dwell);
 
-  const { headers, rows } = se_parseCsv(input.csv_data);
+  const { headers, rows } = parseCsvToRows(input.csv_data);
 
   // Determine focus scope
   const focusCols = input.focus_columns;
@@ -798,7 +769,7 @@ export function flowSparkleEngine(input: SparkleEngineInput): SparkleEngineResul
   for (let i = 0; i < headers.length; i++) {
     const vals = rows.map((r) => r[i]?.trim() ?? "");
     const nonEmpty = vals.filter((v) => v !== "");
-    if (se_isIdLike(headers[i], nonEmpty, rows.length)) {
+    if (isIdLike(headers[i], nonEmpty, rows.length)) {
       idColIdx = i;
       break;
     }

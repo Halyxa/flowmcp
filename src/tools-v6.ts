@@ -7,7 +7,7 @@
  * Visors: statistical, relational, temporal, anomaly, geographic.
  */
 
-import { parseCSVLine, csvEscapeField } from "./csv-utils.js";
+import { parseCSVLine, csvEscapeField, parseCsvToRows, isDateLike, isIdLike } from "./csv-utils.js";
 
 // ============================================================================
 // Public interfaces
@@ -61,38 +61,10 @@ interface VmColProfile {
 }
 
 // ============================================================================
-// Helpers (all prefixed vm_ to avoid naming conflicts)
+// Helpers
 // ============================================================================
 
-function vm_parseCsv(csvContent: string): { headers: string[]; rows: string[][] } {
-  const lines = csvContent.trim().split("\n");
-  if (lines.length < 1 || (lines.length === 1 && lines[0].trim() === "")) {
-    return { headers: [], rows: [] };
-  }
-  const headers = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).map((line) => parseCSVLine(line));
-  return { headers, rows };
-}
-
-function vm_isDateLike(val: string): boolean {
-  if (!val || val.trim() === "") return false;
-  const datePatterns = [
-    /^\d{4}-\d{2}-\d{2}$/,
-    /^\d{1,2}\/\d{1,2}\/\d{2,4}$/,
-    /^\d{4}\/\d{2}\/\d{2}$/,
-    /^\d{4}-\d{2}-\d{2}T/,
-    /^[A-Z][a-z]{2}\s+\d{1,2},?\s+\d{4}$/,
-  ];
-  return datePatterns.some((p) => p.test(val.trim()));
-}
-
-function vm_isIdLike(name: string, values: string[], totalRows: number): boolean {
-  const nameLower = name.toLowerCase();
-  if (nameLower === "id" || nameLower.endsWith("_id") || nameLower === "key") return true;
-  const uniqueCount = new Set(values).size;
-  if (uniqueCount === totalRows && totalRows > 2) return true;
-  return false;
-}
+// parseCsvToRows, isDateLike, isIdLike imported from csv-utils.ts
 
 function vm_profileColumns(
   headers: string[],
@@ -123,7 +95,7 @@ function vm_profileColumns(
     }
 
     const dateSample = nonEmpty.slice(0, 5);
-    const dateCount = dateSample.filter((v) => vm_isDateLike(v)).length;
+    const dateCount = dateSample.filter((v) => isDateLike(v)).length;
 
     // Numeric detection takes priority over ID detection.
     // A column of unique numbers (like population) should be "numeric", not "id".
@@ -131,7 +103,7 @@ function vm_profileColumns(
       type = "numeric";
     } else if (dateCount >= Math.min(3, dateSample.length) && dateSample.length > 0) {
       type = "date";
-    } else if (vm_isIdLike(name, rawValues, rows.length)) {
+    } else if (isIdLike(name, rawValues, rows.length)) {
       type = "id";
     }
 
@@ -904,7 +876,7 @@ function vm_geographic(
 
 export async function flowVisorMode(input: VisorModeInput): Promise<VisorModeResult> {
   const { csv_data, visor, focus_columns } = input;
-  const { headers, rows } = vm_parseCsv(csv_data);
+  const { headers, rows } = parseCsvToRows(csv_data);
 
   if (headers.length === 0) {
     return {
