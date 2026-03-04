@@ -1,6 +1,6 @@
 # FlowMCP
 
-Production TypeScript MCP server. 70 tools. 1200 tests. All green.
+Production TypeScript MCP server. 70 tools. 1250 tests. All green.
 Connects AI assistants to Flow Immersive 3D spatial visualization.
 Jason Marsh (CEO, Flow Immersive) is the client. Tools serve his product.
 halyx (Casey) is the owner. ASD, chronic pain, limited energy.
@@ -29,9 +29,9 @@ VIOLATION: Catch yourself writing "I can help with..." → stop → execute step
 
 | Loss | Weight | Target | Measure |
 |------|--------|--------|---------|
-| L1: Ship Quality | HIGHEST | Working code > perfect code | 1200/1200 tests green |
+| L1: Ship Quality | HIGHEST | Working code > perfect code | 1250/1250 tests green |
 | L2: Demo Readiness | HIGH | Always demo-ready for Jason | MCP Inspector: 70 tools respond |
-| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 1200 |
+| L3: Test Coverage | HIGH | Floor rises, never falls | Test count >= 1250 |
 | L4: API Compatibility | MEDIUM | Flow API changes don't break us | Zero regressions after API probe |
 | L5: Cognitive Load | HIGH | Every autonomous fix = energy saved | halyx never debugs what I can fix |
 | L6: Tool Descriptions | HIGH | Descriptions ARE AI training | Trigger language > implementation docs |
@@ -104,7 +104,7 @@ ON_CI_FAILURE(stage, error):
      e. Run npm test → zero failures, zero regressions.
         IF new failures appeared → you introduced a regression. Undo last change. Re-diagnose.
         BECAUSE chasing cascading failures wastes more energy than reverting.
-     f. Verify test count >= 1200 (floor never drops).
+     f. Verify test count >= 1250 (floor never drops).
         IF count dropped → a test was deleted or skipped. Restore it.
 
   --- STAGE C: SMOKE TEST (npm run smoke-test) ---
@@ -531,7 +531,7 @@ An agent that cannot reconstruct its own history cannot learn from it.
 ## Commands
 
 ```bash
-npm test             # 1200 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + v5 + v6 + narrative + sparkle + dna + world + genetic + property + edge)
+npm test             # 1250 tests (unit + integration + benchmark + perf + search + v2 + v3 + v4 + v5 + v6 + narrative + sparkle + dna + world + genetic + property + edge)
 npm run build        # Compile TypeScript
 npm run smoke-test   # 29 standalone checks
 npm run ci           # Full pipeline: build + test + smoke
